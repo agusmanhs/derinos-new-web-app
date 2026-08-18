@@ -18,10 +18,18 @@ export const IntroSection: React.FC = () => {
         
         <div className={styles.visualContent}>
           <div className={styles.imageGrid}>
-            <div className={styles.imageWrapper}>
+            <div className={styles.imageWrapperMain}>
               <Image 
                 src="https://images.unsplash.com/photo-1600566753086-00f18efc204b?q=80&w=2070&auto=format&fit=crop" 
                 alt="Architecture Detail" 
+                fill 
+                className={styles.image} 
+              />
+            </div>
+            <div className={styles.imageWrapperSecondary}>
+              <Image 
+                src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2067&auto=format&fit=crop" 
+                alt="Interior Detail" 
                 fill 
                 className={styles.image} 
               />

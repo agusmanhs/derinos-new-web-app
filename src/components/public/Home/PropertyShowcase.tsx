@@ -28,7 +28,7 @@ export const PropertyShowcase: React.FC = () => {
                   </div>
                 )}
                 <Image 
-                  src={project.image} 
+                  src={project.heroImage} 
                   alt={project.title} 
                   fill 
                   className={styles.image} 
