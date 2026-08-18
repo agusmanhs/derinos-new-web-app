@@ -4,30 +4,21 @@
   gap: var(--spacing-2xl);
 }
 
-.welcomeBanner {
-  background: var(--color-white);
-  padding: var(--spacing-2xl);
-  border: 1px solid var(--color-border);
-  border-left: 4px solid var(--color-primary);
-}
-
-.welcomeBanner h1 {
+.pageTitle {
   font-family: var(--font-headline);
-  font-size: 2rem;
-  margin-bottom: var(--spacing-xs);
+  font-size: 2.25rem;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
+  font-weight: 500;
 }
 
-.welcomeBanner p {
-  color: var(--color-text-muted);
-}
-
-.statsGrid {
+.kpiGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-xl);
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
 }
 
-.statCard {
+.kpiCard {
   background: var(--color-white);
   padding: var(--spacing-xl);
   border: 1px solid var(--color-border);
@@ -35,40 +26,291 @@
   flex-direction: column;
 }
 
-.statCard h3 {
+.kpiLabel {
   font-size: 0.875rem;
   color: var(--color-text-muted);
-  text-transform: uppercase;
+  font-weight: 600;
   margin-bottom: var(--spacing-md);
 }
 
-.statValue {
+.kpiValue {
   font-family: var(--font-headline);
   font-size: 3rem;
   color: var(--color-primary);
   line-height: 1;
-  margin-bottom: var(--spacing-xs);
 }
 
-.statTrend {
-  font-size: 0.75rem;
-  color: var(--color-success);
+.kpiValueWrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
-.infoCard {
-  background: var(--color-white);
-  padding: var(--spacing-2xl);
-  border: 1px solid var(--color-border);
-}
-
-.infoCard h2 {
-  font-family: var(--font-headline);
-  font-size: 1.5rem;
-  margin-bottom: var(--spacing-md);
-}
-
-.helpText {
-  margin-top: var(--spacing-sm);
+.kpiSub {
   font-size: 0.875rem;
   color: var(--color-text-muted);
+}
+
+.kpiTrend {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: var(--color-secondary); /* Using secondary (gold) for trend as in image */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.progressBar {
+  margin-top: 16px;
+  height: 4px;
+  background: #E5E7EB;
+  border-radius: 2px;
+  width: 100%;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-xl);
+}
+
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-xl);
+}
+
+.chartCard, .donutCard, .activityCard, .progressCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-xl);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.cardTitle {
+  font-family: var(--font-headline);
+  font-size: 1.5rem;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.dateSelect {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.viewAll {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+}
+
+/* Line Chart Mock */
+.chartMockup {
+  height: 250px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.svgChart {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.chartLabels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: 8px;
+}
+
+/* Donut Chart Mock */
+.donutMockup {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg) 0;
+}
+
+.donutCircle {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: conic-gradient(var(--color-primary) 0% 82%, var(--color-secondary) 82% 90%, #E5E7EB 90% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutInner {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutValue {
+  font-family: var(--font-headline);
+  font-size: 1.75rem;
+  color: var(--color-text);
+}
+
+.donutLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.donutLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: var(--spacing-xl);
+}
+
+.legendItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.legendLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+}
+
+.legendStats {
+  color: var(--color-text-muted);
+}
+
+.legendStats strong {
+  color: var(--color-text);
+  margin-right: 4px;
+}
+
+/* Activity List */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.activityItem {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.activityIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activityContent {
+  flex: 1;
+}
+
+.activityTitle {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.activityDesc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.activityTime {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Progress List */
+.progressList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.progressItem {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.progressHeader strong {
+  font-size: 0.75rem;
+}
+
+.progressBarWrapper {
+  height: 4px;
+  background: #E5E7EB;
+  border-radius: 2px;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .mainGrid, .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
 }

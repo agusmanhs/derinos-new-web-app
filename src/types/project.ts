@@ -73,6 +73,12 @@ export interface Project {
   constructionGallery: string[];
   
   gallery: string[];
+  
+  // Admin & SEO
+  archived?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
 }
 
 export interface PropertyUnit {

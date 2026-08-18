@@ -11,11 +11,11 @@ export const ProjectService = {
   /**
    * Fetch all projects, optionally filtered.
    */
-  async getProjects(filters?: ProjectFilters): Promise<Project[]> {
+  async getProjects(filters?: ProjectFilters, includeArchived = false): Promise<Project[]> {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    let results = [...mockProjects];
+    let results = mockProjects.filter(p => includeArchived ? true : !p.archived);
 
     if (filters) {
       if (filters.search) {
@@ -57,5 +57,51 @@ export const ProjectService = {
   async getStatuses(): Promise<string[]> {
     const statuses = Array.from(new Set(mockProjects.map(p => p.status)));
     return ['All', ...statuses];
+  },
+
+  /**
+   * Create a new project.
+   */
+  async createProject(data: Partial<Project>): Promise<Project> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const newProject = {
+      ...data,
+      id: `prj-${Date.now()}`,
+      archived: false,
+    } as Project;
+    mockProjects.push(newProject);
+    return newProject;
+  },
+
+  /**
+   * Update an existing project.
+   */
+  async updateProject(id: string, data: Partial<Project>): Promise<Project | null> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const index = mockProjects.findIndex(p => p.id === id);
+    if (index === -1) return null;
+    
+    mockProjects[index] = { ...mockProjects[index], ...data };
+    return mockProjects[index];
+  },
+
+  /**
+   * Archive a project (soft delete).
+   */
+  async archiveProject(id: string): Promise<boolean> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const index = mockProjects.findIndex(p => p.id === id);
+    if (index === -1) return false;
+    
+    mockProjects[index].archived = true;
+    return true;
+  },
+
+  /**
+   * Get a project by its exact ID (useful for Admin Edit).
+   */
+  async getProjectById(id: string): Promise<Project | null> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return mockProjects.find(p => p.id === id) || null;
   }
 };

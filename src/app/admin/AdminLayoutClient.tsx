@@ -16,7 +16,6 @@ export const AdminLayoutClient: React.FC<Props> = ({ user, children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
 
-  // Close sidebar on route change on mobile
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsSidebarOpen(false);
@@ -35,8 +34,6 @@ export const AdminLayoutClient: React.FC<Props> = ({ user, children }) => {
 
       <div className={styles.mainContent}>
         <AdminHeader 
-          userName={user.name} 
-          userRole={user.role} 
           onMenuToggle={() => setIsSidebarOpen(true)} 
         />
         <main className={styles.pageContent}>

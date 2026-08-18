@@ -1,7 +1,7 @@
 .sidebar {
-  width: 260px;
-  background: var(--color-white);
-  border-right: 1px solid var(--color-border);
+  width: 250px;
+  background-color: #2D2D2D; /* Dark grey from design */
+  color: #E5E5E5;
   height: 100vh;
   position: fixed;
   top: 0;
@@ -10,65 +10,133 @@
   flex-direction: column;
   transition: transform 0.3s ease;
   z-index: 50;
+  font-family: var(--font-body);
+}
+
+.logoContainer {
+  padding: 32px 24px 24px;
 }
 
 .logo {
-  height: 70px;
-  display: flex;
-  align-items: center;
-  padding: 0 var(--spacing-xl);
   font-family: var(--font-headline);
-  font-size: 1.5rem;
-  color: var(--color-primary);
-  border-bottom: 1px solid var(--color-border);
+  font-size: 1.25rem;
+  color: #FFFFFF;
+  margin-bottom: 4px;
 }
 
-.logo span {
-  font-weight: 400;
-  color: var(--color-text-muted);
-  margin-left: 4px;
+.logoSubtitle {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+}
+
+.newPropertyContainer {
+  padding: 0 24px 24px;
+}
+
+.newPropertyBtn {
+  width: 100%;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.newPropertyBtn:hover {
+  background-color: var(--color-primary-dark);
 }
 
 .nav {
   flex: 1;
-  padding: var(--spacing-lg) var(--spacing-md);
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
   overflow-y: auto;
 }
 
 .navItem {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 12px 24px;
   text-decoration: none;
-  color: var(--color-text);
-  border-radius: 6px;
+  color: #9CA3AF;
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  border-left: 3px solid transparent;
 }
 
 .navItem:hover {
-  background: var(--color-neutral);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
 }
 
 .navItem.active {
-  background: var(--color-primary);
-  color: var(--color-white);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  border-left-color: var(--color-secondary); /* Gold/Yellow from design */
 }
 
 .icon {
-  margin-right: 12px;
-  font-size: 1.125rem;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
 }
 
-.footer {
-  padding: var(--spacing-xl);
+.bottomNav {
+  padding: 16px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.userProfile:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #4B5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  color: #E5E5E5;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-size: 0.875rem;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.userRole {
   font-size: 0.75rem;
-  color: var(--color-text-muted);
-  border-top: 1px solid var(--color-border);
+  color: #9CA3AF;
 }
 
 @media (max-width: 1024px) {
