@@ -15,7 +15,9 @@ import {
   IconReports,
   IconSettings,
   IconSupport,
-  IconUser
+  IconUser,
+  IconBookings,
+  IconUsersGroup
 } from '@/components/ui/Icon/AdminIcons';
 import styles from './AdminSidebar.module.css';
 import { logoutAction } from '@/actions/authActions';
@@ -33,8 +35,10 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Units', href: '/admin/properties', icon: <IconUnits />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER', 'SALES_MANAGER'] },
   { label: 'Construction', href: '/admin/construction', icon: <IconConstruction />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'] },
   { label: 'CRM', href: '/admin/leads', icon: <IconCRM />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'] },
+  { label: 'Bookings', href: '/admin/bookings', icon: <IconBookings />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'] },
   { label: 'Sales', href: '/admin/sales', icon: <IconSales />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'] },
   { label: 'Media', href: '/admin/content', icon: <IconMedia />, roles: ['SUPER_ADMIN', 'CONTENT_MANAGER'] },
+  { label: 'Users', href: '/admin/users', icon: <IconUsersGroup />, roles: ['SUPER_ADMIN'] },
   { label: 'Reports', href: '/admin/reports', icon: <IconReports />, roles: ['SUPER_ADMIN', 'MANAGEMENT'] },
 ];
 
