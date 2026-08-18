@@ -29,6 +29,21 @@ export interface Facility {
   iconImage?: string;
 }
 
+export interface ConstructionUpdate {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  image?: string;
+}
+
+export interface Milestone {
+  id: string;
+  date: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -48,7 +63,15 @@ export interface Project {
   
   houseTypes: HouseType[];
   facilities: Facility[];
+  
+  // Construction specifics
+  overallProgress: number;
+  targetCompletion: string;
   constructionPhases: ConstructionPhase[];
+  constructionUpdates: ConstructionUpdate[];
+  milestones: Milestone[];
+  constructionGallery: string[];
+  
   gallery: string[];
 }
 

@@ -1,20 +1,33 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button/Button';
+import { LeadForm } from '@/components/public/LeadForm/LeadForm';
 import styles from './CTASection.module.css';
+import { Modal } from '@/components/ui/Modal/Modal';
 
 export const CTASection: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <section className={styles.cta}>
-      <div className={styles.container}>
-        <h2 className={styles.title}>Find a Place You&apos;ll Love to Call Home.</h2>
-        <p className={styles.subtitle}>
-          Connect with our advisors team to discuss available properties or schedule a private viewing of our model residences.
-        </p>
-        <div className={styles.actions}>
-          <Button variant="secondary" size="lg">Schedule a Visit</Button>
-          <Button variant="outlined" className={styles.outlineWhite} size="lg">Request Brochure</Button>
+    <>
+      <section className={styles.cta}>
+        <div className={styles.overlay} />
+        <div className={styles.container}>
+          <h2 className={styles.title}>Ready to find your dream home?</h2>
+          <p className={styles.subtitle}>
+            Connect with our property experts and discover a living experience tailored to you.
+          </p>
+          <div className={styles.buttonGroup}>
+            <Button variant="primary" onClick={() => setIsModalOpen(true)}>Contact Us Now</Button>
+            <Button variant="inverted">Browse Projects</Button>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Contact Sales">
+        <LeadForm source="Homepage" onSuccess={() => {}} />
+      </Modal>
+    </>
   );
 };

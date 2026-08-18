@@ -2,8 +2,8 @@ import React from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { PropertyService as RealPropertyService } from '@/services/propertyService';
-import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
+import { PropertySidebarCTA } from '@/components/public/Properties/PropertySidebarCTA';
 import styles from './page.module.css';
 
 interface PageProps {
@@ -111,20 +111,11 @@ export default async function PropertyDetailPage({ params }: PageProps) {
 
           {/* Sidebar CTA (Right) */}
           <div className={styles.sidebar}>
-            <div className={styles.stickyCTA}>
-              <h3>Interested in Unit {property.unitNumber}?</h3>
-              <p>Get in touch with our sales team to schedule a viewing or secure this unit.</p>
-              
-              <div className={styles.actionButtons}>
-                <Button variant="primary" fullWidth className={styles.btn}>Schedule a Visit</Button>
-                <Button variant="outlined" fullWidth className={styles.btn}>Contact Sales</Button>
-              </div>
-
-              <div className={styles.sidebarContact}>
-                <span>Need help? Call us at</span>
-                <strong>+1 234 567 890</strong>
-              </div>
-            </div>
+            <PropertySidebarCTA 
+              unitNumber={property.unitNumber} 
+              projectTitle={property.projectTitle} 
+              propertyType={property.typeName} 
+            />
           </div>
         </div>
       </div>

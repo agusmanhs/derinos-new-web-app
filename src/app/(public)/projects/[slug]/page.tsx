@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ProjectService } from '@/services/projectService';
 import { CTASection } from '@/components/public/Home/CTASection';
@@ -115,7 +116,31 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       {/* 5. Construction Progress */}
       <section className={styles.sectionLight}>
         <div className={styles.container}>
-          <h2 className={styles.sectionTitle}>Construction Progress</h2>
+          <div className={styles.constructionHeader}>
+            <h2 className={styles.sectionTitle}>Construction Progress</h2>
+            <Link href={`/construction?project=${project.slug}`} className={styles.reportLink}>
+              View Full Report →
+            </Link>
+          </div>
+          
+          <div className={styles.progressSummary}>
+            <div className={styles.progressStat}>
+              <span className={styles.statLabel}>Overall Progress</span>
+              <span className={styles.statValueLarge}>{project.overallProgress}%</span>
+            </div>
+            <div className={styles.progressStat}>
+              <span className={styles.statLabel}>Target Completion</span>
+              <span className={styles.statValue}>{project.targetCompletion}</span>
+            </div>
+            {project.constructionUpdates && project.constructionUpdates.length > 0 && (
+              <div className={styles.latestUpdateSnippet}>
+                <span className={styles.updateBadge}>Latest</span>
+                <strong>{project.constructionUpdates[0].title}</strong>
+                <p>{project.constructionUpdates[0].date}</p>
+              </div>
+            )}
+          </div>
+
           <div className={styles.timeline}>
             {project.constructionPhases.map((phase, idx) => (
               <div key={phase.id} className={`${styles.timelineItem} ${styles[phase.status]}`}>

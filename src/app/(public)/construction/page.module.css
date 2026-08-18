@@ -1,0 +1,289 @@
+.main {
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+.hero {
+  background-color: var(--color-neutral);
+  padding: 150px var(--spacing-xl) 80px;
+  text-align: center;
+}
+
+.title {
+  font-size: 3rem;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-xl);
+}
+
+/* Layout Grid */
+.contentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-3xl);
+}
+
+.sectionTitle {
+  font-family: var(--font-headline);
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Dashboard Card */
+.dashboardCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-2xl);
+  margin-bottom: var(--spacing-3xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboardHeader h2 {
+  font-family: var(--font-headline);
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.targetDate {
+  display: flex;
+  flex-direction: column;
+  color: var(--color-text-muted);
+}
+
+.targetDate strong {
+  font-size: 1.25rem;
+  color: var(--color-text);
+  margin-top: 4px;
+}
+
+.progressSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressRing {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  padding: 12px;
+  background: var(--color-border);
+}
+
+.progressCircle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressInner {
+  width: 120px;
+  height: 120px;
+  background: var(--color-white);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressNumber {
+  font-family: var(--font-headline);
+  font-size: 2rem;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.progressLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+/* Updates Section */
+.updatesSection {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.updatesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.updateCard {
+  display: flex;
+  gap: var(--spacing-lg);
+  background: var(--color-neutral);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+}
+
+.updateImage {
+  position: relative;
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.imageCover {
+  object-fit: cover;
+}
+
+.updateContent {
+  padding: var(--spacing-md) 0;
+}
+
+.updateDate {
+  display: inline-block;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  border-radius: 12px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.updateTitle {
+  font-family: var(--font-headline);
+  font-size: 1.25rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.updateDesc {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* Gallery Section */
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.galleryItem {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebarCard {
+  position: sticky;
+  top: 100px;
+  background: var(--color-neutral);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-2xl);
+}
+
+.sidebarTitle {
+  font-family: var(--font-headline);
+  font-size: 1.5rem;
+  margin-bottom: var(--spacing-xl);
+}
+
+.verticalTimeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timelineItem {
+  position: relative;
+  padding-left: 32px;
+  padding-bottom: var(--spacing-xl);
+}
+
+.timelineItem:last-child {
+  padding-bottom: 0;
+}
+
+.timelinePoint {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-white);
+  border: 2px solid var(--color-border);
+  z-index: 2;
+}
+
+.timelineLine {
+  position: absolute;
+  left: 7px;
+  top: 20px;
+  width: 2px;
+  height: calc(100% - 16px);
+  background: var(--color-border);
+  z-index: 1;
+}
+
+.timelineItem.completed .timelinePoint {
+  border-color: var(--color-success);
+  background: var(--color-success);
+}
+
+.timelineItem.completed .timelineLine {
+  background: var(--color-success);
+}
+
+.timelineDate {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.timelineTitle {
+  font-size: 1rem;
+  color: var(--color-text);
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+  .dashboardCard {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-xl);
+  }
+  .sidebarCard {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .updateCard {
+    flex-direction: column;
+  }
+  .updateImage {
+    width: 100%;
+    height: 200px;
+  }
+}

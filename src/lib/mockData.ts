@@ -22,6 +22,18 @@ const defaultGallery = [
   'https://images.unsplash.com/photo-1600607688969-a5bfcd64bd28?q=80&w=2070&auto=format&fit=crop',
 ];
 
+const defaultConstructionUpdates = [
+  { id: 'u1', date: 'Oct 2023', title: 'Foundation Completed', description: 'All unit foundations have been poured and cured.', image: 'https://images.unsplash.com/photo-1541888086925-0c1448b11a5e?q=80&w=800&auto=format&fit=crop' },
+  { id: 'u2', date: 'Nov 2023', title: 'Structure Erection Started', description: 'Steel frames and main structural walls are currently being erected across block A.', image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=800&auto=format&fit=crop' },
+];
+
+const defaultMilestones = [
+  { id: 'm1', date: 'Aug 2023', title: 'Groundbreaking', completed: true },
+  { id: 'm2', date: 'Oct 2023', title: 'Foundation Phase', completed: true },
+  { id: 'm3', date: 'Feb 2024', title: 'Topping Off', completed: false },
+  { id: 'm4', date: 'Q4 2024', title: 'Handover', completed: false },
+];
+
 export const mockProjects: Project[] = [
   {
     id: 'prj-1',
@@ -56,7 +68,12 @@ export const mockProjects: Project[] = [
       }
     ],
     facilities: defaultFacilities,
+    overallProgress: 45,
+    targetCompletion: 'Q4 2024',
     constructionPhases: defaultPhases,
+    constructionUpdates: defaultConstructionUpdates,
+    milestones: defaultMilestones,
+    constructionGallery: defaultGallery,
     gallery: defaultGallery,
   },
   {
@@ -84,6 +101,8 @@ export const mockProjects: Project[] = [
       }
     ],
     facilities: defaultFacilities,
+    overallProgress: 100,
+    targetCompletion: 'Q1 2023',
     constructionPhases: [
       { id: 1, name: 'Land Clearing', status: 'completed' },
       { id: 2, name: 'Foundation', status: 'completed' },
@@ -91,6 +110,13 @@ export const mockProjects: Project[] = [
       { id: 4, name: 'Finishing', status: 'completed' },
       { id: 5, name: 'Handover', status: 'completed' },
     ],
+    constructionUpdates: [
+      { id: 'u3', date: 'Jan 2023', title: 'Final Finishing', description: 'Interior details and landscaping finalized.', image: 'https://images.unsplash.com/photo-1600607688969-a5bfcd64bd28?q=80&w=800&auto=format&fit=crop' }
+    ],
+    milestones: [
+      { id: 'm5', date: 'Q1 2023', title: 'Project Handover', completed: true },
+    ],
+    constructionGallery: defaultGallery,
     gallery: defaultGallery,
   },
   {
@@ -121,10 +147,20 @@ export const mockProjects: Project[] = [
       { id: 1, name: 'Private Rooftop', description: 'City skyline views', iconImage: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=200&auto=format&fit=crop' },
       { id: 2, name: 'Smart Home', description: 'Integrated automation', iconImage: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=200&auto=format&fit=crop' },
     ],
+    overallProgress: 15,
+    targetCompletion: 'Q2 2026',
     constructionPhases: [
       { id: 1, name: 'Land Clearing', status: 'active', progress: 30 },
       { id: 2, name: 'Foundation', status: 'pending' },
     ],
+    constructionUpdates: [
+      { id: 'u4', date: 'Sep 2023', title: 'Land Clearing Commenced', description: 'Site preparation and fencing in progress.', image: 'https://images.unsplash.com/photo-1541888086925-0c1448b11a5e?q=80&w=800&auto=format&fit=crop' }
+    ],
+    milestones: [
+      { id: 'm6', date: 'Sep 2023', title: 'Groundbreaking', completed: true },
+      { id: 'm7', date: 'Q2 2026', title: 'Handover', completed: false },
+    ],
+    constructionGallery: defaultGallery,
     gallery: defaultGallery,
   }
 ];
