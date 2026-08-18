@@ -1,0 +1,90 @@
+.main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-neutral);
+  padding: var(--spacing-xl);
+}
+
+.loginContainer {
+  width: 100%;
+  max-width: 440px;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-3xl);
+}
+
+.loginHeader {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.loginHeader h1 {
+  font-family: var(--font-headline);
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.loginHeader p {
+  color: var(--color-text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.submitBtn {
+  margin-top: var(--spacing-md);
+}
+
+.errorAlert {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--color-danger);
+  padding: var(--spacing-md);
+  border-radius: 4px;
+  border: 1px solid var(--color-danger);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.mockAccounts {
+  margin-top: var(--spacing-3xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px dashed var(--color-border);
+}
+
+.mockAccounts h4 {
+  font-size: 0.875rem;
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
+}
+
+.mockAccounts ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.mockAccounts li {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.mockAccounts code {
+  background: var(--color-neutral);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+  color: var(--color-primary);
+}
+
+.mockAccounts p {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
