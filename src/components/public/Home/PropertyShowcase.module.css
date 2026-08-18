@@ -1,0 +1,127 @@
+.showcase {
+  background-color: var(--color-white);
+  padding: 100px 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-xl);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--spacing-3xl);
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+}
+
+.viewAll {
+  font-weight: 600;
+  color: var(--color-tertiary);
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--color-tertiary);
+  padding-bottom: 4px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.viewAll:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-3xl);
+}
+
+.card {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.03);
+}
+
+.badgeWrapper {
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  z-index: 10;
+}
+
+.badgeWrapper > span {
+  background-color: var(--color-white);
+  color: var(--color-tertiary);
+}
+
+.cardBody {
+  padding: var(--spacing-lg) 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.projectTitle {
+  font-family: var(--font-headline);
+  font-size: 1.5rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.location {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.priceInfo {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.priceLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.priceValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-2xl);
+  }
+}

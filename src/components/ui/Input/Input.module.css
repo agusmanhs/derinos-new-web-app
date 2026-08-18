@@ -1,0 +1,56 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-tertiary);
+}
+
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  padding: 10px var(--spacing-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  border-radius: var(--radius-sm); /* search bar in design has very subtle radius or none */
+  font-size: 1rem;
+  color: var(--color-tertiary);
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+}
+
+.inputError {
+  border-color: var(--color-danger);
+}
+
+.hasIcon {
+  padding-left: 2.5rem;
+}
+
+.icon {
+  position: absolute;
+  left: var(--spacing-md);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.error {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+}

@@ -1,0 +1,17 @@
+.skeleton {
+  background-color: var(--color-neutral-hover);
+  animation: pulse 1.5s infinite ease-in-out;
+  display: block;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
