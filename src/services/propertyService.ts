@@ -28,7 +28,7 @@ export const PropertyService = {
   ): Promise<PaginatedResult<PropertyUnit>> {
     await new Promise(resolve => setTimeout(resolve, 400)); // Network simulation
 
-    let results = [...mockProperties];
+    let results = mockProperties.filter(p => !p.archived);
 
     if (filters) {
       if (filters.search) {
@@ -100,5 +100,43 @@ export const PropertyService = {
     const types = Array.from(new Set(mockProperties.map(p => p.typeName)));
     const statuses = Array.from(new Set(mockProperties.map(p => p.status)));
     return { projects: ['All', ...projects], types: ['All', ...types], statuses: ['All', ...statuses] };
+  },
+
+  /**
+   * Create a new property unit.
+   */
+  async createProperty(data: Partial<PropertyUnit>): Promise<PropertyUnit> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const newProperty = {
+      ...data,
+      id: `prop-${Date.now()}`,
+      archived: false,
+    } as PropertyUnit;
+    mockProperties.push(newProperty);
+    return newProperty;
+  },
+
+  /**
+   * Update an existing property unit.
+   */
+  async updateProperty(id: string, data: Partial<PropertyUnit>): Promise<PropertyUnit | null> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const index = mockProperties.findIndex(p => p.id === id);
+    if (index === -1) return null;
+    
+    mockProperties[index] = { ...mockProperties[index], ...data };
+    return mockProperties[index];
+  },
+
+  /**
+   * Archive a property (soft delete).
+   */
+  async archiveProperty(id: string): Promise<boolean> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const index = mockProperties.findIndex(p => p.id === id);
+    if (index === -1) return false;
+    
+    mockProperties[index].archived = true;
+    return true;
   }
 };

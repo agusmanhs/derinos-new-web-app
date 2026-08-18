@@ -1,0 +1,19 @@
+.nameCell {
+  display: flex;
+  flex-direction: column;
+}
+
+.nameCell strong {
+  color: var(--color-text);
+}
+
+.nameCell span {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: var(--spacing-sm);
+}

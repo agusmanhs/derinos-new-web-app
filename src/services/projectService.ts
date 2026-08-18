@@ -103,5 +103,18 @@ export const ProjectService = {
   async getProjectById(id: string): Promise<Project | null> {
     await new Promise(resolve => setTimeout(resolve, 300));
     return mockProjects.find(p => p.id === id) || null;
+  },
+
+  /**
+   * Update Construction Progress of a project.
+   */
+  async updateConstructionProgress(id: string, overallProgress: number, targetCompletion: string): Promise<Project | null> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const index = mockProjects.findIndex(p => p.id === id);
+    if (index === -1) return null;
+    
+    mockProjects[index].overallProgress = overallProgress;
+    mockProjects[index].targetCompletion = targetCompletion;
+    return mockProjects[index];
   }
 };

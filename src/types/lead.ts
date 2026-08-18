@@ -12,6 +12,9 @@ export interface Lead {
   source: string; // e.g., 'Homepage', 'Project Detail', 'Property Detail'
   campaign?: string; // UTM params if available
   
+  // CRM Tracking
+  status?: 'New' | 'Contacted' | 'Qualified' | 'Lost';
+  
   createdAt: string;
 }
 

@@ -97,4 +97,7 @@ export interface PropertyUnit {
   gallery: string[];
   floorPlanImage: string;
   facilities: Facility[];
+
+  // Admin fields
+  archived?: boolean;
 }
