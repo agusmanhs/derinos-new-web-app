@@ -177,7 +177,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      <CTASection />
+      <CTASection projectOptions={await ProjectService.getProjectOptions()} />
     </main>
   );
 }

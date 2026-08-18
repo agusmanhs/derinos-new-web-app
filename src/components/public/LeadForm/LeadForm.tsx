@@ -12,6 +12,7 @@ export interface LeadFormProps {
   source: 'Homepage' | 'Project Detail' | 'Property Detail' | 'Contact Page';
   defaultProject?: string;
   defaultPropertyType?: string;
+  projectOptions: {label: string, value: string}[];
   onSuccess?: () => void;
 }
 
@@ -19,6 +20,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
   source, 
   defaultProject = '', 
   defaultPropertyType = '',
+  projectOptions,
   onSuccess
 }) => {
   const searchParams = useSearchParams();
@@ -102,12 +104,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           name="project" 
           label="Project of Interest" 
           defaultValue={defaultProject}
-          options={[
-            { label: 'Select Project', value: '' },
-            { label: 'Greenwood Residence', value: 'Greenwood Residence' },
-            { label: 'The Valley Estate', value: 'The Valley Estate' },
-            { label: 'Oasis Townhomes', value: 'Oasis Townhomes' },
-          ]}
+          options={projectOptions}
         />
         <Input 
           name="propertyType" 

@@ -115,6 +115,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
               unitNumber={property.unitNumber} 
               projectTitle={property.projectTitle} 
               propertyType={property.typeName} 
+              projectOptions={await (await import('@/services/projectService')).ProjectService.getProjectOptions()}
             />
           </div>
         </div>

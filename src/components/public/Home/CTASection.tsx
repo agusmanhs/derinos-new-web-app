@@ -6,7 +6,7 @@ import { LeadForm } from '@/components/public/LeadForm/LeadForm';
 import styles from './CTASection.module.css';
 import { Modal } from '@/components/ui/Modal/Modal';
 
-export const CTASection: React.FC = () => {
+export const CTASection: React.FC<{ projectOptions: {label: string, value: string}[] }> = ({ projectOptions }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -26,7 +26,7 @@ export const CTASection: React.FC = () => {
       </section>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Contact Sales">
-        <LeadForm source="Homepage" onSuccess={() => {}} />
+        <LeadForm source="Homepage" projectOptions={projectOptions} onSuccess={() => {}} />
       </Modal>
     </>
   );

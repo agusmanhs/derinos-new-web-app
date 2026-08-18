@@ -10,9 +10,10 @@ interface PropertySidebarCTAProps {
   unitNumber: string;
   projectTitle: string;
   propertyType: string;
+  projectOptions: {label: string, value: string}[];
 }
 
-export const PropertySidebarCTA: React.FC<PropertySidebarCTAProps> = ({ unitNumber, projectTitle, propertyType }) => {
+export const PropertySidebarCTA: React.FC<PropertySidebarCTAProps> = ({ unitNumber, projectTitle, propertyType, projectOptions }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -35,6 +36,7 @@ export const PropertySidebarCTA: React.FC<PropertySidebarCTAProps> = ({ unitNumb
           source="Property Detail" 
           defaultProject={projectTitle}
           defaultPropertyType={`Unit ${unitNumber} - ${propertyType}`}
+          projectOptions={projectOptions}
           onSuccess={() => {}} 
         />
       </Modal>

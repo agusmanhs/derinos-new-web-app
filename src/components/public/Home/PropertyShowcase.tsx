@@ -1,12 +1,12 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { featuredProjects } from '@/lib/mockData';
+import { Project } from '@/types/project';
 import { Card } from '@/components/ui/Card/Card';
 import { Badge } from '@/components/ui/Badge/Badge';
 import styles from './PropertyShowcase.module.css';
 
-export const PropertyShowcase: React.FC = () => {
+export const PropertyShowcase: React.FC<{ projects: Project[] }> = ({ projects }) => {
   return (
     <section className={styles.showcase}>
       <div className={styles.container}>
@@ -19,7 +19,7 @@ export const PropertyShowcase: React.FC = () => {
         </div>
         
         <div className={styles.grid}>
-          {featuredProjects.map((project) => (
+          {projects.map((project) => (
             <Card key={project.id} className={styles.card}>
               <div className={styles.imageWrapper}>
                 {project.featured && (

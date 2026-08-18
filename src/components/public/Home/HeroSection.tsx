@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/Button/Button';
 import styles from './HeroSection.module.css';
 
-export const HeroSection: React.FC = () => {
+export const HeroSection: React.FC<{ stats: { availableProjects: number, cities: number } }> = ({ stats }) => {
   return (
     <section className={styles.hero}>
       <Image
@@ -28,8 +28,8 @@ export const HeroSection: React.FC = () => {
         </div>
         
         <div className={styles.stats}>
-          <span>Available Projects: <strong>12</strong></span>
-          <span>Locations: <strong>4 Cities</strong></span>
+          <span>Available Projects: <strong>{stats.availableProjects}</strong></span>
+          <span>Locations: <strong>{stats.cities} Cities</strong></span>
         </div>
       </div>
     </section>

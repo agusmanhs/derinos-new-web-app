@@ -1,9 +1,9 @@
 import React from 'react';
 import Image from 'next/image';
-import { facilities } from '@/lib/mockData';
+import { Facility } from '@/types/project';
 import styles from './FacilitiesSection.module.css';
 
-export const FacilitiesSection: React.FC = () => {
+export const FacilitiesSection: React.FC<{ facilities: Facility[] }> = ({ facilities }) => {
   return (
     <section className={styles.facilities}>
       <div className={styles.container}>

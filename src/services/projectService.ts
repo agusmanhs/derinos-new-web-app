@@ -86,6 +86,72 @@ export const ProjectService = {
   },
 
   /**
+   * Delete (hard delete) a project.
+   */
+  async deleteProject(id: string): Promise<boolean> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const initialLength = mockProjects.length;
+    const filtered = mockProjects.filter(p => p.id !== id);
+    if (filtered.length !== initialLength) {
+      // In a real app we'd splice or reassigned, but since we export the array, we must splice it
+      const index = mockProjects.findIndex(p => p.id === id);
+      if (index !== -1) {
+        mockProjects.splice(index, 1);
+        return true;
+      }
+    }
+    return false;
+  },
+
+  /**
+   * Helper methods for Homepage and UI
+   */
+  async getFeaturedProjects(): Promise<Project[]> {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return mockProjects.filter(p => p.featured && !p.archived);
+  },
+
+  async getFacilities() {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    // Usually facilities are per-project, but we can aggregate distinct facilities or return a mock list for the homepage
+    // Let's use the facilities from the first project as global showcase, or just a static list
+    const defaultFacilities = mockProjects[0]?.facilities || [];
+    return defaultFacilities;
+  },
+
+  async getGalleryImages() {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    // Aggregate gallery images from all projects
+    const allImages = mockProjects.filter(p => !p.archived).flatMap(p => p.gallery || []);
+    // Return unique images up to 8 items
+    return Array.from(new Set(allImages)).slice(0, 8);
+  },
+
+  async getStats() {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const availableProjects = mockProjects.filter(p => !p.archived).length;
+    const cities = new Set(mockProjects.filter(p => !p.archived).map(p => p.location.split(' ').pop())).size;
+    return {
+      yearsExperience: '15+',
+      completedProjects: 24, // Mock static stat
+      availableProjects,
+      cities: cities > 0 ? cities : 4,
+    };
+  },
+
+  async getProjectOptions(): Promise<{label: string, value: string}[]> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const activeProjects = mockProjects.filter(p => !p.archived);
+    return [
+      { label: 'Select Project', value: '' },
+      ...activeProjects.map(p => ({
+        label: p.title,
+        value: p.title
+      }))
+    ];
+  },
+
+  /**
    * Archive a project (soft delete).
    */
   async archiveProject(id: string): Promise<boolean> {
