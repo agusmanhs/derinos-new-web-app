@@ -44,6 +44,18 @@ export interface Milestone {
   completed: boolean;
 }
 
+export interface ProjectPhase {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string | null;
+  sitePlanSvg: string;
+  status: string;
+  properties?: PropertyUnit[];
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -67,7 +79,8 @@ export interface Project {
   // Construction specifics
   overallProgress: number;
   targetCompletion: string;
-  constructionPhases: ConstructionPhase[];
+  constructionPhases: ConstructionPhase[]; // Old JSON phase (can be deprecated later)
+  phases?: ProjectPhase[]; // New relational phase
   constructionUpdates: ConstructionUpdate[];
   milestones: Milestone[];
   constructionGallery: string[];
@@ -84,6 +97,8 @@ export interface Project {
 export interface PropertyUnit {
   id: string;
   projectId: string;
+  phaseId?: string | null;
+  phase?: ProjectPhase | null;
   projectTitle: string;
   unitNumber: string;
   typeName: string;

@@ -61,6 +61,7 @@ model Project {
   metaDescription String?
   metaKeywords    String?
 
+  phases          ProjectPhase[]
   properties      PropertyUnit[]
   leads           Lead[]
   bookings        Booking[]
@@ -69,12 +70,34 @@ model Project {
   updatedAt       DateTime @updatedAt
 }
 
+model ProjectPhase {
+  id            String         @id @default(uuid())
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId     String
+  
+  name          String         // e.g., "Tahap 1", "Cluster A"
+  description   String?
+  sitePlanSvg   String         // URL or Raw SVG string
+  status        String         @default("Active") // Active, Completed
+  
+  properties    PropertyUnit[]
+  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([projectId, name])
+}
+
 model PropertyUnit {
-  id             String   @id @default(uuid())
-  project        Project  @relation(fields: [projectId], references: [id])
+  id             String        @id @default(uuid())
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId      String
+  
+  phase          ProjectPhase? @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  phaseId        String?
+  
   projectTitle   String
-  unitNumber     String
+  unitNumber     String        // This will map to SVG <path id="...">
   typeName       String
   landSize       Float
   buildingSize   Float
@@ -82,18 +105,18 @@ model PropertyUnit {
   bathrooms      Int
   carports       Int
   price          Float
-  status         String   // 'Available' | 'Reserved' | 'Sold'
+  status         String        // 'Available' | 'Reserved' | 'Sold'
   
-  gallery        String[] @default([])
+  gallery        String[]      @default([])
   floorPlanImage String
-  facilities     Json[]   @default([])
+  facilities     Json[]        @default([])
 
-  archived       Boolean  @default(false)
+  archived       Boolean       @default(false)
 
   bookings       Booking[]
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@unique([projectId, unitNumber])
 }

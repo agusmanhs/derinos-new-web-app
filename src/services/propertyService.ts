@@ -115,6 +115,7 @@ export const PropertyService = {
     const property = await prisma.propertyUnit.create({
       data: {
         projectId: data.projectId || '',
+        phaseId: data.phaseId || null,
         projectTitle: data.projectTitle || '',
         unitNumber: data.unitNumber || '',
         typeName: data.typeName || '',

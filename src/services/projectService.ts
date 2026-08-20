@@ -29,17 +29,38 @@ export const ProjectService = {
       }
     }
 
-    const projects = await prisma.project.findMany({ where });
+    const projects = await prisma.project.findMany({ 
+      where,
+      include: { phases: true }
+    });
     // Safe cast because Prisma JSON fields return any, but we typed them in TS
-    return projects as unknown as Project[];
+    return projects.map(p => ({
+      ...p,
+      phases: p.phases.map(ph => ({
+        ...ph,
+        createdAt: ph.createdAt.toISOString(),
+        updatedAt: ph.updatedAt.toISOString(),
+      }))
+    })) as unknown as Project[];
   },
 
   /**
    * Fetch a single project by its slug.
    */
   async getProjectBySlug(slug: string): Promise<Project | null> {
-    const project = await prisma.project.findUnique({ where: { slug } });
-    return project as unknown as Project | null;
+    const project = await prisma.project.findUnique({ 
+      where: { slug },
+      include: { phases: true }
+    });
+    if (!project) return null;
+    return {
+      ...project,
+      phases: project.phases.map(ph => ({
+        ...ph,
+        createdAt: ph.createdAt.toISOString(),
+        updatedAt: ph.updatedAt.toISOString(),
+      }))
+    } as unknown as Project;
   },
   
   /**
@@ -212,8 +233,19 @@ export const ProjectService = {
    * Get a project by its exact ID (useful for Admin Edit).
    */
   async getProjectById(id: string): Promise<Project | null> {
-    const project = await prisma.project.findUnique({ where: { id } });
-    return project as unknown as Project | null;
+    const project = await prisma.project.findUnique({ 
+      where: { id },
+      include: { phases: true }
+    });
+    if (!project) return null;
+    return {
+      ...project,
+      phases: project.phases.map(ph => ({
+        ...ph,
+        createdAt: ph.createdAt.toISOString(),
+        updatedAt: ph.updatedAt.toISOString(),
+      }))
+    } as unknown as Project;
   },
 
   /**
