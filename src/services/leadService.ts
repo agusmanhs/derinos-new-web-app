@@ -1,44 +1,68 @@
 import { Lead, LeadSubmissionPayload } from '@/types/lead';
-import { mockLeads } from '@/lib/mockLeadData';
+import prisma from '@/lib/prisma';
+import { Prisma } from '../../generated/prisma/client';
 
 export const LeadService = {
   /**
    * Save lead to database/CRM.
-   * Currently mocked to simulate backend latency and abstract logic.
    */
   async createLead(payload: LeadSubmissionPayload): Promise<Lead> {
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const projectRecord = payload.project ? await prisma.project.findFirst({ where: { title: payload.project } }) : null;
 
-    const newLead: Lead = {
-      id: `lead-${Date.now()}`,
-      ...payload,
-      status: 'New',
-      createdAt: new Date().toISOString(),
-    };
+    const lead = await prisma.lead.create({
+      data: {
+        name: payload.name,
+        email: payload.email,
+        phone: payload.phone,
+        message: payload.message || '',
+        source: payload.source || 'Website',
+        propertyType: payload.propertyType || '',
+        budget: payload.budget || '',
+        campaign: payload.campaign || '',
+        projectId: projectRecord?.id || null,
+        status: 'New'
+      }
+    });
 
-    mockLeads.push(newLead);
-    console.log('[LeadService] New lead saved:', newLead);
+    console.log('[LeadService] New lead saved:', lead.id);
 
-    return newLead;
+    return {
+      ...lead,
+      createdAt: lead.createdAt.toISOString()
+    } as unknown as Lead;
   },
 
   async getLeads(): Promise<Lead[]> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // Return sorted by newest first
-    return [...mockLeads].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const leads = await prisma.lead.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    return leads.map(l => ({
+      ...l,
+      createdAt: l.createdAt.toISOString()
+    })) as unknown as Lead[];
   },
 
   async getLeadById(id: string): Promise<Lead | null> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return mockLeads.find(l => l.id === id) || null;
+    const lead = await prisma.lead.findUnique({ where: { id } });
+    if (!lead) return null;
+    return {
+      ...lead,
+      createdAt: lead.createdAt.toISOString()
+    } as unknown as Lead;
   },
 
   async updateLeadStatus(id: string, status: Lead['status']): Promise<Lead | null> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const index = mockLeads.findIndex(l => l.id === id);
-    if (index === -1) return null;
-    
-    mockLeads[index].status = status;
-    return mockLeads[index];
+    try {
+      const lead = await prisma.lead.update({
+        where: { id },
+        data: { status }
+      });
+      return {
+        ...lead,
+        createdAt: lead.createdAt.toISOString()
+      } as unknown as Lead;
+    } catch {
+      return null;
+    }
   }
 };

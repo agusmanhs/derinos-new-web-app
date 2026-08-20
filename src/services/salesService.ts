@@ -1,18 +1,30 @@
 import { Sale } from '@/types/sale';
-import { mockSales } from '@/lib/mockSalesData';
+import prisma from '@/lib/prisma';
+import { Prisma } from '../../generated/prisma/client';
 
 export const SalesService = {
   async getSales(): Promise<Sale[]> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return [...mockSales].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const sales = await prisma.sale.findMany({
+      orderBy: { date: 'desc' }
+    });
+    return sales.map(s => ({
+      ...s,
+      date: s.date.toISOString()
+    })) as unknown as Sale[];
   },
 
   async updateSaleStatus(id: string, status: Sale['status']): Promise<Sale | null> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const index = mockSales.findIndex(s => s.id === id);
-    if (index === -1) return null;
-    
-    mockSales[index].status = status;
-    return mockSales[index];
+    try {
+      const sale = await prisma.sale.update({
+        where: { id },
+        data: { status }
+      });
+      return {
+        ...sale,
+        date: sale.date.toISOString()
+      } as unknown as Sale;
+    } catch {
+      return null;
+    }
   }
 };

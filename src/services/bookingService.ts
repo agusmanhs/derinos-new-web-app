@@ -1,19 +1,30 @@
 import { Booking } from '@/types/booking';
-import { mockBookings } from '@/lib/mockBookingData';
+import prisma from '@/lib/prisma';
+import { Prisma } from '../../generated/prisma/client';
 
 export const BookingService = {
   async getBookings(): Promise<Booking[]> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return [...mockBookings].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const bookings = await prisma.booking.findMany({
+      orderBy: { date: 'desc' }
+    });
+    return bookings.map(b => ({
+      ...b,
+      date: b.date.toISOString(),
+    })) as unknown as Booking[];
   },
 
   async updateBookingStatus(id: string, status: Booking['status'], paymentStatus: Booking['paymentStatus']): Promise<Booking | null> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const index = mockBookings.findIndex(b => b.id === id);
-    if (index === -1) return null;
-    
-    mockBookings[index].status = status;
-    mockBookings[index].paymentStatus = paymentStatus;
-    return mockBookings[index];
+    try {
+      const booking = await prisma.booking.update({
+        where: { id },
+        data: { status, paymentStatus }
+      });
+      return {
+        ...booking,
+        date: booking.date.toISOString(),
+      } as unknown as Booking;
+    } catch {
+      return null;
+    }
   }
 };

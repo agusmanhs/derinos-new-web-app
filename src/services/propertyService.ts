@@ -1,5 +1,6 @@
 import { PropertyUnit } from '@/types/project';
-import { mockProperties } from '@/lib/mockPropertyData';
+import prisma from '@/lib/prisma';
+import { Prisma } from '../../generated/prisma/client';
 
 export interface PropertyFilters {
   search?: string;
@@ -26,62 +27,64 @@ export const PropertyService = {
     page: number = 1,
     limit: number = 9
   ): Promise<PaginatedResult<PropertyUnit>> {
-    await new Promise(resolve => setTimeout(resolve, 400)); // Network simulation
-
-    let results = mockProperties.filter(p => !p.archived);
+    
+    const where: Prisma.PropertyUnitWhereInput = { archived: false };
 
     if (filters) {
       if (filters.search) {
-        const q = filters.search.toLowerCase();
-        results = results.filter(p => 
-          p.unitNumber.toLowerCase().includes(q) || 
-          p.projectTitle.toLowerCase().includes(q)
-        );
+        const q = filters.search;
+        where.OR = [
+          { unitNumber: { contains: q, mode: 'insensitive' } },
+          { projectTitle: { contains: q, mode: 'insensitive' } }
+        ];
       }
       if (filters.project && filters.project !== 'All') {
-        results = results.filter(p => p.projectTitle === filters.project);
+        where.projectTitle = filters.project;
       }
       if (filters.type && filters.type !== 'All') {
-        results = results.filter(p => p.typeName === filters.type);
+        where.typeName = filters.type;
       }
-      if (filters.minPrice) {
-        results = results.filter(p => p.price >= filters.minPrice!);
-      }
-      if (filters.maxPrice) {
-        results = results.filter(p => p.price <= filters.maxPrice!);
+      if (filters.minPrice || filters.maxPrice) {
+        where.price = {};
+        if (filters.minPrice) where.price.gte = filters.minPrice;
+        if (filters.maxPrice) where.price.lte = filters.maxPrice;
       }
       if (filters.bedrooms && filters.bedrooms > 0) {
-        results = results.filter(p => p.bedrooms >= filters.bedrooms!);
+        where.bedrooms = { gte: filters.bedrooms };
       }
       if (filters.status && filters.status !== 'All') {
-        results = results.filter(p => p.status === filters.status);
+        where.status = filters.status;
       }
     }
 
-    // Sorting
+    let orderBy: Prisma.PropertyUnitOrderByWithRelationInput = { createdAt: 'desc' };
     if (sort) {
       switch (sort) {
         case 'price_asc':
-          results.sort((a, b) => a.price - b.price);
+          orderBy = { price: 'asc' };
           break;
         case 'price_desc':
-          results.sort((a, b) => b.price - a.price);
+          orderBy = { price: 'desc' };
           break;
         case 'newest':
-          // Mock data doesn't have dates, just reverse ID for proxy
-          results.sort((a, b) => b.id.localeCompare(a.id));
+          orderBy = { createdAt: 'desc' };
           break;
       }
     }
 
-    // Pagination
-    const total = results.length;
+    const total = await prisma.propertyUnit.count({ where });
     const totalPages = Math.ceil(total / limit);
     const start = (page - 1) * limit;
-    const paginatedData = results.slice(start, start + limit);
+
+    const properties = await prisma.propertyUnit.findMany({
+      where,
+      orderBy,
+      skip: start,
+      take: limit,
+    });
 
     return {
-      data: paginatedData,
+      data: properties as unknown as PropertyUnit[],
       total,
       page,
       limit,
@@ -90,15 +93,18 @@ export const PropertyService = {
   },
 
   async getPropertyById(id: string): Promise<PropertyUnit | null> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const property = mockProperties.find(p => p.id === id);
-    return property || null;
+    const property = await prisma.propertyUnit.findUnique({ where: { id } });
+    return property as unknown as PropertyUnit | null;
   },
 
   async getFilterOptions() {
-    const projects = Array.from(new Set(mockProperties.map(p => p.projectTitle)));
-    const types = Array.from(new Set(mockProperties.map(p => p.typeName)));
-    const statuses = Array.from(new Set(mockProperties.map(p => p.status)));
+    const units = await prisma.propertyUnit.findMany({
+      where: { archived: false },
+      select: { projectTitle: true, typeName: true, status: true }
+    });
+    const projects = Array.from(new Set(units.map(p => p.projectTitle)));
+    const types = Array.from(new Set(units.map(p => p.typeName)));
+    const statuses = Array.from(new Set(units.map(p => p.status)));
     return { projects: ['All', ...projects], types: ['All', ...types], statuses: ['All', ...statuses] };
   },
 
@@ -106,37 +112,58 @@ export const PropertyService = {
    * Create a new property unit.
    */
   async createProperty(data: Partial<PropertyUnit>): Promise<PropertyUnit> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const newProperty = {
-      ...data,
-      id: `prop-${Date.now()}`,
-      archived: false,
-    } as PropertyUnit;
-    mockProperties.push(newProperty);
-    return newProperty;
+    const property = await prisma.propertyUnit.create({
+      data: {
+        projectId: data.projectId || '',
+        projectTitle: data.projectTitle || '',
+        unitNumber: data.unitNumber || '',
+        typeName: data.typeName || '',
+        landSize: data.landSize || 0,
+        buildingSize: data.buildingSize || 0,
+        bedrooms: data.bedrooms || 0,
+        bathrooms: data.bathrooms || 0,
+        carports: data.carports || 0,
+        price: data.price || 0,
+        status: data.status || 'Available',
+        floorPlanImage: data.floorPlanImage || '',
+        gallery: data.gallery || [],
+        facilities: (data.facilities as any) || [],
+        archived: data.archived || false,
+      }
+    });
+    return property as unknown as PropertyUnit;
   },
 
   /**
    * Update an existing property unit.
    */
   async updateProperty(id: string, data: Partial<PropertyUnit>): Promise<PropertyUnit | null> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const index = mockProperties.findIndex(p => p.id === id);
-    if (index === -1) return null;
+    const updateData: any = { ...data };
+    delete updateData.id;
     
-    mockProperties[index] = { ...mockProperties[index], ...data };
-    return mockProperties[index];
+    try {
+      const property = await prisma.propertyUnit.update({
+        where: { id },
+        data: updateData
+      });
+      return property as unknown as PropertyUnit;
+    } catch {
+      return null;
+    }
   },
 
   /**
    * Archive a property (soft delete).
    */
   async archiveProperty(id: string): Promise<boolean> {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const index = mockProperties.findIndex(p => p.id === id);
-    if (index === -1) return false;
-    
-    mockProperties[index].archived = true;
-    return true;
+    try {
+      await prisma.propertyUnit.update({
+        where: { id },
+        data: { archived: true }
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 };
