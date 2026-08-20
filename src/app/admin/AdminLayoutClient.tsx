@@ -5,14 +5,16 @@ import { usePathname } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin/AdminSidebar/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader/AdminHeader';
 import { User } from '@/types/auth';
+import { Project } from '@/types/project';
 import styles from './layout.module.css';
 
 interface Props {
   user: User;
+  projects?: Project[];
   children: React.ReactNode;
 }
 
-export const AdminLayoutClient: React.FC<Props> = ({ user, children }) => {
+export const AdminLayoutClient: React.FC<Props> = ({ user, projects = [], children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
 
@@ -23,7 +25,7 @@ export const AdminLayoutClient: React.FC<Props> = ({ user, children }) => {
 
   return (
     <div className={styles.adminLayout}>
-      <AdminSidebar userRole={user.role} isOpen={isSidebarOpen} />
+      <AdminSidebar userRole={user.role} isOpen={isSidebarOpen} projects={projects} />
       
       {isSidebarOpen && (
         <div 

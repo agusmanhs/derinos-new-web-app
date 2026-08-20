@@ -93,6 +93,50 @@
   color: inherit;
 }
 
+.label {
+  flex: 1;
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.navItemContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.submenu {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 8px 0;
+}
+
+.submenuItem {
+  padding: 8px 24px 8px 56px;
+  text-decoration: none;
+  color: #9CA3AF;
+  font-size: 0.8125rem;
+  transition: all 0.2s ease;
+}
+
+.submenuItem:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.submenuItem.active {
+  color: var(--color-secondary);
+  font-weight: 500;
+}
+
 .bottomNav {
   padding: 16px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
