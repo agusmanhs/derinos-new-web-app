@@ -8,11 +8,14 @@ interface Props {
   svgContent: string;
   properties: PropertyUnit[];
   phaseId: string;
+  onRegisterUnit?: (unitId: string) => void;
 }
 
-export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, phaseId }) => {
+type SelectedUnitState = { type: 'mapped'; unit: PropertyUnit } | { type: 'unmapped'; id: string };
+
+export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, phaseId, onRegisterUnit }) => {
   const svgContainerRef = useRef<HTMLDivElement>(null);
-  const [selectedUnit, setSelectedUnit] = useState<PropertyUnit | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<SelectedUnitState | null>(null);
 
   useEffect(() => {
     if (!svgContainerRef.current) return;
@@ -47,6 +50,7 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
         
         // Add attribute for event delegation
         el.setAttribute('data-unit-id', matchedUnit.id);
+        el.removeAttribute('data-unmapped-id');
         
         // Add a title tooltip
         const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
@@ -60,6 +64,8 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
       } else {
         // Elements with IDs that don't match any unit in the database
         el.classList.add('unmappedElement');
+        el.setAttribute('data-unmapped-id', id);
+        el.removeAttribute('data-unit-id');
         
         // Add a tooltip so the admin knows what ID this is!
         const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
@@ -75,16 +81,30 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
 
   const handleSvgClick = (e: React.MouseEvent) => {
     const target = e.target as Element;
-    const interactable = target.closest('[data-unit-id]');
-    if (interactable) {
-      const unitId = interactable.getAttribute('data-unit-id');
+    
+    // Check for mapped units
+    const mappedInteractable = target.closest('[data-unit-id]');
+    if (mappedInteractable) {
+      const unitId = mappedInteractable.getAttribute('data-unit-id');
       const unit = properties.find(p => p.id === unitId);
       if (unit) {
-        setSelectedUnit(unit);
+        setSelectedUnit({ type: 'mapped', unit });
+        return;
       }
-    } else {
-      setSelectedUnit(null);
+    } 
+
+    // Check for unmapped units
+    const unmappedInteractable = target.closest('[data-unmapped-id]');
+    if (unmappedInteractable) {
+      const id = unmappedInteractable.getAttribute('data-unmapped-id');
+      if (id) {
+        setSelectedUnit({ type: 'unmapped', id });
+        return;
+      }
     }
+
+    // Clicked elsewhere
+    setSelectedUnit(null);
   };
 
   return (
@@ -113,68 +133,96 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
         />
       </div>
 
-      {selectedUnit && (
-        <div className={styles.sidePanel}>
-          <div className={styles.sidePanelHeader}>
-            <h3>Unit {selectedUnit.unitNumber}</h3>
-            <button className={styles.closeBtn} onClick={() => setSelectedUnit(null)}>×</button>
+      <div className={styles.sidePanel}>
+        {!selectedUnit ? (
+          <div style={{ textAlign: 'center', color: '#6B7280', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+              <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
+              <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            </svg>
+            <p style={{ margin: 0, fontSize: '15px' }}>Click a unit block on the site plan to view its details or register a new unit.</p>
           </div>
-          
-          <div className={styles.panelSection}>
-            <div className={styles.dataRow}>
-              <span className={styles.dataLabel}>Status</span>
-              <span className={`${styles.swatch} ${styles['swatch' + selectedUnit.status.charAt(0).toUpperCase() + selectedUnit.status.slice(1).toLowerCase()]}`} style={{ display: 'inline-block', width: 'auto', padding: '2px 8px', height: 'auto', fontSize: '12px', fontWeight: 600 }}>
-                {selectedUnit.status}
-              </span>
+        ) : (
+          <>
+            <div className={styles.sidePanelHeader}>
+              <h3>Unit {selectedUnit.type === 'mapped' ? selectedUnit.unit.unitNumber : selectedUnit.id}</h3>
+              <button className={styles.closeBtn} onClick={() => setSelectedUnit(null)}>×</button>
             </div>
-            <div className={styles.dataRow}>
-              <span className={styles.dataLabel}>Price</span>
-              <span className={styles.dataValue}>Rp {selectedUnit.price.toLocaleString()}</span>
-            </div>
-          </div>
-          
-          <div className={styles.panelSection}>
-            <h4>Specifications</h4>
-            <div className={styles.dataRow}>
-              <span className={styles.dataLabel}>Type</span>
-              <span className={styles.dataValue}>{selectedUnit.typeName}</span>
-            </div>
-            <div className={styles.dataRow}>
-              <span className={styles.dataLabel}>Land Area</span>
-              <span className={styles.dataValue}>{selectedUnit.landSize} m²</span>
-            </div>
-            <div className={styles.dataRow}>
-              <span className={styles.dataLabel}>Building Area</span>
-              <span className={styles.dataValue}>{selectedUnit.buildingSize} m²</span>
-            </div>
-          </div>
-          
-          <div className={styles.panelSection}>
-            <h4>Customer Info</h4>
-            <div className={styles.dataRow}>
-              <span className={styles.dataLabel}>Buyer</span>
-              <span className={styles.dataValue}>{selectedUnit.buyerName || '-'}</span>
-            </div>
-          </div>
-          
-          <div className={styles.panelSection}>
-            <h4>Construction Progress</h4>
-            <div className={styles.dataRow}>
-              <span className={styles.dataLabel}>Completion</span>
-              <span className={styles.dataValue}>{selectedUnit.constructionProgress || 0}%</span>
-            </div>
-            <div className={styles.progressBarBg}>
-              <div className={styles.progressBarFill} style={{ width: `${selectedUnit.constructionProgress || 0}%` }}></div>
-            </div>
-          </div>
+            
+            {selectedUnit.type === 'unmapped' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
+                <div style={{ padding: '12px', backgroundColor: '#FEF3C7', color: '#92400E', borderRadius: '6px', fontSize: '14px', lineHeight: 1.5 }}>
+                  <strong>Unmapped Unit</strong><br/>
+                  This unit is present in the SVG Site Plan but has not been created in the database yet.
+                </div>
+                
+                <button 
+                  onClick={() => onRegisterUnit && onRegisterUnit(selectedUnit.id)}
+                  style={{ width: '100%', padding: '12px', backgroundColor: '#1D4ED8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+                >
+                  + Register Unit {selectedUnit.id}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className={styles.panelSection}>
+                  <div className={styles.dataRow}>
+                    <span className={styles.dataLabel}>Status</span>
+                    <span className={`${styles.swatch} ${styles['swatch' + selectedUnit.unit.status.charAt(0).toUpperCase() + selectedUnit.unit.status.slice(1).toLowerCase()]}`} style={{ display: 'inline-block', width: 'auto', padding: '2px 8px', height: 'auto', fontSize: '12px', fontWeight: 600 }}>
+                      {selectedUnit.unit.status}
+                    </span>
+                  </div>
+                  <div className={styles.dataRow}>
+                    <span className={styles.dataLabel}>Price</span>
+                    <span className={styles.dataValue}>Rp {selectedUnit.unit.price.toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <div className={styles.panelSection}>
+                  <h4>Specifications</h4>
+                  <div className={styles.dataRow}>
+                    <span className={styles.dataLabel}>Type</span>
+                    <span className={styles.dataValue}>{selectedUnit.unit.typeName}</span>
+                  </div>
+                  <div className={styles.dataRow}>
+                    <span className={styles.dataLabel}>Land Area</span>
+                    <span className={styles.dataValue}>{selectedUnit.unit.landSize} m²</span>
+                  </div>
+                  <div className={styles.dataRow}>
+                    <span className={styles.dataLabel}>Building Area</span>
+                    <span className={styles.dataValue}>{selectedUnit.unit.buildingSize} m²</span>
+                  </div>
+                </div>
+                
+                <div className={styles.panelSection}>
+                  <h4>Customer Info</h4>
+                  <div className={styles.dataRow}>
+                    <span className={styles.dataLabel}>Buyer</span>
+                    <span className={styles.dataValue}>{selectedUnit.unit.buyerName || '-'}</span>
+                  </div>
+                </div>
+                
+                <div className={styles.panelSection}>
+                  <h4>Construction Progress</h4>
+                  <div className={styles.dataRow}>
+                    <span className={styles.dataLabel}>Completion</span>
+                    <span className={styles.dataValue}>{selectedUnit.unit.constructionProgress || 0}%</span>
+                  </div>
+                  <div className={styles.progressBarBg}>
+                    <div className={styles.progressBarFill} style={{ width: `${selectedUnit.unit.constructionProgress || 0}%` }}></div>
+                  </div>
+                </div>
 
-          <div style={{ marginTop: '24px' }}>
-            <button style={{ width: '100%', padding: '10px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
-              Edit Unit Details
-            </button>
-          </div>
-        </div>
-      )}
+                <div style={{ marginTop: '24px' }}>
+                  <button style={{ width: '100%', padding: '10px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
+                    Edit Unit Details
+                  </button>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

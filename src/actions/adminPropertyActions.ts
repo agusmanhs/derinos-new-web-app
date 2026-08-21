@@ -70,3 +70,36 @@ export async function savePropertyAction(prevState: unknown, formData: FormData)
 
   redirect('/admin/properties');
 }
+
+export async function createPropertyAjaxAction(payload: any) {
+  const session = await verifySession();
+  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER', 'SALES_MANAGER'].includes(session.role)) {
+    return { success: false, message: 'Unauthorized access' };
+  }
+
+  if (!payload.projectId || !payload.unitNumber || !payload.typeName || !payload.status || isNaN(payload.price)) {
+    return { success: false, message: 'Project, Unit Number, Type, Status, and valid Price are required.' };
+  }
+
+  const project = await ProjectService.getProjectById(payload.projectId);
+  if (!project) {
+    return { success: false, message: 'Selected project does not exist.' };
+  }
+
+  try {
+    const data = {
+      ...payload,
+      projectTitle: project.title,
+    };
+
+    const newProperty = await PropertyService.createProperty(data);
+
+    revalidatePath(`/admin/projects/${project.slug}`);
+    revalidatePath(`/admin/projects/${project.id}`);
+    
+    return { success: true, property: newProperty };
+  } catch (error) {
+    console.error('Error saving property:', error);
+    return { success: false, message: 'An error occurred while saving the property.' };
+  }
+}

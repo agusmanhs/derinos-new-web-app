@@ -5,6 +5,7 @@ import { Project, PropertyUnit } from '@/types/project';
 import { SvgSitePlanRenderer } from '@/components/admin/SvgSitePlanRenderer/SvgSitePlanRenderer';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { createPhaseAction, deletePhaseAction, updatePhaseAction } from '@/actions/adminPhaseActions';
+import { createPropertyAjaxAction } from '@/actions/adminPropertyActions';
 import styles from './ProjectDashboardClient.module.css';
 
 interface Props {
@@ -17,6 +18,8 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(project.phases?.[0]?.id || null);
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<any | null>(null);
+  const [isAddUnitModalOpen, setIsAddUnitModalOpen] = useState(false);
+  const [prefilledUnitId, setPrefilledUnitId] = useState<string>('');
   const [isPending, startTransition] = useTransition();
   const [uploadedSvg, setUploadedSvg] = useState<string>('');
 
@@ -87,6 +90,40 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
         if (selectedPhaseId === phaseId) {
           setSelectedPhaseId(project.phases?.filter(p => p.id !== phaseId)[0]?.id || null);
         }
+      } else {
+        alert(res.message);
+      }
+    });
+  };
+
+  const openAddUnitModal = (unitId: string = '') => {
+    setPrefilledUnitId(unitId);
+    setIsAddUnitModalOpen(true);
+  };
+
+  const handleSaveUnit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      projectId: project.id,
+      unitNumber: formData.get('unitNumber') as string,
+      typeName: formData.get('typeName') as string,
+      status: formData.get('status') as string,
+      price: parseFloat(formData.get('price') as string),
+      landSize: parseFloat(formData.get('landSize') as string) || 0,
+      buildingSize: parseFloat(formData.get('buildingSize') as string) || 0,
+      bedrooms: parseInt(formData.get('bedrooms') as string) || 0,
+      bathrooms: parseInt(formData.get('bathrooms') as string) || 0,
+      carports: parseInt(formData.get('carports') as string) || 0,
+      phaseId: selectedPhaseId // Default to currently selected phase
+    };
+
+    startTransition(async () => {
+      const res = await createPropertyAjaxAction(data);
+      if (res.success) {
+        setIsAddUnitModalOpen(false);
+        // We switch to the phases tab so they can see the newly colored SVG block
+        setActiveTab('phases');
       } else {
         alert(res.message);
       }
@@ -192,6 +229,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
                             svgContent={phase.sitePlanSvg}
                             properties={properties}
                             phaseId={phase.id}
+                            onRegisterUnit={openAddUnitModal}
                           />
                         ) : (
                           <div className={styles.noSvg}>No SVG Uploaded</div>
@@ -210,7 +248,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
             <div className={styles.card}>
               <div className={styles.cardHeader}>
                 <h3>Property Units</h3>
-                <button className={styles.primaryBtn}>+ Add Unit</button>
+                <button className={styles.primaryBtn} onClick={() => openAddUnitModal('')}>+ Add Unit</button>
               </div>
               <p>Manage all units in this project. Units can be linked to a Phase so they appear on the Site Plan SVG.</p>
               
@@ -297,6 +335,78 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
             <button type="button" onClick={() => setIsPhaseModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
             <button type="submit" disabled={isPending} className={styles.primaryBtn}>
               {isPending ? 'Saving...' : (editingPhase ? 'Save Changes' : 'Create Phase')}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isAddUnitModalOpen} onClose={() => setIsAddUnitModalOpen(false)} title="Register New Unit">
+        <form onSubmit={handleSaveUnit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
+          
+          <div style={{ padding: '12px', backgroundColor: '#EFF6FF', color: '#1E40AF', borderRadius: '6px', fontSize: '13px' }}>
+            <strong>Phase Association:</strong> This unit will automatically be linked to the currently active phase.
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="unitNumber" style={{ fontWeight: 500, fontSize: '14px' }}>Unit Number / ID</label>
+              <input type="text" id="unitNumber" name="unitNumber" defaultValue={prefilledUnitId} required placeholder="e.g. A-01" className={styles.input} />
+              <small className={styles.helpText}>Must exactly match the SVG data-id for Site Plan linking.</small>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="typeName" style={{ fontWeight: 500, fontSize: '14px' }}>Type Name</label>
+              <input type="text" id="typeName" name="typeName" required placeholder="e.g. Type 45, Type 60" className={styles.input} />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="price" style={{ fontWeight: 500, fontSize: '14px' }}>Price (Rp)</label>
+              <input type="number" id="price" name="price" required min="0" defaultValue="0" className={styles.input} />
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="status" style={{ fontWeight: 500, fontSize: '14px' }}>Status</label>
+              <select id="status" name="status" className={styles.input}>
+                <option value="Available">Available</option>
+                <option value="Reserved">Reserved</option>
+                <option value="Sold">Sold</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="landSize" style={{ fontWeight: 500, fontSize: '14px' }}>Land Size (m²)</label>
+              <input type="number" id="landSize" name="landSize" required min="0" defaultValue="0" className={styles.input} />
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="buildingSize" style={{ fontWeight: 500, fontSize: '14px' }}>Building Size (m²)</label>
+              <input type="number" id="buildingSize" name="buildingSize" required min="0" defaultValue="0" className={styles.input} />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="bedrooms" style={{ fontWeight: 500, fontSize: '14px' }}>Bedrooms</label>
+              <input type="number" id="bedrooms" name="bedrooms" required min="0" defaultValue="0" className={styles.input} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="bathrooms" style={{ fontWeight: 500, fontSize: '14px' }}>Bathrooms</label>
+              <input type="number" id="bathrooms" name="bathrooms" required min="0" defaultValue="0" className={styles.input} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label htmlFor="carports" style={{ fontWeight: 500, fontSize: '14px' }}>Carports</label>
+              <input type="number" id="carports" name="carports" required min="0" defaultValue="0" className={styles.input} />
+            </div>
+          </div>
+
+          <div className={styles.formActions} style={{ marginTop: '16px', position: 'sticky', bottom: 0, backgroundColor: 'white', padding: '16px 0', borderTop: '1px solid #E5E7EB' }}>
+            <button type="button" onClick={() => setIsAddUnitModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
+            <button type="submit" disabled={isPending} className={styles.primaryBtn}>
+              {isPending ? 'Saving...' : 'Register Unit'}
             </button>
           </div>
         </form>
