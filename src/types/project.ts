@@ -97,8 +97,11 @@ export interface Project {
 export interface PropertyUnit {
   id: string;
   projectId: string;
-  phaseId?: string | null;
-  phase?: ProjectPhase | null;
+  phaseId: string | null;
+  phase?: {
+    id: string;
+    name: string;
+  } | null;
   projectTitle: string;
   unitNumber: string;
   typeName: string;
@@ -114,5 +117,7 @@ export interface PropertyUnit {
   facilities: Facility[];
 
   // Admin fields
+  buyerName?: string | null;
+  constructionProgress?: number;
   archived?: boolean;
 }

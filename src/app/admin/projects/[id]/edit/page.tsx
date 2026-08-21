@@ -6,7 +6,10 @@ import { ProjectForm } from '../../ProjectForm';
 
 export default async function EditProjectPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const project = await ProjectService.getProjectById(params.id);
+  let project = await ProjectService.getProjectBySlug(params.id);
+  if (!project) {
+    project = await ProjectService.getProjectById(params.id);
+  }
 
   if (!project) {
     notFound();

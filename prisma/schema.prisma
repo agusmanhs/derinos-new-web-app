@@ -111,6 +111,9 @@ model PropertyUnit {
   floorPlanImage String
   facilities     Json[]        @default([])
 
+  buyerName            String?
+  constructionProgress Float         @default(0) // 0 to 100 percentage
+
   archived       Boolean       @default(false)
 
   bookings       Booking[]
