@@ -1,21 +1,29 @@
-export type Role = 
-  | 'SUPER_ADMIN' 
-  | 'MANAGEMENT' 
-  | 'PROJECT_MANAGER' 
-  | 'SALES_MANAGER' 
-  | 'SALES_AGENT' 
-  | 'CONTENT_MANAGER';
+export interface Permission {
+  id: string;
+  action: string;
+  description: string | null;
+  module: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string | null;
+  permissions?: string[]; // Array of action strings
+}
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  roleId: string | null;
+  role?: Role | null;
   avatar?: string;
 }
 
 export interface SessionPayload {
   userId: string;
-  role: Role;
+  roleName: string;
+  permissions: string[];
   expiresAt: Date;
 }

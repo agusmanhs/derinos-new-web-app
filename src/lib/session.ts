@@ -1,7 +1,7 @@
 import 'server-only';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import { SessionPayload, Role } from '@/types/auth';
+import { SessionPayload } from '@/types/auth';
 
 // Use a secure secret in production (process.env.SESSION_SECRET)
 const secretKey = 'super-secret-derinos-key-do-not-use-in-production';
@@ -28,9 +28,9 @@ export async function decrypt(session: string | undefined = '') {
   }
 }
 
-export async function createSession(userId: string, role: string) {
+export async function createSession(userId: string, roleName: string, permissions: string[]) {
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day
-  const session = await encrypt({ userId, role: role as Role, expiresAt });
+  const session = await encrypt({ userId, roleName, permissions, expiresAt });
   
   const cookieStore = await cookies();
   
@@ -52,7 +52,12 @@ export async function verifySession() {
     return null;
   }
 
-  return { isAuth: true, userId: session.userId, role: session.role };
+  return { 
+    isAuth: true, 
+    userId: session.userId, 
+    roleName: session.roleName,
+    permissions: session.permissions 
+  };
 }
 
 export async function deleteSession() {

@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHeader';
-import { AdminTable } from '@/components/admin/AdminTable/AdminTable';
 import { Button } from '@/components/ui/Button/Button';
 import { Customer } from '../../../../generated/prisma/client';
+import { IconEdit, IconTrash } from '@/components/ui/Icon/AdminIcons';
 import { createCustomerAction, updateCustomerAction, deleteCustomerAction } from '@/actions/adminCustomerActions';
 import styles from './page.module.css';
 
@@ -16,6 +16,7 @@ export const CustomerListClient: React.FC<Props> = ({ customers }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleOpenModal = (customer?: Customer) => {
     if (customer) {
@@ -59,39 +60,11 @@ export const CustomerListClient: React.FC<Props> = ({ customers }) => {
     }
   };
 
-  const columns = [
-    {
-      header: 'Name',
-      accessor: 'name' as keyof Customer
-    },
-    {
-      header: 'Contact',
-      accessor: (row: Customer) => (
-        <div>
-          <div>{row.phone || '-'}</div>
-          <div style={{ fontSize: '0.85em', color: '#666' }}>{row.email || '-'}</div>
-        </div>
-      )
-    },
-    {
-      header: 'Assets/Bookings',
-      accessor: (row: any) => (
-        <div>
-          <span style={{ marginRight: 8 }}>🏠 {row.properties?.length || 0}</span>
-          <span>📝 {row.bookings?.length || 0}</span>
-        </div>
-      )
-    },
-    {
-      header: 'Actions',
-      accessor: (row: Customer) => (
-        <div className={styles.actionButtons}>
-          <Button variant="outlined" onClick={() => handleOpenModal(row)}>Edit</Button>
-          <Button variant="danger" onClick={() => handleDelete(row.id)}>Delete</Button>
-        </div>
-      )
-    }
-  ];
+  const filteredCustomers = customers.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (c.email && c.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (c.phone && c.phone.includes(searchQuery))
+  );
 
   return (
     <div>
@@ -103,12 +76,75 @@ export const CustomerListClient: React.FC<Props> = ({ customers }) => {
         }
       />
 
-      <AdminTable 
-        columns={columns} 
-        data={customers} 
-        keyExtractor={(row) => row.id} 
-        emptyMessage="No customers found."
-      />
+      <div className={styles.tableCard}>
+        <div className={styles.filterBar}>
+          <div className={styles.searchWrapper}>
+            <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              type="text" 
+              placeholder="Search by name, email, or phone..." 
+              className={styles.searchInput}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className={styles.tableWrapper}>
+          <table className={styles.dataTable}>
+            <thead>
+              <tr>
+                <th>NAME</th>
+                <th>CONTACT</th>
+                <th>ADDRESS</th>
+                <th>ASSETS/BOOKINGS</th>
+                <th style={{ textAlign: 'right' }}>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCustomers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
+                    No customers found.
+                  </td>
+                </tr>
+              ) : (
+                filteredCustomers.map((row) => (
+                  <tr key={row.id}>
+                    <td><strong>{row.name}</strong></td>
+                    <td>
+                      <div>{row.phone || '-'}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.email || '-'}</div>
+                    </td>
+                    <td>
+                      <div style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {row.address || '-'}
+                      </div>
+                    </td>
+                    <td>
+                      <span style={{ marginRight: 12 }}>🏠 {row.properties?.length || 0}</span>
+                      <span>📝 {row.bookings?.length || 0}</span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div className={styles.actionIcons}>
+                        <button className={styles.iconButton} onClick={() => handleOpenModal(row)} title="Edit Customer">
+                          <IconEdit />
+                        </button>
+                        <button className={styles.iconButton} onClick={() => handleDelete(row.id)} title="Delete Customer">
+                          <IconTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {isModalOpen && (
         <div className={styles.modalOverlay}>

@@ -79,7 +79,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ user, onMenuToggle }) 
             </div>
             <div className={styles.userInfo}>
               <span className={styles.userName}>{user.name || user.email}</span>
-              <span className={styles.userRole}>{user.role.replace('_', ' ')}</span>
+              <span className={styles.userRole}>{user.role?.name || 'No Role'}</span>
             </div>
             <svg className={`${styles.chevron} ${isDropdownOpen ? styles.chevronOpen : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>

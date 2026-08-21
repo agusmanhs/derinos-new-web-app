@@ -5,7 +5,16 @@ import { Prisma } from '../../generated/prisma/client';
 export const AuthService = {
   async authenticate(email: string, password: string): Promise<User | null> {
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() }
+      where: { email: email.toLowerCase() },
+      include: {
+        role: {
+          include: {
+            permissions: {
+              include: { permission: true }
+            }
+          }
+        }
+      }
     });
     
     // Simplistic password check (no hashing for now as per mock)
@@ -16,7 +25,13 @@ export const AuthService = {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        roleId: user.roleId,
+        role: user.role ? {
+          id: user.role.id,
+          name: user.role.name,
+          description: user.role.description,
+          permissions: user.role.permissions.map(rp => rp.permission.action)
+        } : null,
         avatar: user.avatar || undefined,
       } as User;
     }
@@ -24,13 +39,30 @@ export const AuthService = {
   },
 
   async getUserById(id: string): Promise<User | null> {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({ 
+      where: { id },
+      include: {
+        role: {
+          include: {
+            permissions: {
+              include: { permission: true }
+            }
+          }
+        }
+      }
+    });
     if (!user) return null;
     return {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        roleId: user.roleId,
+        role: user.role ? {
+          id: user.role.id,
+          name: user.role.name,
+          description: user.role.description,
+          permissions: user.role.permissions.map(rp => rp.permission.action)
+        } : null,
         avatar: user.avatar || undefined,
     } as User;
   },
@@ -41,22 +73,22 @@ export const AuthService = {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        roleId: user.roleId,
         avatar: user.avatar || undefined,
     })) as User[];
   },
 
-  async updateUserRole(id: string, role: User['role']): Promise<User | null> {
+  async updateUserRole(id: string, roleId: string | null): Promise<User | null> {
     try {
       const user = await prisma.user.update({
         where: { id },
-        data: { role }
+        data: { roleId }
       });
       return {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        roleId: user.roleId,
         avatar: user.avatar || undefined,
       } as User;
     } catch {

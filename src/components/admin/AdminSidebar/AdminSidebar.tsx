@@ -28,75 +28,83 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  roles: Role[];
+  permissions: string[];
   hasSubmenu?: boolean;
 }
 
 interface NavCategory {
   title: string;
-  roles: Role[];
+  permissions: string[];
   items: NavItem[];
 }
 
 const NAV_CATEGORIES: NavCategory[] = [
   {
     title: 'Main',
-    roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER', 'SALES_MANAGER', 'SALES_AGENT', 'CONTENT_MANAGER'],
+    permissions: [], // empty means all authenticated users can see it
     items: [
-      { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: <IconDashboard />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER', 'SALES_MANAGER', 'SALES_AGENT', 'CONTENT_MANAGER'] }
+      { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: <IconDashboard />, permissions: [] }
     ]
   },
   {
     title: 'Property Management',
-    roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER', 'SALES_MANAGER'],
+    permissions: ['view_projects', 'manage_projects'],
     items: [
-      { id: 'projects', label: 'Projects', href: '/admin/projects', icon: <IconProjects />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'], hasSubmenu: true },
-      { id: 'units', label: 'Units', href: '/admin/properties', icon: <IconUnits />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER', 'SALES_MANAGER'] },
-      { id: 'construction', label: 'Construction', href: '/admin/construction', icon: <IconConstruction />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'] },
+      { id: 'projects', label: 'Projects', href: '/admin/projects', icon: <IconProjects />, permissions: ['view_projects', 'manage_projects'], hasSubmenu: true },
+      { id: 'units', label: 'Units', href: '/admin/properties', icon: <IconUnits />, permissions: ['view_projects', 'manage_projects'] },
+      { id: 'construction', label: 'Construction', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects'] },
     ]
   },
   {
     title: 'Sales & CRM',
-    roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'],
+    permissions: ['view_leads', 'manage_leads', 'view_bookings', 'manage_bookings'],
     items: [
-      { id: 'crm', label: 'CRM (Leads)', href: '/admin/leads', icon: <IconCRM />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'] },
-      { id: 'bookings', label: 'Bookings', href: '/admin/bookings', icon: <IconBookings />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'] },
-      { id: 'sales', label: 'Sales', href: '/admin/sales', icon: <IconSales />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'] },
+      { id: 'crm', label: 'CRM (Leads)', href: '/admin/leads', icon: <IconCRM />, permissions: ['view_leads', 'manage_leads'] },
+      { id: 'bookings', label: 'Bookings', href: '/admin/bookings', icon: <IconBookings />, permissions: ['view_bookings', 'manage_bookings'] },
+      { id: 'sales', label: 'Sales', href: '/admin/sales', icon: <IconSales />, permissions: ['manage_bookings'] },
     ]
   },
   {
     title: 'Contacts & Partners',
-    roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'],
+    permissions: ['manage_users', 'manage_leads'], // example
     items: [
-      { id: 'customers', label: 'Customers', href: '/admin/customers', icon: <IconUser />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'] },
-      { id: 'agencies', label: 'Marketing Agencies', href: '/admin/agencies', icon: <IconUsersGroup />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'] },
+      { id: 'customers', label: 'Customers', href: '/admin/customers', icon: <IconUser />, permissions: ['manage_users', 'manage_leads'] },
+      { id: 'agencies', label: 'Marketing Agencies', href: '/admin/agencies', icon: <IconUsersGroup />, permissions: ['manage_users'] },
     ]
   },
   {
     title: 'System & Content',
-    roles: ['SUPER_ADMIN', 'MANAGEMENT', 'CONTENT_MANAGER'],
+    permissions: ['manage_users', 'manage_roles'],
     items: [
-      { id: 'media', label: 'Media / Content', href: '/admin/content', icon: <IconMedia />, roles: ['SUPER_ADMIN', 'CONTENT_MANAGER'] },
-      { id: 'reports', label: 'Reports', href: '/admin/reports', icon: <IconReports />, roles: ['SUPER_ADMIN', 'MANAGEMENT'] },
-      { id: 'users', label: 'Users Management', href: '/admin/users', icon: <IconUsersGroup />, roles: ['SUPER_ADMIN'] },
+      { id: 'media', label: 'Media / Content', href: '/admin/content', icon: <IconMedia />, permissions: ['manage_projects'] }, // Adjust as needed
+      { id: 'reports', label: 'Reports', href: '/admin/reports', icon: <IconReports />, permissions: ['view_projects'] },
+      { id: 'users', label: 'User Management', href: '/admin/users', icon: <IconUsersGroup />, permissions: ['manage_users', 'manage_roles'], hasSubmenu: true },
     ]
   }
 ];
 
-export const AdminSidebar: React.FC<{ userRole: Role; isOpen: boolean; projects?: Project[] }> = ({ userRole, isOpen, projects = [] }) => {
+export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen: boolean; projects?: Project[] }> = ({ userRole, isOpen, projects = [] }) => {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
-    projects: pathname.startsWith('/admin/projects')
+    projects: pathname.startsWith('/admin/projects'),
+    users: pathname.startsWith('/admin/users')
   });
+
+  const userPermissions = userRole?.permissions || [];
+  const hasPermission = (requiredPerms: string[]) => {
+    if (requiredPerms.length === 0) return true; // Empty means no specific permission needed
+    // Assuming Super Admin has all permissions, but the userPermissions list should be exhaustive from DB
+    return requiredPerms.some(p => userPermissions.includes(p));
+  };
 
   // Filter categories that have at least one allowed item for this role
   const allowedCategories = NAV_CATEGORIES.map(category => ({
     ...category,
-    items: category.items.filter(item => item.roles.includes(userRole))
+    items: category.items.filter(item => hasPermission(item.permissions))
   })).filter(category => category.items.length > 0);
 
   const toggleSubmenu = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent navigating to the parent href so it just toggles the menu
     setOpenSubmenus(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
@@ -157,6 +165,23 @@ export const AdminSidebar: React.FC<{ userRole: Role; isOpen: boolean; projects?
                           {project.slug}
                         </Link>
                       ))}
+                    </div>
+                  )}
+
+                  {item.hasSubmenu && item.id === 'users' && isSubmenuOpen && (
+                    <div className={styles.submenu}>
+                      <Link 
+                        href="/admin/users?refresh=1"
+                        className={`${styles.submenuItem} ${pathname === '/admin/users' ? styles.active : ''}`}
+                      >
+                        Users
+                      </Link>
+                      <Link 
+                        href="/admin/users/roles?refresh=1"
+                        className={`${styles.submenuItem} ${pathname.startsWith('/admin/users/roles') ? styles.active : ''}`}
+                      >
+                        Roles & Permissions
+                      </Link>
                     </div>
                   )}
                 </div>

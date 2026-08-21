@@ -7,13 +7,38 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  SUPER_ADMIN
-  MANAGEMENT
-  PROJECT_MANAGER
-  SALES_MANAGER
-  SALES_AGENT
-  CONTENT_MANAGER
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  description String?
+  
+  permissions RolePermission[]
+  users       User[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Permission {
+  id          String       @id @default(uuid())
+  action      String       @unique // e.g., 'view_projects', 'manage_users'
+  description String?
+  module      String       // e.g., 'Projects', 'Settings', 'CRM'
+
+  roles       RolePermission[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model RolePermission {
+  role        Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId      String
+  
+  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+
+  @@id([roleId, permissionId])
 }
 
 model User {
@@ -21,7 +46,8 @@ model User {
   email     String   @unique
   name      String
   password  String   // Added for auth
-  role      Role     @default(SALES_AGENT)
+  roleId    String?  // Made optional temporarily to avoid hard crash if users exist
+  role      Role?    @relation(fields: [roleId], references: [id])
   avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

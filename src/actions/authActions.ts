@@ -19,7 +19,11 @@ export async function loginAction(prevState: unknown, formData: FormData) {
   }
 
   // Create the secure HttpOnly cookie session
-  await createSession(user.id, user.role);
+  await createSession(
+    user.id, 
+    user.role?.name || 'Guest', 
+    user.role?.permissions || []
+  );
 
   // Redirect to dashboard
   redirect('/admin');
