@@ -39,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'construction', label: 'Construction', href: '/admin/construction', icon: <IconConstruction />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'] },
   { id: 'crm', label: 'CRM', href: '/admin/leads', icon: <IconCRM />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'] },
   { id: 'customers', label: 'Customers', href: '/admin/customers', icon: <IconUser />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'] },
+  { id: 'agencies', label: 'Agencies', href: '/admin/agencies', icon: <IconUsersGroup />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'] },
   { id: 'bookings', label: 'Bookings', href: '/admin/bookings', icon: <IconBookings />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'] },
   { id: 'sales', label: 'Sales', href: '/admin/sales', icon: <IconSales />, roles: ['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'] },
   { id: 'media', label: 'Media', href: '/admin/content', icon: <IconMedia />, roles: ['SUPER_ADMIN', 'CONTENT_MANAGER'] },

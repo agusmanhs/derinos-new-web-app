@@ -181,6 +181,10 @@ model Booking {
   projectId      String
   projectTitle   String
   
+  agency         MarketingAgency? @relation(fields: [agencyId], references: [id])
+  agencyId       String?
+  commission     Commission?
+  
   propertyUnit   PropertyUnit @relation(fields: [propertyUnitId], references: [id])
   propertyUnitId String
   unitNumber     String
@@ -205,6 +209,10 @@ model Sale {
   
   customer       Customer @relation(fields: [customerId], references: [id])
   customerId     String
+  
+  agency         MarketingAgency? @relation(fields: [agencyId], references: [id])
+  agencyId       String?
+  commission     Commission?
   projectTitle   String
   unitNumber     String
   
@@ -232,4 +240,40 @@ model Customer {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model MarketingAgency {
+  id          String   @id @default(uuid())
+  name        String
+  picName     String?
+  phone       String?
+  email       String?
+  bankInfo    String?
+
+  bookings    Booking[]
+  sales       Sale[]
+  commissions Commission[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Commission {
+  id               String          @id @default(uuid())
+  agency           MarketingAgency @relation(fields: [agencyId], references: [id])
+  agencyId         String
+  
+  booking          Booking?        @relation(fields: [bookingId], references: [id])
+  bookingId        String?         @unique
+
+  sale             Sale?           @relation(fields: [saleId], references: [id])
+  saleId           String?         @unique
+
+  amount           Float?          // Optional: set when approving/paying
+  status           String          @default("Pending") // 'Pending', 'Paid'
+  paymentDate      DateTime?
+  paymentNotes     String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
