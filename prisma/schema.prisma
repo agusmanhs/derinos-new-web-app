@@ -131,7 +131,8 @@ model PropertyUnit {
   floorPlanImage String
   facilities     Json[]        @default([])
 
-  buyerName            String?
+  customer       Customer?     @relation(fields: [customerId], references: [id])
+  customerId     String?
   constructionProgress Float         @default(0) // 0 to 100 percentage
 
   archived       Boolean       @default(false)
@@ -173,7 +174,8 @@ model Booking {
   
   lead           Lead         @relation(fields: [leadId], references: [id])
   leadId         String
-  customerName   String
+  customer       Customer     @relation(fields: [customerId], references: [id])
+  customerId     String
   
   project        Project      @relation(fields: [projectId], references: [id])
   projectId      String
@@ -201,7 +203,8 @@ model Sale {
   booking        Booking  @relation(fields: [bookingId], references: [id])
   bookingId      String   @unique
   
-  customerName   String
+  customer       Customer @relation(fields: [customerId], references: [id])
+  customerId     String
   projectTitle   String
   unitNumber     String
   
@@ -212,4 +215,21 @@ model Sale {
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  ktpNumber   String?
+  npwp        String?
+
+  properties  PropertyUnit[]
+  bookings    Booking[]
+  sales       Sale[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

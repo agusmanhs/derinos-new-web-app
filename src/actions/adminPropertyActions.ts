@@ -47,6 +47,7 @@ export async function savePropertyAction(prevState: unknown, formData: FormData)
       unitNumber,
       typeName,
       statusId,
+      customerId: (formData.get('customerId') as string) || null,
       price,
       landSize: parseFloat(formData.get('landSize') as string) || 0,
       buildingSize: parseFloat(formData.get('buildingSize') as string) || 0,

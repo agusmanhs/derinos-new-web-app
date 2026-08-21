@@ -4,24 +4,31 @@ import { PropertyService } from '@/services/propertyService';
 import { ProjectService } from '@/services/projectService';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHeader';
 import { PropertyForm } from '../../PropertyForm';
+import { CustomerService } from '@/services/customerService';
 
 export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const property = await PropertyService.getPropertyById(params.id);
+  const [property, projects, customers] = await Promise.all([
+    PropertyService.getPropertyById(params.id),
+    ProjectService.getProjects(),
+    CustomerService.getCustomers()
+  ]);
 
   if (!property) {
     notFound();
   }
 
-  const projects = await ProjectService.getProjects({}, false);
-
   return (
     <div>
       <AdminPageHeader 
         title="Edit Unit" 
-        description={`Editing Unit: ${property.unitNumber}`}
+        description={`Update details for ${property.unitNumber}`}
+        breadcrumbs={[
+          { label: 'Units', href: '/admin/properties' },
+          { label: 'Edit' }
+        ]}
       />
-      <PropertyForm property={property} projects={projects} />
+      <PropertyForm property={property} projects={projects} customers={customers} />
     </div>
   );
 }

@@ -138,8 +138,29 @@ export const ProjectService = {
         where: { id },
         data: updateData
       });
+
+      // If the title changed, we must update the denormalized projectTitle in related records
+      if (updateData.title) {
+        const newTitle = updateData.title;
+        await Promise.all([
+          prisma.propertyUnit.updateMany({
+            where: { projectId: id },
+            data: { projectTitle: newTitle }
+          }),
+          prisma.booking.updateMany({
+            where: { projectId: id },
+            data: { projectTitle: newTitle }
+          }),
+          prisma.sale.updateMany({
+            where: { booking: { projectId: id } }, // assuming booking relates to project
+            data: { projectTitle: newTitle }
+          })
+        ]);
+      }
+
       return project as unknown as Project;
-    } catch {
+    } catch (err) {
+      console.error("Error updating project:", err);
       return null;
     }
   },

@@ -25,7 +25,7 @@ export const SalesListClient: React.FC<Props> = ({ sales }) => {
       header: 'Customer',
       accessor: (row: Sale) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <strong>{row.customerName}</strong>
+          <strong>{row.customer?.name || row.customerId}</strong>
           <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>{new Date(row.date).toLocaleDateString()}</span>
         </div>
       )

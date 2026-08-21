@@ -1,7 +1,8 @@
 export interface Sale {
   id: string;
   bookingId: string;
-  customerName: string;
+  customerId: string;
+  customer?: { id: string; name: string };
   projectTitle: string;
   unitNumber: string;
   contractPrice: number;

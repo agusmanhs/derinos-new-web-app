@@ -126,7 +126,8 @@ export interface PropertyUnit {
   facilities: Facility[];
 
   // Admin fields
-  buyerName?: string | null;
+  customerId?: string | null;
+  customer?: { id: string; name: string } | null;
   constructionProgress?: number;
   archived?: boolean;
 }

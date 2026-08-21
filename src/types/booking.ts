@@ -1,7 +1,8 @@
 export interface Booking {
   id: string;
   leadId: string;
-  customerName: string;
+  customerId: string;
+  customer?: { id: string; name: string };
   projectId: string;
   projectTitle: string;
   propertyUnitId: string;

@@ -82,7 +82,8 @@ export const PropertyService = {
       skip: start,
       take: limit,
       include: {
-        propertyStatus: true
+        propertyStatus: true,
+        customer: { select: { id: true, name: true } }
       }
     });
 
@@ -96,7 +97,10 @@ export const PropertyService = {
   },
 
   async getPropertyById(id: string): Promise<PropertyUnit | null> {
-    const property = await prisma.propertyUnit.findUnique({ where: { id } });
+    const property = await prisma.propertyUnit.findUnique({ 
+      where: { id },
+      include: { customer: true, propertyStatus: true }
+    });
     return property as unknown as PropertyUnit | null;
   },
 
@@ -142,6 +146,7 @@ export const PropertyService = {
         carports: data.carports || 0,
         price: data.price || 0,
         statusId: data.statusId || '',
+        customerId: data.customerId || null,
         floorPlanImage: data.floorPlanImage || '',
         gallery: data.gallery || [],
         facilities: (data.facilities as any) || [],

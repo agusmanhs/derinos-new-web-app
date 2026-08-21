@@ -11,6 +11,7 @@ import styles from './PropertyForm.module.css';
 interface Props {
   property?: PropertyUnit;
   projects: Project[]; // For the dropdown
+  customers: any[]; // For the customer dropdown
 }
 
 const initialState = {
@@ -18,7 +19,7 @@ const initialState = {
   message: '',
 };
 
-export const PropertyForm: React.FC<Props> = ({ property, projects }) => {
+export const PropertyForm: React.FC<Props> = ({ property, projects, customers }) => {
   const [state, formAction, isPending] = useActionState(savePropertyAction, initialState);
 
   return (
@@ -61,6 +62,15 @@ export const PropertyForm: React.FC<Props> = ({ property, projects }) => {
               <option value="Available">Available</option>
               <option value="Reserved">Reserved</option>
               <option value="Sold">Sold</option>
+            </select>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Customer / Buyer</label>
+            <select name="customerId" className={styles.select} defaultValue={property?.customerId || ''}>
+              <option value="">-- No Customer Assigned --</option>
+              {customers.map(c => (
+                <option key={c.id} value={c.id}>{c.name} {c.phone ? `(${c.phone})` : ''}</option>
+              ))}
             </select>
           </div>
         </div>
