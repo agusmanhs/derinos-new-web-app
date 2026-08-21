@@ -9,11 +9,12 @@ interface Props {
   properties: PropertyUnit[];
   phaseId: string;
   onRegisterUnit?: (unitId: string) => void;
+  onEditSvgId?: (oldId: string) => void;
 }
 
 type SelectedUnitState = { type: 'mapped'; unit: PropertyUnit } | { type: 'unmapped'; id: string };
 
-export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, phaseId, onRegisterUnit }) => {
+export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, phaseId, onRegisterUnit, onEditSvgId }) => {
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnitState | null>(null);
 
@@ -127,6 +128,7 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
         
         <div 
           ref={svgContainerRef}
+          id={`svg-container-${phaseId}`}
           className={styles.svgContainer}
           dangerouslySetInnerHTML={{ __html: svgContent }} 
           onClick={handleSvgClick}
@@ -161,6 +163,12 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
                   style={{ width: '100%', padding: '12px', backgroundColor: '#1D4ED8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
                 >
                   + Register Unit {selectedUnit.id}
+                </button>
+                <button 
+                  onClick={() => onEditSvgId && onEditSvgId(selectedUnit.id)}
+                  style={{ width: '100%', padding: '10px', backgroundColor: 'white', color: '#4B5563', border: '1px solid #D1D5DB', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px' }}
+                >
+                  Edit SVG ID
                 </button>
               </div>
             ) : (
@@ -214,9 +222,17 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
                 </div>
 
                 <div style={{ marginTop: '24px' }}>
-                  <button style={{ width: '100%', padding: '10px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
-                    Edit Unit Details
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button style={{ flex: 1, padding: '10px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
+                      Edit Details
+                    </button>
+                    <button 
+                      onClick={() => onEditSvgId && onEditSvgId(selectedUnit.unit.unitNumber)}
+                      style={{ flex: 1, padding: '10px', backgroundColor: 'white', color: '#4B5563', border: '1px solid #D1D5DB', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px' }}
+                    >
+                      Edit SVG ID
+                    </button>
+                  </div>
                 </div>
               </>
             )}

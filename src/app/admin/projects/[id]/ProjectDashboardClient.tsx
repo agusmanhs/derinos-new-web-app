@@ -20,6 +20,8 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
   const [editingPhase, setEditingPhase] = useState<any | null>(null);
   const [isAddUnitModalOpen, setIsAddUnitModalOpen] = useState(false);
   const [prefilledUnitId, setPrefilledUnitId] = useState<string>('');
+  const [isEditSvgIdModalOpen, setIsEditSvgIdModalOpen] = useState(false);
+  const [editingSvgId, setEditingSvgId] = useState<string>('');
   const [isPending, startTransition] = useTransition();
   const [uploadedSvg, setUploadedSvg] = useState<string>('');
 
@@ -130,6 +132,35 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
     });
   };
 
+  const handleSaveSvgId = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const newId = formData.get('newId') as string;
+    
+    if (!newId || newId.trim() === '') return;
+    
+    const phase = project.phases?.find(p => p.id === selectedPhaseId);
+    if (!phase || !phase.sitePlanSvg) return;
+    
+    const escapedOldId = editingSvgId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let newSvgString = phase.sitePlanSvg;
+    
+    const idRegex = new RegExp(`id=["']${escapedOldId}["']`, 'g');
+    newSvgString = newSvgString.replace(idRegex, `id="${newId}"`);
+    
+    const dataIdRegex = new RegExp(`data-id=["']${escapedOldId}["']`, 'g');
+    newSvgString = newSvgString.replace(dataIdRegex, `data-id="${newId}"`);
+    
+    startTransition(async () => {
+      const res = await updatePhaseAction(phase.id, { sitePlanSvg: newSvgString }, project.id, project.slug);
+      if (res.success) {
+        setIsEditSvgIdModalOpen(false);
+      } else {
+        alert(res.message);
+      }
+    });
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.tabs}>
@@ -230,6 +261,10 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
                             properties={properties}
                             phaseId={phase.id}
                             onRegisterUnit={openAddUnitModal}
+                            onEditSvgId={(id) => {
+                              setEditingSvgId(id);
+                              setIsEditSvgIdModalOpen(true);
+                            }}
                           />
                         ) : (
                           <div className={styles.noSvg}>No SVG Uploaded</div>
@@ -407,6 +442,32 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
             <button type="button" onClick={() => setIsAddUnitModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
             <button type="submit" disabled={isPending} className={styles.primaryBtn}>
               {isPending ? 'Saving...' : 'Register Unit'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isEditSvgIdModalOpen} onClose={() => setIsEditSvgIdModalOpen(false)} title="Edit SVG Unit ID">
+        <form onSubmit={handleSaveSvgId} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
+          
+          <div style={{ padding: '12px', backgroundColor: '#FEF3C7', color: '#92400E', borderRadius: '6px', fontSize: '13px', lineHeight: 1.5 }}>
+            <strong>Warning:</strong> You are directly modifying the underlying SVG code in the database. Make sure the new ID exactly matches your database Unit Number.
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontWeight: 500, fontSize: '14px', color: '#6B7280' }}>Current SVG ID</label>
+            <input type="text" value={editingSvgId} disabled className={styles.input} style={{ backgroundColor: '#F3F4F6' }} />
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label htmlFor="newId" style={{ fontWeight: 500, fontSize: '14px' }}>New SVG ID</label>
+            <input type="text" id="newId" name="newId" required placeholder="Enter new ID..." className={styles.input} autoFocus />
+          </div>
+
+          <div className={styles.formActions} style={{ marginTop: '16px' }}>
+            <button type="button" onClick={() => setIsEditSvgIdModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
+            <button type="submit" disabled={isPending} className={styles.primaryBtn}>
+              {isPending ? 'Updating...' : 'Update ID'}
             </button>
           </div>
         </form>
