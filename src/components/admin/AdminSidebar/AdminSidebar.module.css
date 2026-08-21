@@ -62,6 +62,15 @@
   overflow-y: auto;
 }
 
+.categoryHeader {
+  padding: 16px 24px 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6B7280;
+  letter-spacing: 0.05em;
+}
+
 .navItem {
   display: flex;
   align-items: center;

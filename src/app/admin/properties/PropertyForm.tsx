@@ -12,6 +12,7 @@ interface Props {
   property?: PropertyUnit;
   projects: Project[]; // For the dropdown
   customers: any[]; // For the customer dropdown
+  propertyStatuses: any[]; // For the status dropdown
 }
 
 const initialState = {
@@ -19,7 +20,7 @@ const initialState = {
   message: '',
 };
 
-export const PropertyForm: React.FC<Props> = ({ property, projects, customers }) => {
+export const PropertyForm: React.FC<Props> = ({ property, projects, customers, propertyStatuses }) => {
   const [state, formAction, isPending] = useActionState(savePropertyAction, initialState);
 
   return (
@@ -58,10 +59,11 @@ export const PropertyForm: React.FC<Props> = ({ property, projects, customers })
           />
           <div className={styles.formGroup}>
             <label className={styles.label}>Status *</label>
-            <select name="status" className={styles.select} defaultValue={property?.status || 'Available'} required>
-              <option value="Available">Available</option>
-              <option value="Reserved">Reserved</option>
-              <option value="Sold">Sold</option>
+            <select name="statusId" className={styles.select} defaultValue={property?.statusId || ''} required>
+              <option value="" disabled>Select status</option>
+              {propertyStatuses.map((status: any) => (
+                <option key={status.id} value={status.id}>{status.name}</option>
+              ))}
             </select>
           </div>
           <div className={styles.formGroup}>
@@ -81,7 +83,7 @@ export const PropertyForm: React.FC<Props> = ({ property, projects, customers })
         <div className={styles.grid}>
           <Input 
             name="price" 
-            label="Price (USD) *" 
+            label="Price (Rp) *" 
             type="number"
             defaultValue={property?.price?.toString() || ''} 
             required 

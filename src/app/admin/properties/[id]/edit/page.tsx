@@ -5,13 +5,15 @@ import { ProjectService } from '@/services/projectService';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHeader';
 import { PropertyForm } from '../../PropertyForm';
 import { CustomerService } from '@/services/customerService';
+import { statusService } from '@/services/statusService';
 
 export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const [property, projects, customers] = await Promise.all([
+  const [property, projects, customers, propertyStatuses] = await Promise.all([
     PropertyService.getPropertyById(params.id),
     ProjectService.getProjects(),
-    CustomerService.getCustomers()
+    CustomerService.getCustomers(),
+    statusService.getStatuses()
   ]);
 
   if (!property) {
@@ -28,7 +30,7 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
           { label: 'Edit' }
         ]}
       />
-      <PropertyForm property={property} projects={projects} customers={customers} />
+      <PropertyForm property={property} projects={projects} customers={customers} propertyStatuses={propertyStatuses} />
     </div>
   );
 }

@@ -3,12 +3,14 @@ import { ProjectService } from '@/services/projectService';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHeader';
 import { PropertyForm } from '../PropertyForm';
 import { CustomerService } from '@/services/customerService';
+import { statusService } from '@/services/statusService';
 
 export default async function NewPropertyPage() {
   // Fetch projects to populate the dropdown
-  const [projects, customers] = await Promise.all([
+  const [projects, customers, propertyStatuses] = await Promise.all([
     ProjectService.getProjects(),
-    CustomerService.getCustomers()
+    CustomerService.getCustomers(),
+    statusService.getStatuses()
   ]);
 
   return (
@@ -21,7 +23,7 @@ export default async function NewPropertyPage() {
           { label: 'New Unit' }
         ]}
       />
-      <PropertyForm projects={projects} customers={customers} />
+      <PropertyForm projects={projects} customers={customers} propertyStatuses={propertyStatuses} />
     </div>
   );
 }

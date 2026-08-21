@@ -48,8 +48,8 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
       header: 'Financials',
       accessor: (row: Booking) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span>Fee: ${row.bookingFee.toLocaleString()}</span>
-          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Total: ${row.price.toLocaleString()}</span>
+          <span>Fee: Rp {row.bookingFee.toLocaleString('id-ID')}</span>
+          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Total: Rp {row.price.toLocaleString('id-ID')}</span>
         </div>
       )
     },

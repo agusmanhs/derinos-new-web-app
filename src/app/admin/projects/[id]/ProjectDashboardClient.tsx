@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { Project, PropertyUnit, PropertyStatus } from '@/types/project';
 import { SvgSitePlanRenderer } from '@/components/admin/SvgSitePlanRenderer/SvgSitePlanRenderer';
 import { Modal } from '@/components/ui/Modal/Modal';
+import { Input } from '@/components/ui/Input/Input';
 import { createPhaseAction, deletePhaseAction, updatePhaseAction } from '@/actions/adminPhaseActions';
 import { createPropertyAjaxAction } from '@/actions/adminPropertyActions';
 import { createStatusAction, updateStatusAction, deleteStatusAction } from '@/actions/adminStatusActions';
@@ -523,34 +524,27 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
       </Modal>
 
       <Modal isOpen={isAddUnitModalOpen} onClose={() => setIsAddUnitModalOpen(false)} title="Register New Unit">
-        <form onSubmit={handleSaveUnit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
+        <form onSubmit={handleSaveUnit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px', maxHeight: '70vh', overflowY: 'auto', overflowX: 'hidden', padding: '4px' }}>
           
           <div style={{ padding: '12px', backgroundColor: '#EFF6FF', color: '#1E40AF', borderRadius: '6px', fontSize: '13px' }}>
             <strong>Phase Association:</strong> This unit will automatically be linked to the currently active phase.
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="unitNumber" style={{ fontWeight: 500, fontSize: '14px' }}>Unit Number / ID</label>
-              <input type="text" id="unitNumber" name="unitNumber" defaultValue={prefilledUnitId} required placeholder="e.g. A-01" className={styles.input} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <Input label="Unit Number / ID *" type="text" id="unitNumber" name="unitNumber" defaultValue={prefilledUnitId} required placeholder="e.g. A-01" />
               <small className={styles.helpText}>Must exactly match the SVG data-id for Site Plan linking.</small>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="typeName" style={{ fontWeight: 500, fontSize: '14px' }}>Type Name</label>
-              <input type="text" id="typeName" name="typeName" required placeholder="e.g. Type 45, Type 60" className={styles.input} />
-            </div>
+            <Input label="Type Name *" type="text" id="typeName" name="typeName" required placeholder="e.g. Type 45, Type 60" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="price" style={{ fontWeight: 500, fontSize: '14px' }}>Price (Rp)</label>
-              <input type="number" id="price" name="price" required min="0" defaultValue="0" className={styles.input} />
-            </div>
+            <Input label="Price (Rp) *" type="number" id="price" name="price" required min="0" defaultValue="0" />
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="statusId" style={{ fontWeight: 500, fontSize: '14px' }}>Status</label>
-              <select id="statusId" name="statusId" className={styles.input} required>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label htmlFor="statusId" style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--color-tertiary)' }}>Status *</label>
+              <select id="statusId" name="statusId" className={styles.select} required>
                 <option value="">Select Status</option>
                 {statuses.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -560,30 +554,14 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="landSize" style={{ fontWeight: 500, fontSize: '14px' }}>Land Size (m²)</label>
-              <input type="number" id="landSize" name="landSize" required min="0" defaultValue="0" className={styles.input} />
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="buildingSize" style={{ fontWeight: 500, fontSize: '14px' }}>Building Size (m²)</label>
-              <input type="number" id="buildingSize" name="buildingSize" required min="0" defaultValue="0" className={styles.input} />
-            </div>
+            <Input label="Land Size (m²) *" type="number" id="landSize" name="landSize" required min="0" defaultValue="0" />
+            <Input label="Building Size (m²) *" type="number" id="buildingSize" name="buildingSize" required min="0" defaultValue="0" />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="bedrooms" style={{ fontWeight: 500, fontSize: '14px' }}>Bedrooms</label>
-              <input type="number" id="bedrooms" name="bedrooms" required min="0" defaultValue="0" className={styles.input} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="bathrooms" style={{ fontWeight: 500, fontSize: '14px' }}>Bathrooms</label>
-              <input type="number" id="bathrooms" name="bathrooms" required min="0" defaultValue="0" className={styles.input} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="carports" style={{ fontWeight: 500, fontSize: '14px' }}>Carports</label>
-              <input type="number" id="carports" name="carports" required min="0" defaultValue="0" className={styles.input} />
-            </div>
+            <Input label="Bedrooms *" type="number" id="bedrooms" name="bedrooms" required min="0" defaultValue="0" />
+            <Input label="Bathrooms *" type="number" id="bathrooms" name="bathrooms" required min="0" defaultValue="0" />
+            <Input label="Carports *" type="number" id="carports" name="carports" required min="0" defaultValue="0" />
           </div>
 
           <div className={styles.formActions} style={{ marginTop: '16px', position: 'sticky', bottom: 0, backgroundColor: 'white', padding: '16px 0', borderTop: '1px solid #E5E7EB' }}>

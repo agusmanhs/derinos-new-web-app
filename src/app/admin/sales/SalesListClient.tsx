@@ -41,7 +41,7 @@ export const SalesListClient: React.FC<Props> = ({ sales }) => {
     },
     {
       header: 'Contract Value',
-      accessor: (row: Sale) => `$${row.contractPrice.toLocaleString()}`
+      accessor: (row: Sale) => `Rp ${row.contractPrice.toLocaleString('id-ID')}`
     },
     {
       header: 'Method',

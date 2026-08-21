@@ -19,18 +19,21 @@
 
 .input {
   width: 100%;
-  padding: 10px var(--spacing-md);
-  border: 1px solid var(--color-border);
-  background-color: var(--color-white);
-  border-radius: var(--radius-sm); /* search bar in design has very subtle radius or none */
-  font-size: 1rem;
-  color: var(--color-tertiary);
-  transition: border-color 0.2s ease;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  color: #111827;
+  transition: all 0.2s ease;
   outline: none;
+  font-family: inherit;
 }
 
 .input:focus {
-  border-color: var(--color-primary);
+  background-color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
 .inputError {

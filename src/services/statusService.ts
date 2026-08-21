@@ -8,6 +8,12 @@ export const statusService = {
     });
   },
 
+  getStatuses: async () => {
+    return await prisma.propertyStatus.findMany({
+      orderBy: { order: 'asc' },
+    });
+  },
+
   createStatus: async (data: { projectId: string; name: string; colorHex: string; order?: number }) => {
     return await prisma.propertyStatus.create({
       data: {

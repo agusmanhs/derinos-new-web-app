@@ -28,7 +28,7 @@ export default async function ViewPropertyPage(props: { params: Promise<{ id: st
       <div style={{ background: 'white', padding: '24px', border: '1px solid #e5e5e5' }}>
         <h3>Specifications</h3>
         <p><strong>Type:</strong> {property.typeName}</p>
-        <p><strong>Price:</strong> ${property.price.toLocaleString()}</p>
+        <p><strong>Price:</strong> Rp {property.price.toLocaleString('id-ID')}</p>
         <p><strong>Land Size:</strong> {property.landSize} sqm</p>
         <p><strong>Building Size:</strong> {property.buildingSize} sqm</p>
         <p><strong>Bedrooms:</strong> {property.bedrooms}</p>

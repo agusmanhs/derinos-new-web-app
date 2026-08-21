@@ -67,7 +67,7 @@ export const AgencyDetailClient: React.FC<Props> = ({ agency }) => {
     },
     {
       header: 'Commission Amount',
-      accessor: (row: any) => row.amount ? `Rp ${row.amount.toLocaleString()}` : '-'
+      accessor: (row: any) => row.amount ? `Rp ${row.amount.toLocaleString('id-ID')}` : '-'
     },
     {
       header: 'Status',
