@@ -36,6 +36,7 @@ export const AdminLayoutClient: React.FC<Props> = ({ user, projects = [], childr
 
       <div className={styles.mainContent}>
         <AdminHeader 
+          user={user}
           onMenuToggle={() => setIsSidebarOpen(true)} 
         />
         <main className={styles.pageContent}>

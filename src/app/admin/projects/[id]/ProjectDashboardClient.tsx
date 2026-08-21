@@ -67,6 +67,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
       description: formData.get('description') as string,
       sitePlanSvg: uploadedSvg, // Use the uploaded state
       status: 'Planning' as const,
+      order: parseInt(formData.get('order') as string) || 0,
     };
     
     // If we're editing but didn't upload a new SVG, we keep the old one
@@ -479,15 +480,16 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
       </div>
 
       <Modal isOpen={isPhaseModalOpen} onClose={() => setIsPhaseModalOpen(false)} title={editingPhase ? "Edit Construction Phase" : "Add Construction Phase"}>
-        <form onSubmit={handleSavePhase} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label htmlFor="name" style={{ fontWeight: 500, fontSize: '14px' }}>Phase Name</label>
-            <input type="text" id="name" name="name" defaultValue={editingPhase?.name} required placeholder="e.g. Cluster A / Tahap 1" className={styles.input} />
+        <form onSubmit={handleSavePhase} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px', padding: '4px' }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px' }}>
+            <Input label="Phase Name *" type="text" id="name" name="name" defaultValue={editingPhase?.name} required placeholder="e.g. Cluster A / Tahap 1" />
+            <Input label="Order (Sort Priority)" type="number" id="order" name="order" defaultValue={editingPhase?.order ?? 0} required />
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label htmlFor="description" style={{ fontWeight: 500, fontSize: '14px' }}>Description (Optional)</label>
-            <textarea id="description" name="description" defaultValue={editingPhase?.description} rows={2} className={styles.input}></textarea>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label htmlFor="description" style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--color-tertiary)' }}>Description (Optional)</label>
+            <textarea id="description" name="description" defaultValue={editingPhase?.description} rows={3} className={styles.textarea}></textarea>
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

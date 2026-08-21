@@ -37,6 +37,7 @@ export const PhaseService = {
         description: data.description,
         sitePlanSvg: data.sitePlanSvg,
         status: data.status,
+        order: data.order,
       }
     });
     
@@ -56,6 +57,7 @@ export const PhaseService = {
           description: data.description,
           sitePlanSvg: data.sitePlanSvg,
           status: data.status,
+          order: data.order,
         }
       });
       

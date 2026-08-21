@@ -31,7 +31,7 @@ export const ProjectService = {
 
     const projects = await prisma.project.findMany({ 
       where,
-      include: { phases: true }
+      include: { phases: { orderBy: { order: 'asc' } } }
     });
     // Safe cast because Prisma JSON fields return any, but we typed them in TS
     return projects.map(p => ({
@@ -50,7 +50,7 @@ export const ProjectService = {
   async getProjectBySlug(slug: string): Promise<Project | null> {
     const project = await prisma.project.findUnique({ 
       where: { slug },
-      include: { phases: true }
+      include: { phases: { orderBy: { order: 'asc' } } }
     });
     if (!project) return null;
     return {
@@ -256,7 +256,7 @@ export const ProjectService = {
   async getProjectById(id: string): Promise<Project | null> {
     const project = await prisma.project.findUnique({ 
       where: { id },
-      include: { phases: true }
+      include: { phases: { orderBy: { order: 'asc' } } }
     });
     if (!project) return null;
     return {

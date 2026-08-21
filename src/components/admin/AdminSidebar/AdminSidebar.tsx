@@ -111,12 +111,7 @@ export const AdminSidebar: React.FC<{ userRole: Role; isOpen: boolean; projects?
         </div>
       </div>
       
-      <div className={styles.newPropertyContainer}>
-        <button className={styles.newPropertyBtn}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          New Property
-        </button>
-      </div>
+
 
       <nav className={styles.nav}>
         {allowedCategories.map((category) => (
@@ -181,15 +176,7 @@ export const AdminSidebar: React.FC<{ userRole: Role; isOpen: boolean; projects?
           Support
         </Link>
         
-        <div className={styles.userProfile} onClick={() => logoutAction()}>
-          <div className={styles.avatar}>
-            <IconUser />
-          </div>
-          <div className={styles.userInfo}>
-            <span className={styles.userName}>Admin User</span>
-            <span className={styles.userRole}>Logout</span>
-          </div>
-        </div>
+
       </div>
     </aside>
   );

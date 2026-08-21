@@ -80,6 +80,7 @@ model ProjectPhase {
   description   String?
   sitePlanSvg   String         // URL or Raw SVG string
   status        String         @default("Active") // Active, Completed
+  order         Int            @default(0) // Control display order
   
   properties    PropertyUnit[]
   
