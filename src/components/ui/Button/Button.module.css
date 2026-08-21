@@ -41,6 +41,7 @@
 }
 .primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
+  color: var(--color-white);
 }
 
 .secondary {
@@ -49,6 +50,7 @@
 }
 .secondary:hover:not(:disabled) {
   background-color: var(--color-secondary-hover);
+  color: var(--color-white);
 }
 
 .inverted {
@@ -74,4 +76,5 @@
 }
 .danger:hover:not(:disabled) {
   background-color: var(--color-danger-hover);
+  color: var(--color-white);
 }

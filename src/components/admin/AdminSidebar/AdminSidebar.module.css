@@ -52,6 +52,7 @@
 
 .newPropertyBtn:hover {
   background-color: var(--color-primary-hover);
+  color: white;
 }
 
 .nav {

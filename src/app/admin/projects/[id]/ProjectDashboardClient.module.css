@@ -86,6 +86,7 @@
 
 .primaryBtn:hover {
   background-color: var(--color-primary-hover);
+  color: white;
 }
 
 .emptyState {
