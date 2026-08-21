@@ -9,7 +9,7 @@ export interface PropertyFilters {
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
-  status?: string;
+  statusId?: string;
 }
 
 export interface PaginatedResult<T> {
@@ -52,8 +52,8 @@ export const PropertyService = {
       if (filters.bedrooms && filters.bedrooms > 0) {
         where.bedrooms = { gte: filters.bedrooms };
       }
-      if (filters.status && filters.status !== 'All') {
-        where.status = filters.status;
+      if (filters.statusId && filters.statusId !== 'All') {
+        where.statusId = filters.statusId;
       }
     }
 
@@ -81,6 +81,9 @@ export const PropertyService = {
       orderBy,
       skip: start,
       take: limit,
+      include: {
+        propertyStatus: true
+      }
     });
 
     return {
@@ -100,12 +103,25 @@ export const PropertyService = {
   async getFilterOptions() {
     const units = await prisma.propertyUnit.findMany({
       where: { archived: false },
-      select: { projectTitle: true, typeName: true, status: true }
+      select: { projectTitle: true, typeName: true, propertyStatus: { select: { id: true, name: true } } }
     });
     const projects = Array.from(new Set(units.map(p => p.projectTitle)));
     const types = Array.from(new Set(units.map(p => p.typeName)));
-    const statuses = Array.from(new Set(units.map(p => p.status)));
-    return { projects: ['All', ...projects], types: ['All', ...types], statuses: ['All', ...statuses] };
+    
+    // De-duplicate statuses based on ID
+    const statusMap = new Map();
+    units.forEach(u => {
+      if (u.propertyStatus && !statusMap.has(u.propertyStatus.id)) {
+        statusMap.set(u.propertyStatus.id, u.propertyStatus);
+      }
+    });
+    const statuses = Array.from(statusMap.values());
+    
+    return { 
+      projects: ['All', ...projects], 
+      types: ['All', ...types], 
+      statuses: [{ id: 'All', name: 'All' }, ...statuses] 
+    };
   },
 
   /**
@@ -125,7 +141,7 @@ export const PropertyService = {
         bathrooms: data.bathrooms || 0,
         carports: data.carports || 0,
         price: data.price || 0,
-        status: data.status || 'Available',
+        statusId: data.statusId || '',
         floorPlanImage: data.floorPlanImage || '',
         gallery: data.gallery || [],
         facilities: (data.facilities as any) || [],

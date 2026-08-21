@@ -16,6 +16,17 @@ export async function archiveProjectAction(id: string) {
   revalidatePath('/projects');
 }
 
+export async function deleteProjectAction(id: string) {
+  const session = await verifySession();
+  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'].includes(session.role)) {
+    throw new Error('Unauthorized');
+  }
+
+  await ProjectService.deleteProject(id);
+  revalidatePath('/admin/projects');
+  revalidatePath('/projects');
+}
+
 export async function saveProjectAction(prevState: unknown, formData: FormData) {
   const session = await verifySession();
   if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'].includes(session.role)) {

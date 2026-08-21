@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { PropertyUnit } from '@/types/project';
+import { PropertyUnit, PropertyStatus } from '@/types/project';
 import styles from './SvgSitePlanRenderer.module.css';
 
 interface Props {
   svgContent: string;
   properties: PropertyUnit[];
+  statuses: PropertyStatus[];
   phaseId: string;
   onRegisterUnit?: (unitId: string) => void;
   onEditSvgId?: (oldId: string) => void;
@@ -14,7 +15,7 @@ interface Props {
 
 type SelectedUnitState = { type: 'mapped'; unit: PropertyUnit } | { type: 'unmapped'; id: string };
 
-export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, phaseId, onRegisterUnit, onEditSvgId }) => {
+export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, statuses, phaseId, onRegisterUnit, onEditSvgId }) => {
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnitState | null>(null);
 
@@ -42,12 +43,12 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
 
       // Clean up previous inline fills to allow CSS classes to work
       el.removeAttribute('fill');
-      el.classList.remove('available', 'reserved', 'sold');
+      statuses.forEach(s => el.classList.remove(`status-${s.id}`));
 
       if (matchedUnit) {
         // Apply status class
         el.classList.add('interactiveElement');
-        el.classList.add(matchedUnit.status.toLowerCase());
+        el.classList.add(`status-${matchedUnit.statusId}`);
         
         // Add attribute for event delegation
         el.setAttribute('data-unit-id', matchedUnit.id);
@@ -55,7 +56,7 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
         
         // Add a title tooltip
         const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        titleEl.textContent = `Unit: ${matchedUnit.unitNumber} | Type: ${matchedUnit.typeName} | Status: ${matchedUnit.status}`;
+        titleEl.textContent = `Unit: ${matchedUnit.unitNumber} | Type: ${matchedUnit.typeName} | Status: ${matchedUnit.propertyStatus?.name || 'Unknown'}`;
         
         // Remove old title if exists
         const oldTitle = el.querySelector('title');
@@ -110,17 +111,16 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.mainContent}>
+      <div id={`siteplan-export-container-${phaseId}`} className={styles.mainContent} style={{ backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px' }}>
+        <style>
+          {statuses.map(s => `.status-${s.id} { fill: ${s.colorHex} !important; }`).join('\n')}
+        </style>
         <div className={styles.legend}>
-          <div className={styles.legendItem}>
-            <span className={`${styles.swatch} ${styles.swatchAvailable}`}></span> Available
-          </div>
-          <div className={styles.legendItem}>
-            <span className={`${styles.swatch} ${styles.swatchReserved}`}></span> Reserved
-          </div>
-          <div className={styles.legendItem}>
-            <span className={`${styles.swatch} ${styles.swatchSold}`}></span> Sold
-          </div>
+          {statuses.map(s => (
+            <div key={s.id} className={styles.legendItem}>
+              <span className={styles.swatch} style={{ backgroundColor: s.colorHex }}></span> {s.name}
+            </div>
+          ))}
           <div className={styles.legendItem}>
             <span className={`${styles.swatch} ${styles.swatchUnmapped}`}></span> Unmapped / Other
           </div>
@@ -176,8 +176,8 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, p
                 <div className={styles.panelSection}>
                   <div className={styles.dataRow}>
                     <span className={styles.dataLabel}>Status</span>
-                    <span className={`${styles.swatch} ${styles['swatch' + selectedUnit.unit.status.charAt(0).toUpperCase() + selectedUnit.unit.status.slice(1).toLowerCase()]}`} style={{ display: 'inline-block', width: 'auto', padding: '2px 8px', height: 'auto', fontSize: '12px', fontWeight: 600 }}>
-                      {selectedUnit.unit.status}
+                    <span className={styles.swatch} style={{ display: 'inline-block', width: 'auto', padding: '2px 8px', height: 'auto', fontSize: '12px', fontWeight: 600, backgroundColor: selectedUnit.unit.propertyStatus?.colorHex || '#E5E7EB', color: '#fff' }}>
+                      {selectedUnit.unit.propertyStatus?.name || 'Unknown'}
                     </span>
                   </div>
                   <div className={styles.dataRow}>

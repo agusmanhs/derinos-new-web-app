@@ -94,6 +94,14 @@ export interface Project {
   metaKeywords?: string;
 }
 
+export interface PropertyStatus {
+  id: string;
+  projectId: string;
+  name: string;
+  colorHex: string;
+  order: number;
+}
+
 export interface PropertyUnit {
   id: string;
   projectId: string;
@@ -111,7 +119,8 @@ export interface PropertyUnit {
   bathrooms: number;
   carports: number;
   price: number;
-  status: 'Available' | 'Reserved' | 'Sold';
+  statusId: string;
+  propertyStatus?: PropertyStatus;
   gallery: string[];
   floorPlanImage: string;
   facilities: Facility[];

@@ -1,19 +1,23 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { Project, PropertyUnit } from '@/types/project';
+import { Project, PropertyUnit, PropertyStatus } from '@/types/project';
 import { SvgSitePlanRenderer } from '@/components/admin/SvgSitePlanRenderer/SvgSitePlanRenderer';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { createPhaseAction, deletePhaseAction, updatePhaseAction } from '@/actions/adminPhaseActions';
 import { createPropertyAjaxAction } from '@/actions/adminPropertyActions';
+import { createStatusAction, updateStatusAction, deleteStatusAction } from '@/actions/adminStatusActions';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import styles from './ProjectDashboardClient.module.css';
 
 interface Props {
   project: Project;
   properties: PropertyUnit[];
+  statuses: PropertyStatus[];
 }
 
-export const ProjectDashboardClient: React.FC<Props> = ({ project, properties }) => {
+export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, statuses }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'units' | 'settings'>('overview');
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(project.phases?.[0]?.id || null);
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
@@ -24,6 +28,9 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
   const [editingSvgId, setEditingSvgId] = useState<string>('');
   const [isPending, startTransition] = useTransition();
   const [uploadedSvg, setUploadedSvg] = useState<string>('');
+
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [editingStatus, setEditingStatus] = useState<PropertyStatus | null>(null);
 
   const handleSvgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,7 +117,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
       projectId: project.id,
       unitNumber: formData.get('unitNumber') as string,
       typeName: formData.get('typeName') as string,
-      status: formData.get('status') as string,
+      statusId: formData.get('statusId') as string,
       price: parseFloat(formData.get('price') as string),
       landSize: parseFloat(formData.get('landSize') as string) || 0,
       buildingSize: parseFloat(formData.get('buildingSize') as string) || 0,
@@ -159,6 +166,92 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
         alert(res.message);
       }
     });
+  };
+
+  const handleSaveStatus = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      projectId: project.id,
+      name: formData.get('name') as string,
+      colorHex: formData.get('colorHex') as string,
+      order: parseInt(formData.get('order') as string) || 0,
+    };
+
+    startTransition(async () => {
+      try {
+        if (editingStatus) {
+          await updateStatusAction(editingStatus.id, project.id, data);
+        } else {
+          await createStatusAction(data);
+        }
+        setIsStatusModalOpen(false);
+      } catch (error: any) {
+        alert(error.message);
+      }
+    });
+  };
+
+  const handleDeleteStatus = async (statusId: string) => {
+    if (!confirm('Are you sure you want to delete this status? Units using this status might lose their visual representation.')) return;
+    
+    startTransition(async () => {
+      try {
+        await deleteStatusAction(statusId, project.id);
+      } catch (error: any) {
+        alert(error.message);
+      }
+    });
+  };
+
+  const [isExporting, setIsExporting] = useState<string | null>(null);
+
+  const handleExportPDF = async (phaseId: string, phaseName: string) => {
+    setIsExporting(phaseId);
+    try {
+      const containerId = `siteplan-export-container-${phaseId}`;
+      const element = document.getElementById(containerId);
+      
+      if (!element) {
+        throw new Error("Could not find the Site Plan container to export.");
+      }
+
+      // Capture the element using html2canvas
+      const canvas = await html2canvas(element, {
+        scale: 2, // Higher resolution
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calculate aspect ratio for PDF (Landscape A4)
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      
+      const targetWidth = imgWidth * ratio;
+      const targetHeight = imgHeight * ratio;
+      const marginX = (pdfWidth - targetWidth) / 2;
+      const marginY = (pdfHeight - targetHeight) / 2;
+
+      pdf.addImage(imgData, 'PNG', marginX, marginY, targetWidth, targetHeight);
+      pdf.save(`SitePlan-${project.slug}-${phaseName.replace(/\s+/g, '-')}.pdf`);
+
+    } catch (error: any) {
+      alert("Error exporting PDF: " + error.message);
+    } finally {
+      setIsExporting(null);
+    }
   };
 
   return (
@@ -248,6 +341,13 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <h4 style={{ margin: 0 }}>{phase.name} <span className={styles.badge}>{phase.status}</span></h4>
                         <div style={{ display: 'flex', gap: '8px' }}>
+                          <button 
+                            onClick={() => handleExportPDF(phase.id, phase.name)} 
+                            disabled={isExporting === phase.id}
+                            style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #10B981', color: '#047857', backgroundColor: '#ECFDF5', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            {isExporting === phase.id ? 'Exporting...' : 'Export PDF'}
+                          </button>
                           <button onClick={() => openEditModal(phase)} style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #D1D5DB', backgroundColor: 'white', borderRadius: '4px', cursor: 'pointer' }}>Edit Phase</button>
                           <button onClick={() => handleDeletePhase(phase.id)} disabled={isPending} style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #FCA5A5', color: '#DC2626', backgroundColor: '#FEF2F2', borderRadius: '4px', cursor: 'pointer' }}>Delete Phase</button>
                         </div>
@@ -259,6 +359,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
                           <SvgSitePlanRenderer 
                             svgContent={phase.sitePlanSvg}
                             properties={properties}
+                            statuses={statuses}
                             phaseId={phase.id}
                             onRegisterUnit={openAddUnitModal}
                             onEditSvgId={(id) => {
@@ -306,7 +407,11 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
                         <td><strong>{unit.unitNumber}</strong></td>
                         <td>{unit.typeName}</td>
                         <td>{unit.phase?.name || '-'}</td>
-                        <td><span className={`${styles.statusBadge} ${styles[unit.status.toLowerCase()]}`}>{unit.status}</span></td>
+                        <td>
+                          <span className={styles.statusBadge} style={{ backgroundColor: unit.propertyStatus?.colorHex || '#E5E7EB', color: '#fff' }}>
+                            {unit.propertyStatus?.name || 'Unknown'}
+                          </span>
+                        </td>
                         <td>Rp {unit.price.toLocaleString()}</td>
                       </tr>
                     ))
@@ -320,6 +425,48 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
         {activeTab === 'settings' && (
           <div className={styles.settingsTab}>
             <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h3>Unit Statuses</h3>
+                <button className={styles.primaryBtn} onClick={() => {
+                  setEditingStatus(null);
+                  setIsStatusModalOpen(true);
+                }}>+ Add Status</button>
+              </div>
+              <p>Manage the statuses and colors for units in this project. Colors will automatically apply to the Site Plan.</p>
+              
+              <table className={styles.table} style={{ marginTop: '16px' }}>
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Status Name</th>
+                    <th>Color</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {statuses.map(status => (
+                    <tr key={status.id}>
+                      <td>{status.order}</td>
+                      <td><strong>{status.name}</strong></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '24px', height: '24px', backgroundColor: status.colorHex, borderRadius: '4px', border: '1px solid #E5E7EB' }}></div>
+                          <span>{status.colorHex}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => { setEditingStatus(status); setIsStatusModalOpen(true); }} style={{ padding: '4px 8px', fontSize: '12px', border: '1px solid #D1D5DB', backgroundColor: 'white', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
+                          <button onClick={() => handleDeleteStatus(status.id)} style={{ padding: '4px 8px', fontSize: '12px', border: '1px solid #FCA5A5', color: '#DC2626', backgroundColor: '#FEF2F2', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className={styles.card} style={{ marginTop: '24px' }}>
               <h3>Project Settings</h3>
               <p>Project settings are currently managed through the central edit page.</p>
               <a href={`/admin/projects/${project.id}/edit`} className={styles.primaryBtn} style={{ display: 'inline-block', marginTop: '16px', textDecoration: 'none' }}>
@@ -402,11 +549,12 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label htmlFor="status" style={{ fontWeight: 500, fontSize: '14px' }}>Status</label>
-              <select id="status" name="status" className={styles.input}>
-                <option value="Available">Available</option>
-                <option value="Reserved">Reserved</option>
-                <option value="Sold">Sold</option>
+              <label htmlFor="statusId" style={{ fontWeight: 500, fontSize: '14px' }}>Status</label>
+              <select id="statusId" name="statusId" className={styles.input} required>
+                <option value="">Select Status</option>
+                {statuses.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -468,6 +616,37 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties })
             <button type="button" onClick={() => setIsEditSvgIdModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
             <button type="submit" disabled={isPending} className={styles.primaryBtn}>
               {isPending ? 'Updating...' : 'Update ID'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isStatusModalOpen} onClose={() => setIsStatusModalOpen(false)} title={editingStatus ? "Edit Status" : "Add New Status"}>
+        <form onSubmit={handleSaveStatus} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label htmlFor="name" style={{ fontWeight: 500, fontSize: '14px' }}>Status Name</label>
+            <input type="text" id="name" name="name" defaultValue={editingStatus?.name} required placeholder="e.g. Booking Fee, Handover" className={styles.input} />
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label htmlFor="colorHex" style={{ fontWeight: 500, fontSize: '14px' }}>Color (Hex)</label>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <input type="color" id="colorHex" name="colorHex" defaultValue={editingStatus?.colorHex || '#34D399'} required style={{ width: '48px', height: '42px', padding: '0', cursor: 'pointer', border: '1px solid #D1D5DB', borderRadius: '6px' }} />
+              <input type="text" defaultValue={editingStatus?.colorHex || '#34D399'} readOnly className={styles.input} style={{ flex: 1, backgroundColor: '#F3F4F6' }} />
+            </div>
+            <small className={styles.helpText}>Click the color box to pick a color.</small>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label htmlFor="order" style={{ fontWeight: 500, fontSize: '14px' }}>Sort Order</label>
+            <input type="number" id="order" name="order" defaultValue={editingStatus?.order || 0} required className={styles.input} />
+            <small className={styles.helpText}>Lower numbers appear first in the legend.</small>
+          </div>
+          
+          <div className={styles.formActions} style={{ marginTop: '16px' }}>
+            <button type="button" onClick={() => setIsStatusModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
+            <button type="submit" disabled={isPending} className={styles.primaryBtn}>
+              {isPending ? 'Saving...' : (editingStatus ? 'Save Changes' : 'Create Status')}
             </button>
           </div>
         </form>

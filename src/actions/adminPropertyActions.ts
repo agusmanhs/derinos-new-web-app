@@ -27,10 +27,10 @@ export async function savePropertyAction(prevState: unknown, formData: FormData)
   const projectId = formData.get('projectId') as string;
   const unitNumber = formData.get('unitNumber') as string;
   const typeName = formData.get('typeName') as string;
-  const status = formData.get('status') as "Available" | "Reserved" | "Sold";
+  const statusId = formData.get('statusId') as string;
   const price = parseFloat(formData.get('price') as string);
   
-  if (!projectId || !unitNumber || !typeName || !status || isNaN(price)) {
+  if (!projectId || !unitNumber || !typeName || !statusId || isNaN(price)) {
     return { success: false, message: 'Project, Unit Number, Type, Status, and valid Price are required.' };
   }
 
@@ -46,7 +46,7 @@ export async function savePropertyAction(prevState: unknown, formData: FormData)
       projectTitle: project.title,
       unitNumber,
       typeName,
-      status,
+      statusId,
       price,
       landSize: parseFloat(formData.get('landSize') as string) || 0,
       buildingSize: parseFloat(formData.get('buildingSize') as string) || 0,
@@ -77,7 +77,7 @@ export async function createPropertyAjaxAction(payload: any) {
     return { success: false, message: 'Unauthorized access' };
   }
 
-  if (!payload.projectId || !payload.unitNumber || !payload.typeName || !payload.status || isNaN(payload.price)) {
+  if (!payload.projectId || !payload.unitNumber || !payload.typeName || !payload.statusId || isNaN(payload.price)) {
     return { success: false, message: 'Project, Unit Number, Type, Status, and valid Price are required.' };
   }
 

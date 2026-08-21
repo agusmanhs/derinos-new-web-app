@@ -7,7 +7,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHea
 import { AdminTable } from '@/components/admin/AdminTable/AdminTable';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
-import { archiveProjectAction } from '@/actions/adminProjectActions';
+import { archiveProjectAction, deleteProjectAction } from '@/actions/adminProjectActions';
 import { Project } from '@/types/project';
 import styles from './page.module.css';
 
@@ -23,6 +23,18 @@ export const ProjectListClient: React.FC<Props> = ({ projects }) => {
     if (confirm('Are you sure you want to archive this project?')) {
       startTransition(async () => {
         await archiveProjectAction(id);
+      });
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('WARNING: Are you sure you want to permanently delete this project? All associated data (Phases, Units, Statuses) will be destroyed. This action cannot be undone!')) {
+      startTransition(async () => {
+        try {
+          await deleteProjectAction(id);
+        } catch (error: any) {
+          alert("Error deleting project: " + error.message);
+        }
       });
     }
   };
@@ -54,7 +66,8 @@ export const ProjectListClient: React.FC<Props> = ({ projects }) => {
       accessor: (row: Project) => (
         <div className={styles.actionButtons}>
           <Button variant="outlined" onClick={() => router.push(`/admin/projects/${row.id}/edit`)}>Edit</Button>
-          <Button variant="danger" disabled={isPending} onClick={() => handleArchive(row.id)}>Archive</Button>
+          <Button variant="outlined" disabled={isPending} onClick={() => handleArchive(row.id)}>Archive</Button>
+          <Button variant="danger" disabled={isPending} onClick={() => handleDelete(row.id)}>Delete</Button>
         </div>
       )
     }

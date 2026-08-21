@@ -61,6 +61,7 @@ model Project {
   metaDescription String?
   metaKeywords    String?
 
+  statuses        PropertyStatus[]
   phases          ProjectPhase[]
   properties      PropertyUnit[]
   leads           Lead[]
@@ -88,6 +89,23 @@ model ProjectPhase {
   @@unique([projectId, name])
 }
 
+model PropertyStatus {
+  id        String         @id @default(uuid())
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  
+  name      String
+  colorHex  String
+  order     Int            @default(0)
+  
+  properties PropertyUnit[]
+
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([projectId, name])
+}
+
 model PropertyUnit {
   id             String        @id @default(uuid())
   project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -105,7 +123,9 @@ model PropertyUnit {
   bathrooms      Int
   carports       Int
   price          Float
-  status         String        // 'Available' | 'Reserved' | 'Sold'
+  
+  propertyStatus PropertyStatus @relation(fields: [statusId], references: [id])
+  statusId       String
   
   gallery        String[]      @default([])
   floorPlanImage String
