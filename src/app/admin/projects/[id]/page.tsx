@@ -5,6 +5,7 @@ import { PropertyService } from '@/services/propertyService';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHeader';
 import { ProjectDashboardClient } from './ProjectDashboardClient';
 import { statusService } from '@/services/statusService';
+import { verifySession } from '@/lib/session';
 
 export default async function ViewProjectPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -19,6 +20,9 @@ export default async function ViewProjectPage(props: { params: Promise<{ id: str
   
   const { data: properties } = await PropertyService.getProperties({ project: project.title }, undefined, 1, 100);
   const statuses = await statusService.getStatusesByProject(project.id);
+  
+  const session = await verifySession();
+  const canManageProjects = session?.permissions.includes('manage_projects') || session?.roleName === 'Super Admin';
 
   return (
     <div>
@@ -27,7 +31,12 @@ export default async function ViewProjectPage(props: { params: Promise<{ id: str
         description={`Status: ${project.status} | Location: ${project.location}`}
       />
       
-      <ProjectDashboardClient project={project} properties={properties} statuses={statuses} />
+      <ProjectDashboardClient 
+        project={project} 
+        properties={properties} 
+        statuses={statuses} 
+        canManageProjects={canManageProjects} 
+      />
     </div>
   );
 }

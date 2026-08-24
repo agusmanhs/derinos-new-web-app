@@ -17,9 +17,10 @@ interface Props {
   project: Project;
   properties: PropertyUnit[];
   statuses: PropertyStatus[];
+  canManageProjects?: boolean;
 }
 
-export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, statuses }) => {
+export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, statuses, canManageProjects = false }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'units' | 'settings'>('overview');
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(project.phases?.[0]?.id || null);
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
@@ -387,7 +388,9 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
             <div className={styles.card}>
               <div className={styles.cardHeader}>
                 <h3>Property Units</h3>
-                <button className={styles.primaryBtn} onClick={() => openAddUnitModal('')}>+ Add Unit</button>
+                {canManageProjects && (
+                  <button className={styles.primaryBtn} onClick={() => openAddUnitModal('')}>+ Add Unit</button>
+                )}
               </div>
               <p>Manage all units in this project. Units can be linked to a Phase so they appear on the Site Plan SVG.</p>
               
@@ -430,10 +433,12 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
             <div className={styles.card}>
               <div className={styles.cardHeader}>
                 <h3>Unit Statuses</h3>
-                <button className={styles.primaryBtn} onClick={() => {
-                  setEditingStatus(null);
-                  setIsStatusModalOpen(true);
-                }}>+ Add Status</button>
+                {canManageProjects && (
+                  <button className={styles.primaryBtn} onClick={() => {
+                    setEditingStatus(null);
+                    setIsStatusModalOpen(true);
+                  }}>+ Add Status</button>
+                )}
               </div>
               <p>Manage the statuses and colors for units in this project. Colors will automatically apply to the Site Plan.</p>
               
@@ -458,10 +463,12 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
                         </div>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => { setEditingStatus(status); setIsStatusModalOpen(true); }} style={{ padding: '4px 8px', fontSize: '12px', border: '1px solid #D1D5DB', backgroundColor: 'white', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
-                          <button onClick={() => handleDeleteStatus(status.id)} style={{ padding: '4px 8px', fontSize: '12px', border: '1px solid #FCA5A5', color: '#DC2626', backgroundColor: '#FEF2F2', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
-                        </div>
+                        {canManageProjects && (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={() => { setEditingStatus(status); setIsStatusModalOpen(true); }} style={{ padding: '4px 8px', fontSize: '12px', border: '1px solid #D1D5DB', backgroundColor: 'white', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
+                            <button onClick={() => handleDeleteStatus(status.id)} style={{ padding: '4px 8px', fontSize: '12px', border: '1px solid #FCA5A5', color: '#DC2626', backgroundColor: '#FEF2F2', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
