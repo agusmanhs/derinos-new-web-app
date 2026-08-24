@@ -6,17 +6,25 @@ import { Button } from '@/components/ui/Button/Button';
 import { Customer } from '../../../../generated/prisma/client';
 import { IconEdit, IconTrash } from '@/components/ui/Icon/AdminIcons';
 import { createCustomerAction, updateCustomerAction, deleteCustomerAction } from '@/actions/adminCustomerActions';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './page.module.css';
 
 interface Props {
   customers: any[]; // Extended customer with properties, bookings, sales
+  pagination: {
+    page: number;
+    totalPages: number;
+    total: number;
+    limit: number;
+  };
 }
 
-export const CustomerListClient: React.FC<Props> = ({ customers }) => {
+export const CustomerListClient: React.FC<Props> = ({ customers, pagination }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const handleOpenModal = (customer?: Customer) => {
     if (customer) {
@@ -60,11 +68,23 @@ export const CustomerListClient: React.FC<Props> = ({ customers }) => {
     }
   };
 
-  const filteredCustomers = customers.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    (c.email && c.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (c.phone && c.phone.includes(searchQuery))
-  );
+  const handleFilterChange = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    params.set('page', '1');
+    router.push(`/admin/customers?${params.toString()}`);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', newPage.toString());
+    router.push(`/admin/customers?${params.toString()}`);
+  };
 
   return (
     <div>
@@ -87,8 +107,11 @@ export const CustomerListClient: React.FC<Props> = ({ customers }) => {
               type="text" 
               placeholder="Search by name, email, or phone..." 
               className={styles.searchInput}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              defaultValue={searchParams.get('q') || ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                setTimeout(() => handleFilterChange('q', val), 500);
+              }}
             />
           </div>
         </div>
@@ -105,14 +128,14 @@ export const CustomerListClient: React.FC<Props> = ({ customers }) => {
               </tr>
             </thead>
             <tbody>
-              {filteredCustomers.length === 0 ? (
+              {customers.length === 0 ? (
                 <tr>
                   <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
-                    No customers found.
+                    No customers found matching your filters.
                   </td>
                 </tr>
               ) : (
-                filteredCustomers.map((row) => (
+                customers.map((row) => (
                   <tr key={row.id}>
                     <td><strong>{row.name}</strong></td>
                     <td>
@@ -143,6 +166,47 @@ export const CustomerListClient: React.FC<Props> = ({ customers }) => {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className={styles.pagination}>
+          <div className={styles.pageInfo}>
+            Showing {(pagination.page - 1) * pagination.limit + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} entries
+          </div>
+          <div className={styles.pageControls}>
+            <button 
+              className={styles.pageButton} 
+              disabled={pagination.page <= 1}
+              onClick={() => handlePageChange(pagination.page - 1)}
+            >
+              &lt;
+            </button>
+            
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum = i + 1;
+              if (pagination.totalPages > 5 && pagination.page > 3) {
+                pageNum = pagination.page - 2 + i;
+                if (pageNum > pagination.totalPages) pageNum = pagination.totalPages - (4 - i);
+              }
+              
+              return (
+                <button 
+                  key={pageNum}
+                  className={`${styles.pageButton} ${pagination.page === pageNum ? styles.activePage : ''}`}
+                  onClick={() => handlePageChange(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            
+            <button 
+              className={styles.pageButton} 
+              disabled={pagination.page >= pagination.totalPages}
+              onClick={() => handlePageChange(pagination.page + 1)}
+            >
+              &gt;
+            </button>
+          </div>
         </div>
       </div>
 

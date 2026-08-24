@@ -260,6 +260,11 @@ model Customer {
   address     String?
   ktpNumber   String?
   npwp        String?
+  birthPlace  String?
+  birthDate   DateTime?
+  gender      String?
+  occupation  String?
+  ktpFile     String?
 
   properties  PropertyUnit[]
   bookings    Booking[]

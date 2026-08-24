@@ -1,8 +1,20 @@
 import prisma from '@/lib/prisma';
 import { Customer, Prisma } from '../../generated/prisma/client';
 
+export interface PaginatedCustomerResult {
+  data: Customer[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const CustomerService = {
-  async getCustomers(search?: string): Promise<Customer[]> {
+  async getCustomers(
+    search?: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<PaginatedCustomerResult> {
     const where: Prisma.CustomerWhereInput = search
       ? {
           OR: [
@@ -13,14 +25,28 @@ export const CustomerService = {
         }
       : {};
 
-    return prisma.customer.findMany({
+    const total = await prisma.customer.count({ where });
+    const totalPages = Math.ceil(total / limit);
+    const start = (page - 1) * limit;
+
+    const customers = await prisma.customer.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      skip: start,
+      take: limit,
       include: {
         properties: { select: { id: true, unitNumber: true, projectTitle: true } },
         bookings: { select: { id: true, unitNumber: true, projectTitle: true, status: true } },
       },
     });
+
+    return {
+      data: customers,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   },
 
   async getCustomerById(id: string): Promise<Customer | null> {
