@@ -13,6 +13,8 @@ async function main() {
     { action: 'view_leads', description: 'View leads', module: 'CRM' },
     { action: 'manage_bookings', description: 'Manage bookings and sales', module: 'Sales' },
     { action: 'view_bookings', description: 'View bookings and sales', module: 'Sales' },
+    { action: 'manage_customers', description: 'Manage customer master data', module: 'Contacts' },
+    { action: 'manage_agencies', description: 'Manage marketing agencies master data', module: 'Contacts' },
   ];
 
   for (const p of permissionsData) {

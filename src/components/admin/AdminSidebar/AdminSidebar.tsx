@@ -66,10 +66,10 @@ const NAV_CATEGORIES: NavCategory[] = [
   },
   {
     title: 'Contacts & Partners',
-    permissions: ['manage_users', 'manage_leads'], // example
+    permissions: ['manage_customers', 'manage_agencies'], 
     items: [
-      { id: 'customers', label: 'Customers', href: '/admin/customers', icon: <IconUser />, permissions: ['manage_users', 'manage_leads'] },
-      { id: 'agencies', label: 'Marketing Agencies', href: '/admin/agencies', icon: <IconUsersGroup />, permissions: ['manage_users'] },
+      { id: 'customers', label: 'Customers', href: '/admin/customers', icon: <IconUser />, permissions: ['manage_customers'] },
+      { id: 'agencies', label: 'Marketing Agencies', href: '/admin/agencies', icon: <IconUsersGroup />, permissions: ['manage_agencies'] },
     ]
   },
   {
