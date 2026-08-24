@@ -170,18 +170,22 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
 
                   {item.hasSubmenu && item.id === 'users' && isSubmenuOpen && (
                     <div className={styles.submenu}>
-                      <Link 
-                        href="/admin/users?refresh=1"
-                        className={`${styles.submenuItem} ${pathname === '/admin/users' ? styles.active : ''}`}
-                      >
-                        Users
-                      </Link>
-                      <Link 
-                        href="/admin/users/roles?refresh=1"
-                        className={`${styles.submenuItem} ${pathname.startsWith('/admin/users/roles') ? styles.active : ''}`}
-                      >
-                        Roles & Permissions
-                      </Link>
+                      {hasPermission(['manage_users']) && (
+                        <Link 
+                          href="/admin/users?refresh=1"
+                          className={`${styles.submenuItem} ${pathname === '/admin/users' ? styles.active : ''}`}
+                        >
+                          Users
+                        </Link>
+                      )}
+                      {hasPermission(['manage_roles']) && (
+                        <Link 
+                          href="/admin/users/roles?refresh=1"
+                          className={`${styles.submenuItem} ${pathname.startsWith('/admin/users/roles') ? styles.active : ''}`}
+                        >
+                          Roles & Permissions
+                        </Link>
+                      )}
                     </div>
                   )}
                 </div>
