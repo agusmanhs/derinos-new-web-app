@@ -311,7 +311,9 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
             <div className={styles.card}>
               <div className={styles.cardHeader}>
                 <h3>Construction Phases</h3>
-                <button className={styles.primaryBtn} onClick={openAddModal}>+ Add Phase</button>
+                {canManageProjects && (
+                  <button className={styles.primaryBtn} onClick={openAddModal}>+ Add Phase</button>
+                )}
               </div>
               
               {(!project.phases || project.phases.length === 0) ? (
@@ -352,8 +354,12 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
                           >
                             {isExporting === phase.id ? 'Exporting...' : 'Export PDF'}
                           </button>
-                          <button onClick={() => openEditModal(phase)} style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #D1D5DB', backgroundColor: 'white', borderRadius: '4px', cursor: 'pointer' }}>Edit Phase</button>
-                          <button onClick={() => handleDeletePhase(phase.id)} disabled={isPending} style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #FCA5A5', color: '#DC2626', backgroundColor: '#FEF2F2', borderRadius: '4px', cursor: 'pointer' }}>Delete Phase</button>
+                          {canManageProjects && (
+                            <>
+                              <button onClick={() => openEditModal(phase)} style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #D1D5DB', backgroundColor: 'white', borderRadius: '4px', cursor: 'pointer' }}>Edit Phase</button>
+                              <button onClick={() => handleDeletePhase(phase.id)} disabled={isPending} style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #FCA5A5', color: '#DC2626', backgroundColor: '#FEF2F2', borderRadius: '4px', cursor: 'pointer' }}>Delete Phase</button>
+                            </>
+                          )}
                         </div>
                       </div>
                       <p>{phase.description}</p>
