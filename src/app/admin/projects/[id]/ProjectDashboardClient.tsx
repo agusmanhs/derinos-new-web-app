@@ -5,6 +5,7 @@ import { Project, PropertyUnit, PropertyStatus } from '@/types/project';
 import { SvgSitePlanRenderer } from '@/components/admin/SvgSitePlanRenderer/SvgSitePlanRenderer';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { Input } from '@/components/ui/Input/Input';
+import { Button } from '@/components/ui/Button/Button';
 import { createPhaseAction, deletePhaseAction, updatePhaseAction } from '@/actions/adminPhaseActions';
 import { createPropertyAjaxAction } from '@/actions/adminPropertyActions';
 import { createStatusAction, updateStatusAction, deleteStatusAction } from '@/actions/adminStatusActions';
@@ -582,52 +583,70 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
             <strong>Warning:</strong> You are directly modifying the underlying SVG code in the database. Make sure the new ID exactly matches your database Unit Number.
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={{ fontWeight: 500, fontSize: '14px', color: '#6B7280' }}>Current SVG ID</label>
-            <input type="text" value={editingSvgId} disabled className={styles.input} style={{ backgroundColor: '#F3F4F6' }} />
-          </div>
+          <Input 
+            label="Current SVG ID" 
+            value={editingSvgId} 
+            disabled 
+            style={{ backgroundColor: '#F3F4F6' }} 
+          />
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label htmlFor="newId" style={{ fontWeight: 500, fontSize: '14px' }}>New SVG ID</label>
-            <input type="text" id="newId" name="newId" required placeholder="Enter new ID..." className={styles.input} autoFocus />
-          </div>
+          <Input 
+            label="New SVG ID"
+            id="newId" 
+            name="newId" 
+            required 
+            placeholder="Enter new ID..." 
+            autoFocus 
+          />
 
-          <div className={styles.formActions} style={{ marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsEditSvgIdModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
-            <button type="submit" disabled={isPending} className={styles.primaryBtn}>
-              {isPending ? 'Updating...' : 'Update ID'}
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+            <Button variant="outline" type="button" onClick={() => setIsEditSvgIdModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" isLoading={isPending}>
+              Update ID
+            </Button>
           </div>
         </form>
       </Modal>
 
       <Modal isOpen={isStatusModalOpen} onClose={() => setIsStatusModalOpen(false)} title={editingStatus ? "Edit Status" : "Add New Status"}>
         <form onSubmit={handleSaveStatus} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label htmlFor="name" style={{ fontWeight: 500, fontSize: '14px' }}>Status Name</label>
-            <input type="text" id="name" name="name" defaultValue={editingStatus?.name} required placeholder="e.g. Booking Fee, Handover" className={styles.input} />
-          </div>
+          <Input 
+            label="Status Name"
+            id="name" 
+            name="name" 
+            defaultValue={editingStatus?.name} 
+            required 
+            placeholder="e.g. Booking Fee, Handover" 
+          />
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label htmlFor="colorHex" style={{ fontWeight: 500, fontSize: '14px' }}>Color (Hex)</label>
+            <label htmlFor="colorHex" style={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>Color (Hex)</label>
             <div style={{ display: 'flex', gap: '12px' }}>
               <input type="color" id="colorHex" name="colorHex" defaultValue={editingStatus?.colorHex || '#34D399'} required style={{ width: '48px', height: '42px', padding: '0', cursor: 'pointer', border: '1px solid #D1D5DB', borderRadius: '6px' }} />
               <input type="text" defaultValue={editingStatus?.colorHex || '#34D399'} readOnly className={styles.input} style={{ flex: 1, backgroundColor: '#F3F4F6' }} />
             </div>
-            <small className={styles.helpText}>Click the color box to pick a color.</small>
+            <small style={{ fontSize: '0.75rem', color: '#6b7280' }}>Click the color box to pick a color.</small>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label htmlFor="order" style={{ fontWeight: 500, fontSize: '14px' }}>Sort Order</label>
-            <input type="number" id="order" name="order" defaultValue={editingStatus?.order || 0} required className={styles.input} />
-            <small className={styles.helpText}>Lower numbers appear first in the legend.</small>
-          </div>
+          <Input 
+            label="Sort Order"
+            type="number" 
+            id="order" 
+            name="order" 
+            defaultValue={editingStatus?.order || 0} 
+            required 
+          />
+          <small style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '-12px' }}>Lower numbers appear first in the legend.</small>
           
-          <div className={styles.formActions} style={{ marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsStatusModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
-            <button type="submit" disabled={isPending} className={styles.primaryBtn}>
-              {isPending ? 'Saving...' : (editingStatus ? 'Save Changes' : 'Create Status')}
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+            <Button variant="outline" type="button" onClick={() => setIsStatusModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" isLoading={isPending}>
+              {editingStatus ? 'Save Changes' : 'Create Status'}
+            </Button>
           </div>
         </form>
       </Modal>
