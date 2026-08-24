@@ -15,9 +15,10 @@ import styles from './page.module.css';
 interface Props {
   users: User[];
   roles: { id: string; name: string; }[];
+  currentUserRole?: string;
 }
 
-export const UserListClient: React.FC<Props> = ({ users, roles }) => {
+export const UserListClient: React.FC<Props> = ({ users, roles, currentUserRole }) => {
   const [isPending, startTransition] = useTransition();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newUserName, setNewUserName] = useState('');
@@ -28,14 +29,19 @@ export const UserListClient: React.FC<Props> = ({ users, roles }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleRoleChange = (id: string, newRole: string) => {
-    startTransition(async () => {
-      try {
-        const result = await updateUserRoleAction(id, newRole);
-        if (!result.success) throw new Error(result.message);
-      } catch (e: any) {
-        alert(e.message || 'An error occurred');
-      }
-    });
+    if (confirm("Apakah Anda yakin ingin mengubah hak akses / role untuk user ini?")) {
+      startTransition(async () => {
+        try {
+          const result = await updateUserRoleAction(id, newRole);
+          if (!result.success) throw new Error(result.message);
+        } catch (e: any) {
+          alert(e.message || 'An error occurred');
+        }
+      });
+    } else {
+      // Create a dummy state update to force React to re-render the select with the old value
+      setSearchQuery(prev => prev);
+    }
   };
 
   const handleAddUser = async (e: React.FormEvent) => {
@@ -145,7 +151,12 @@ export const UserListClient: React.FC<Props> = ({ users, roles }) => {
                         value={row.roleId || ''}
                         onChange={(e) => handleRoleChange(row.id, e.target.value)}
                         disabled={isPending}
-                        options={[{ label: 'Select Role', value: '' }, ...roles.map(r => ({ label: r.name, value: r.id }))]}
+                        options={[
+                          { label: 'Select Role', value: '' }, 
+                          ...roles
+                            .filter(r => currentUserRole === 'Super Admin' || r.name !== 'Super Admin')
+                            .map(r => ({ label: r.name, value: r.id }))
+                        ]}
                         style={{ width: '150px', display: 'inline-block' }}
                       />
                     </td>
@@ -189,7 +200,9 @@ export const UserListClient: React.FC<Props> = ({ users, roles }) => {
             required
             options={[
               { label: 'Select a role', value: '' },
-              ...roles.map(r => ({ label: r.name, value: r.id }))
+              ...roles
+                .filter(r => currentUserRole === 'Super Admin' || r.name !== 'Super Admin')
+                .map(r => ({ label: r.name, value: r.id }))
             ]}
           />
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>

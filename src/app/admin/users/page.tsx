@@ -14,5 +14,5 @@ export default async function AdminUsersPage() {
   const users = await UserService.getUsers();
   const roles = await RoleService.getRoles();
 
-  return <UserListClient users={users} roles={roles} />;
+  return <UserListClient users={users} roles={roles} currentUserRole={session?.roleName || ''} />;
 }
