@@ -2,15 +2,38 @@ import prisma from '@/lib/prisma';
 import { MarketingAgency, Commission } from '../../generated/prisma/client';
 
 export const MarketingService = {
-  async getAgencies() {
-    return prisma.marketingAgency.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: { bookings: true, sales: true }
+  async getAgencies(searchQuery?: string, page: number = 1, limit: number = 10) {
+    const where = searchQuery ? {
+      OR: [
+        { name: { contains: searchQuery, mode: 'insensitive' as const } },
+        { picName: { contains: searchQuery, mode: 'insensitive' as const } },
+      ]
+    } : {};
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      prisma.marketingAgency.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          _count: {
+            select: { bookings: true, sales: true }
+          }
         }
-      }
-    });
+      }),
+      prisma.marketingAgency.count({ where })
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
   },
 
   async getAgencyById(id: string) {

@@ -6,6 +6,8 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHea
 import { ProjectDashboardClient } from './ProjectDashboardClient';
 import { statusService } from '@/services/statusService';
 import { verifySession } from '@/lib/session';
+import { MarketingService } from '@/services/marketingService';
+import { CustomerService } from '@/services/customerService';
 
 export default async function ViewProjectPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -13,13 +15,18 @@ export default async function ViewProjectPage(props: { params: Promise<{ id: str
   if (!project) {
     project = await ProjectService.getProjectById(params.id);
   }
-
+  
   if (!project) {
     notFound();
   }
   
   const { data: properties } = await PropertyService.getProperties({ project: project.title }, undefined, 1, 100);
-  const statuses = await statusService.getStatusesByProject(project.id);
+  const statuses = await statusService.getStatuses();
+  
+  const [paginatedCustomers, paginatedAgencies] = await Promise.all([
+    CustomerService.getCustomers(undefined, 1, 1000),
+    MarketingService.getAgencies(undefined, 1, 1000)
+  ]);
   
   const session = await verifySession();
   const canManageProjects = session?.permissions.includes('manage_projects') || session?.roleName === 'Super Admin';
@@ -35,6 +42,8 @@ export default async function ViewProjectPage(props: { params: Promise<{ id: str
         project={project} 
         properties={properties} 
         statuses={statuses} 
+        customers={paginatedCustomers.data}
+        agencies={paginatedAgencies.data}
         canManageProjects={canManageProjects} 
       />
     </div>

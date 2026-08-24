@@ -7,7 +7,8 @@ import { AdminTable } from '@/components/admin/AdminTable/AdminTable';
 import { Button } from '@/components/ui/Button/Button';
 import { saveAgencyAction, deleteAgencyAction } from '@/actions/adminMarketingActions';
 import { MarketingAgency } from '../../../../generated/prisma/client';
-import styles from '../customers/page.module.css'; // Reusing customer modal styles
+import { useRouter, useSearchParams } from 'next/navigation';
+import styles from '../customers/page.module.css'; // Reusing customer styles
 
 interface ExtendedAgency extends MarketingAgency {
   _count: {
@@ -18,9 +19,17 @@ interface ExtendedAgency extends MarketingAgency {
 
 interface Props {
   agencies: ExtendedAgency[];
+  pagination: {
+    page: number;
+    totalPages: number;
+    total: number;
+    limit: number;
+  };
 }
 
-export const AgencyListClient: React.FC<Props> = ({ agencies }) => {
+export const AgencyListClient: React.FC<Props> = ({ agencies, pagination }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAgency, setEditingAgency] = useState<ExtendedAgency | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +70,24 @@ export const AgencyListClient: React.FC<Props> = ({ agencies }) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    params.set('page', '1');
+    router.push(`/admin/agencies?${params.toString()}`);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', newPage.toString());
+    router.push(`/admin/agencies?${params.toString()}`);
   };
 
   const columns = [
@@ -114,12 +141,48 @@ export const AgencyListClient: React.FC<Props> = ({ agencies }) => {
         }
       />
 
-      <AdminTable 
-        columns={columns} 
-        data={agencies} 
-        keyExtractor={(row) => row.id} 
-        emptyMessage="No marketing agencies found."
-      />
+      <div className={styles.tableCard}>
+        <div className={styles.filterBar}>
+          <input 
+            type="text" 
+            placeholder="Search agency name or PIC..." 
+            className={styles.searchInput}
+            defaultValue={searchParams.get('q') || ''}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleFilterChange('q', e.currentTarget.value);
+              }
+            }}
+          />
+        </div>
+
+        <AdminTable 
+          columns={columns} 
+          data={agencies} 
+          keyExtractor={(row) => row.id} 
+          emptyMessage="No marketing agencies found."
+        />
+
+        {pagination.totalPages > 1 && (
+          <div className={styles.pagination}>
+            <button 
+              disabled={pagination.page <= 1}
+              onClick={() => handlePageChange(pagination.page - 1)}
+            >
+              Previous
+            </button>
+            <span className={styles.pageInfo}>
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+            <button 
+              disabled={pagination.page >= pagination.totalPages}
+              onClick={() => handlePageChange(pagination.page + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
 
       {isModalOpen && (
         <div className={styles.modalOverlay}>

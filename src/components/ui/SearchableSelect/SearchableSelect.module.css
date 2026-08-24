@@ -1,0 +1,129 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+  position: relative;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-tertiary);
+}
+
+.selectContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--color-tertiary);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.selectContainer:hover {
+  border-color: #9CA3AF;
+}
+
+.errorBorder {
+  border-color: var(--color-danger);
+}
+
+.selectedValue {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.placeholder {
+  color: #9CA3AF;
+}
+
+.caret {
+  font-size: 0.6rem;
+  color: #6B7280;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 50;
+  max-height: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.searchWrapper {
+  padding: 8px;
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+}
+
+.optionsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.option {
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  color: var(--color-tertiary);
+  cursor: pointer;
+}
+
+.option:hover {
+  background-color: #F3F4F6;
+}
+
+.selected {
+  background-color: #E0E7FF;
+  color: #4338CA;
+  font-weight: 500;
+}
+
+.selected:hover {
+  background-color: #C7D2FE;
+}
+
+.noResults {
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  color: #9CA3AF;
+  text-align: center;
+}
+
+.errorText {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+}

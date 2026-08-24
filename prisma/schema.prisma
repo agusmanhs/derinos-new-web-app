@@ -87,7 +87,6 @@ model Project {
   metaDescription String?
   metaKeywords    String?
 
-  statuses        PropertyStatus[]
   phases          ProjectPhase[]
   properties      PropertyUnit[]
   leads           Lead[]
@@ -118,10 +117,8 @@ model ProjectPhase {
 
 model PropertyStatus {
   id        String         @id @default(uuid())
-  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String
   
-  name      String
+  name      String         @unique
   colorHex  String
   order     Int            @default(0)
   
@@ -129,8 +126,6 @@ model PropertyStatus {
 
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-
-  @@unique([projectId, name])
 }
 
 model PropertyUnit {
@@ -199,8 +194,8 @@ model Lead {
 model Booking {
   id             String       @id @default(uuid())
   
-  lead           Lead         @relation(fields: [leadId], references: [id])
-  leadId         String
+  lead           Lead?         @relation(fields: [leadId], references: [id])
+  leadId         String?
   customer       Customer     @relation(fields: [customerId], references: [id])
   customerId     String
   

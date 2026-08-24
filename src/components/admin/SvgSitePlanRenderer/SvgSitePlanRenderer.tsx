@@ -3,11 +3,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PropertyUnit, PropertyStatus } from '@/types/project';
 import styles from './SvgSitePlanRenderer.module.css';
+import { UpdateUnitStatusModal } from './UpdateUnitStatusModal';
 
 interface Props {
   svgContent: string;
   properties: PropertyUnit[];
   statuses: PropertyStatus[];
+  customers: any[];
+  agencies: any[];
   phaseId: string;
   onRegisterUnit?: (unitId: string) => void;
   onEditSvgId?: (oldId: string) => void;
@@ -15,9 +18,10 @@ interface Props {
 
 type SelectedUnitState = { type: 'mapped'; unit: PropertyUnit } | { type: 'unmapped'; id: string };
 
-export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, statuses, phaseId, onRegisterUnit, onEditSvgId }) => {
+export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, statuses, customers, agencies, phaseId, onRegisterUnit, onEditSvgId }) => {
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnitState | null>(null);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
   useEffect(() => {
     if (!svgContainerRef.current) return;
@@ -223,9 +227,20 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, s
 
                 <div style={{ marginTop: '24px' }}>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button style={{ flex: 1, padding: '10px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>
+                    <button 
+                      onClick={() => window.location.href = `/admin/properties/${selectedUnit.unit.id}/edit`}
+                      style={{ flex: 1, padding: '10px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
+                    >
                       Edit Details
                     </button>
+                    <button 
+                      onClick={() => setIsStatusModalOpen(true)}
+                      style={{ flex: 1, padding: '10px', backgroundColor: '#3B82F6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
+                    >
+                      Update Status
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                     <button 
                       onClick={() => onEditSvgId && onEditSvgId(selectedUnit.unit.unitNumber)}
                       style={{ flex: 1, padding: '10px', backgroundColor: 'white', color: '#4B5563', border: '1px solid #D1D5DB', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px' }}
@@ -239,6 +254,24 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, s
           </>
         )}
       </div>
+      
+      {selectedUnit?.type === 'mapped' && (
+        <UpdateUnitStatusModal
+          isOpen={isStatusModalOpen}
+          onClose={() => setIsStatusModalOpen(false)}
+          unit={selectedUnit.unit}
+          currentStatusId={selectedUnit.unit.statusId}
+          statuses={statuses}
+          customers={customers}
+          agencies={agencies}
+          onSuccess={() => {
+            // Wait for revalidation to complete or manually trigger refresh
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          }}
+        />
+      )}
     </div>
   );
 };

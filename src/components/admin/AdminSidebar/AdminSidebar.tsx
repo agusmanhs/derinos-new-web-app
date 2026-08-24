@@ -53,6 +53,7 @@ const NAV_CATEGORIES: NavCategory[] = [
       { id: 'projects', label: 'Projects', href: '/admin/projects', icon: <IconProjects />, permissions: ['view_projects', 'manage_projects'], hasSubmenu: true },
       { id: 'units', label: 'Units', href: '/admin/properties', icon: <IconUnits />, permissions: ['view_projects', 'manage_projects'] },
       { id: 'construction', label: 'Construction', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects'] },
+      { id: 'statuses', label: 'Unit Statuses', href: '/admin/settings/statuses', icon: <IconSettings />, permissions: ['manage_projects'] },
     ]
   },
   {
