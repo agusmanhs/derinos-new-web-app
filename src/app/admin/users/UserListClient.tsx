@@ -75,7 +75,16 @@ export const UserListClient: React.FC<Props> = ({ users, roles, currentUserRole 
     }
   };
 
-  const filteredUsers = users.filter(u => 
+  // 1. Filter out Super Admins if current user is not a Super Admin
+  const visibleUsers = users.filter(u => {
+    if (currentUserRole !== 'Super Admin' && u.role?.name === 'Super Admin') {
+      return false;
+    }
+    return true;
+  });
+
+  // 2. Then apply the search filter
+  const filteredUsers = visibleUsers.filter(u => 
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
