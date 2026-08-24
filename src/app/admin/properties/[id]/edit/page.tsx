@@ -9,10 +9,10 @@ import { statusService } from '@/services/statusService';
 
 export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const [property, projects, customers, propertyStatuses] = await Promise.all([
+  const [property, projects, paginatedCustomers, propertyStatuses] = await Promise.all([
     PropertyService.getPropertyById(params.id),
     ProjectService.getProjects(),
-    CustomerService.getCustomers(),
+    CustomerService.getCustomers(undefined, 1, 1000),
     statusService.getStatuses()
   ]);
 
@@ -30,7 +30,7 @@ export default async function EditPropertyPage(props: { params: Promise<{ id: st
           { label: 'Edit' }
         ]}
       />
-      <PropertyForm property={property} projects={projects} customers={customers} propertyStatuses={propertyStatuses} />
+      <PropertyForm property={property} projects={projects} customers={paginatedCustomers.data} propertyStatuses={propertyStatuses} />
     </div>
   );
 }

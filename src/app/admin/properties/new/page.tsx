@@ -7,9 +7,9 @@ import { statusService } from '@/services/statusService';
 
 export default async function NewPropertyPage() {
   // Fetch projects to populate the dropdown
-  const [projects, customers, propertyStatuses] = await Promise.all([
+  const [projects, paginatedCustomers, propertyStatuses] = await Promise.all([
     ProjectService.getProjects(),
-    CustomerService.getCustomers(),
+    CustomerService.getCustomers(undefined, 1, 1000),
     statusService.getStatuses()
   ]);
 
@@ -23,7 +23,7 @@ export default async function NewPropertyPage() {
           { label: 'New Unit' }
         ]}
       />
-      <PropertyForm projects={projects} customers={customers} propertyStatuses={propertyStatuses} />
+      <PropertyForm projects={projects} customers={paginatedCustomers.data} propertyStatuses={propertyStatuses} />
     </div>
   );
 }
