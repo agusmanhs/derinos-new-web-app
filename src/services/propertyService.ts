@@ -121,6 +121,13 @@ export const PropertyService = {
         },
         constructionUpdates: {
           orderBy: { createdAt: 'desc' }
+        },
+        statusHistory: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            customer: true,
+            agency: true
+          }
         }
       }
     });

@@ -8,34 +8,34 @@ datasource db {
 }
 
 model Role {
-  id          String       @id @default(uuid())
-  name        String       @unique
+  id          String  @id @default(uuid())
+  name        String  @unique
   description String?
-  
+
   permissions RolePermission[]
   users       User[]
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Permission {
-  id          String       @id @default(uuid())
-  action      String       @unique // e.g., 'view_projects', 'manage_users'
+  id          String  @id @default(uuid())
+  action      String  @unique // e.g., 'view_projects', 'manage_users'
   description String?
-  module      String       // e.g., 'Projects', 'Settings', 'CRM'
+  module      String // e.g., 'Projects', 'Settings', 'CRM'
 
-  roles       RolePermission[]
+  roles RolePermission[]
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RolePermission {
-  role        Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId      String
-  
-  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId String
+
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
   permissionId String
 
   @@id([roleId, permissionId])
@@ -45,8 +45,8 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String
-  password  String   // Added for auth
-  roleId    String?  // Made optional temporarily to avoid hard crash if users exist
+  password  String // Added for auth
+  roleId    String? // Made optional temporarily to avoid hard crash if users exist
   role      Role?    @relation(fields: [roleId], references: [id])
   avatar    String?
   createdAt DateTime @default(now())
@@ -54,116 +54,118 @@ model User {
 }
 
 model Project {
-  id            String   @id @default(uuid())
+  id            String  @id @default(uuid())
   title         String
-  slug          String   @unique
+  slug          String  @unique
   location      String
-  status        String   // 'Pre-Selling' | 'Under Construction' | 'Ready to Move' | 'Sold Out'
+  status        String // 'Pre-Selling' | 'Under Construction' | 'Ready to Move' | 'Sold Out'
   startingPrice String
   heroImage     String
-  featured      Boolean  @default(false)
-  
+  featured      Boolean @default(false)
+
   description     String
   totalArea       String
   totalUnits      Int
   availableUnits  Int
   masterplanImage String
-  
+
   // Stored as JSON arrays for UI flexibility
-  houseTypes          Json[]   @default([])
-  facilities          Json[]   @default([])
-  constructionPhases  Json[]   @default([])
-  constructionUpdates Json[]   @default([])
-  milestones          Json[]   @default([])
-  
-  overallProgress    Float    @default(0)
-  targetCompletion   String
-  
+  houseTypes          Json[] @default([])
+  facilities          Json[] @default([])
+  constructionPhases  Json[] @default([])
+  constructionUpdates Json[] @default([])
+  milestones          Json[] @default([])
+
+  overallProgress  Float  @default(0)
+  targetCompletion String
+
   gallery             String[] @default([])
   constructionGallery String[] @default([])
-  
+
   archived        Boolean @default(false)
   metaTitle       String?
   metaDescription String?
   metaKeywords    String?
 
-  phases          ProjectPhase[]
-  properties      PropertyUnit[]
-  leads           Lead[]
-  bookings        Booking[]
+  phases     ProjectPhase[]
+  properties PropertyUnit[]
+  leads      Lead[]
+  bookings   Booking[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ProjectPhase {
-  id            String         @id @default(uuid())
-  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId     String
-  
-  name          String         // e.g., "Tahap 1", "Cluster A"
-  description   String?
-  sitePlanSvg   String         // URL or Raw SVG string
-  status        String         @default("Active") // Active, Completed
-  order         Int            @default(0) // Control display order
-  
-  properties    PropertyUnit[]
-  
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id        String  @id @default(uuid())
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  name        String // e.g., "Tahap 1", "Cluster A"
+  description String?
+  sitePlanSvg String // URL or Raw SVG string
+  status      String  @default("Active") // Active, Completed
+  order       Int     @default(0) // Control display order
+
+  properties PropertyUnit[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([projectId, name])
 }
 
 model PropertyStatus {
-  id        String         @id @default(uuid())
-  
-  name      String         @unique
-  colorHex  String
-  order     Int            @default(0)
-  
+  id String @id @default(uuid())
+
+  name     String @unique
+  colorHex String
+  order    Int    @default(0)
+
   properties PropertyUnit[]
 
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  unitStatusHistories UnitStatusHistory[]
 }
 
 model PropertyUnit {
-  id             String        @id @default(uuid())
-  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId      String
-  
-  phase          ProjectPhase? @relation(fields: [phaseId], references: [id], onDelete: SetNull)
-  phaseId        String?
-  
-  projectTitle   String
-  unitNumber     String        // This will map to SVG <path id="...">
-  typeName       String
-  landSize       Float
-  buildingSize   Float
-  bedrooms       Int
-  bathrooms      Int
-  carports       Int
-  price          Float
-  
+  id        String  @id @default(uuid())
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  phase   ProjectPhase? @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  phaseId String?
+
+  projectTitle String
+  unitNumber   String // This will map to SVG <path id="...">
+  typeName     String
+  landSize     Float
+  buildingSize Float
+  bedrooms     Int
+  bathrooms    Int
+  carports     Int
+  price        Float
+
   propertyStatus PropertyStatus @relation(fields: [statusId], references: [id])
   statusId       String
-  
-  gallery        String[]      @default([])
+
+  gallery        String[] @default([])
   floorPlanImage String
-  facilities     Json[]        @default([])
+  facilities     Json[]   @default([])
 
-  customer       Customer?     @relation(fields: [customerId], references: [id])
-  customerId     String?
-  constructionProgress Float         @default(0) // 0 to 100 percentage
+  customer             Customer? @relation(fields: [customerId], references: [id])
+  customerId           String?
+  constructionProgress Float     @default(0) // 0 to 100 percentage
 
-  archived       Boolean       @default(false)
+  archived Boolean @default(false)
 
-  bookings       Booking[]
+  bookings            Booking[]
   constructionUpdates UnitConstructionUpdate[]
+  statusHistory       UnitStatusHistory[]
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([projectId, unitNumber])
 }
@@ -172,149 +174,171 @@ model UnitConstructionUpdate {
   id             String       @id @default(uuid())
   propertyUnit   PropertyUnit @relation(fields: [propertyUnitId], references: [id], onDelete: Cascade)
   propertyUnitId String
-  
-  progress       Float
-  photos         String[]     @default([])
-  notes          String?
-  
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+
+  progress Float
+  photos   String[] @default([])
+  notes    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Lead {
-  id           String   @id @default(uuid())
-  name         String
-  phone        String
-  email        String
-  
-  project      Project? @relation(fields: [projectId], references: [id])
-  projectId    String?
-  
+  id    String @id @default(uuid())
+  name  String
+  phone String
+  email String
+
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
+
   propertyType String?
   budget       String?
   message      String
-  
-  source       String
-  campaign     String?
-  
-  status       String   @default("New") // 'New' | 'Contacted' | 'Qualified' | 'Lost'
-  
-  bookings     Booking[]
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  source   String
+  campaign String?
+
+  status String @default("New") // 'New' | 'Contacted' | 'Qualified' | 'Lost'
+
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Booking {
-  id             String       @id @default(uuid())
-  
-  lead           Lead?         @relation(fields: [leadId], references: [id])
-  leadId         String?
-  customer       Customer     @relation(fields: [customerId], references: [id])
-  customerId     String
-  
-  project        Project      @relation(fields: [projectId], references: [id])
-  projectId      String
-  projectTitle   String
-  
-  agency         MarketingAgency? @relation(fields: [agencyId], references: [id])
-  agencyId       String?
-  commission     Commission?
-  
+  id String @id @default(uuid())
+
+  lead       Lead?    @relation(fields: [leadId], references: [id])
+  leadId     String?
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
+
+  project      Project @relation(fields: [projectId], references: [id])
+  projectId    String
+  projectTitle String
+
+  agency     MarketingAgency? @relation(fields: [agencyId], references: [id])
+  agencyId   String?
+  commission Commission?
+
   propertyUnit   PropertyUnit @relation(fields: [propertyUnitId], references: [id])
   propertyUnitId String
   unitNumber     String
-  
-  price          Float
-  bookingFee     Float
-  paymentStatus  String       // 'Pending' | 'Paid' | 'Refunded'
-  status         String       // 'Awaiting Payment' | 'Confirmed' | 'Cancelled'
-  date           DateTime     @default(now())
 
-  sales          Sale[]
-  
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  price         Float
+  bookingFee    Float
+  paymentStatus String // 'Pending' | 'Paid' | 'Refunded'
+  status        String // 'Awaiting Payment' | 'Confirmed' | 'Cancelled'
+  date          DateTime @default(now())
+
+  sales Sale[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Sale {
-  id             String   @id @default(uuid())
-  
-  booking        Booking  @relation(fields: [bookingId], references: [id])
-  bookingId      String   @unique
-  
-  customer       Customer @relation(fields: [customerId], references: [id])
-  customerId     String
-  
-  agency         MarketingAgency? @relation(fields: [agencyId], references: [id])
-  agencyId       String?
-  commission     Commission?
-  projectTitle   String
-  unitNumber     String
-  
-  contractPrice  Float
-  paymentMethod  String   // 'Cash' | 'Mortgage' | 'Installment'
-  status         String   // 'In Progress' | 'Completed' | 'Cancelled'
-  date           DateTime @default(now())
+  id String @id @default(uuid())
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  booking   Booking @relation(fields: [bookingId], references: [id])
+  bookingId String  @unique
+
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
+
+  agency       MarketingAgency? @relation(fields: [agencyId], references: [id])
+  agencyId     String?
+  commission   Commission?
+  projectTitle String
+  unitNumber   String
+
+  contractPrice Float
+  paymentMethod String // 'Cash' | 'Mortgage' | 'Installment'
+  status        String // 'In Progress' | 'Completed' | 'Cancelled'
+  date          DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Customer {
-  id          String   @id @default(uuid())
-  name        String
-  email       String?
-  phone       String?
-  address     String?
-  ktpNumber   String?
-  npwp        String?
-  birthPlace  String?
-  birthDate   DateTime?
-  gender      String?
-  occupation  String?
-  ktpFile     String?
+  id         String    @id @default(uuid())
+  name       String
+  email      String?
+  phone      String?
+  address    String?
+  ktpNumber  String?
+  npwp       String?
+  birthPlace String?
+  birthDate  DateTime?
+  gender     String?
+  occupation String?
+  ktpFile    String?
 
-  properties  PropertyUnit[]
-  bookings    Booking[]
-  sales       Sale[]
+  properties PropertyUnit[]
+  bookings   Booking[]
+  sales      Sale[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  unitStatusHistories UnitStatusHistory[]
 }
 
 model MarketingAgency {
-  id          String   @id @default(uuid())
-  name        String
-  picName     String?
-  phone       String?
-  email       String?
-  bankInfo    String?
+  id       String  @id @default(uuid())
+  name     String
+  picName  String?
+  phone    String?
+  email    String?
+  bankInfo String?
 
   bookings    Booking[]
   sales       Sale[]
   commissions Commission[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  unitStatusHistories UnitStatusHistory[]
 }
 
 model Commission {
-  id               String          @id @default(uuid())
-  agency           MarketingAgency @relation(fields: [agencyId], references: [id])
-  agencyId         String
-  
-  booking          Booking?        @relation(fields: [bookingId], references: [id])
-  bookingId        String?         @unique
+  id       String          @id @default(uuid())
+  agency   MarketingAgency @relation(fields: [agencyId], references: [id])
+  agencyId String
 
-  sale             Sale?           @relation(fields: [saleId], references: [id])
-  saleId           String?         @unique
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+  bookingId String?  @unique
 
-  amount           Float?          // Optional: set when approving/paying
-  status           String          @default("Pending") // 'Pending', 'Paid'
-  paymentDate      DateTime?
-  paymentNotes     String?
+  sale   Sale?   @relation(fields: [saleId], references: [id])
+  saleId String? @unique
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  amount       Float? // Optional: set when approving/paying
+  status       String    @default("Pending") // 'Pending', 'Paid'
+  paymentDate  DateTime?
+  paymentNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UnitStatusHistory {
+  id             String       @id @default(uuid())
+  propertyUnit   PropertyUnit @relation(fields: [propertyUnitId], references: [id], onDelete: Cascade)
+  propertyUnitId String
+
+  status     PropertyStatus @relation(fields: [statusId], references: [id])
+  statusId   String
+  statusName String
+
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId String?
+
+  agency   MarketingAgency? @relation(fields: [agencyId], references: [id])
+  agencyId String?
+
+  notes String?
+
+  createdAt DateTime @default(now())
 }

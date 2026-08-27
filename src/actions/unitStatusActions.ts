@@ -39,6 +39,20 @@ export async function updateUnitStatusFromSitePlan(
       })
     );
 
+    // 1.5. Record the status change in UnitStatusHistory
+    operations.push(
+      prisma.unitStatusHistory.create({
+        data: {
+          propertyUnitId,
+          statusId: newStatusId,
+          statusName: newStatusName,
+          customerId: finalCustomerId,
+          agencyId: agencyId || null,
+          notes: notes || null
+        }
+      })
+    );
+
     // 2. Logic based on status transition
     const requiresCustomer = !isAvailable;
     if (requiresCustomer && !customerId) {

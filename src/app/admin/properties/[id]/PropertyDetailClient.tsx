@@ -80,32 +80,32 @@ export const PropertyDetailClient = ({ property }: { property: any }) => {
         </div>
       </div>
 
-      {/* Booking History */}
+      {/* Status History */}
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <h3 className={styles.cardTitle}>Booking History</h3>
+          <h3 className={styles.cardTitle}>Status History</h3>
         </div>
         <div className={styles.cardContent}>
-          {property.bookings && property.bookings.length > 0 ? (
+          {property.statusHistory && property.statusHistory.length > 0 ? (
             <div className={styles.timeline}>
-              {property.bookings.map((booking: any) => (
-                <div key={booking.id} className={styles.timelineItem}>
+              {property.statusHistory.map((history: any) => (
+                <div key={history.id} className={styles.timelineItem}>
                   <div className={styles.timelineHeader}>
-                    <span className={styles.timelineDate}>{new Date(booking.date).toLocaleDateString('id-ID')}</span>
-                    <span className={`${styles.timelineStatus} ${booking.status === 'CANCELLED' ? styles.statusCancelled : styles.statusActive}`}>
-                      {booking.status}
+                    <span className={styles.timelineDate}>{new Date(history.createdAt).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className={`${styles.timelineStatus} ${history.statusName === 'Available' ? styles.statusCancelled : styles.statusActive}`}>
+                      {history.statusName}
                     </span>
                   </div>
                   <div className={styles.timelineBody}>
-                    <p><strong>Customer:</strong> {booking.customer?.name}</p>
-                    <p><strong>Agency:</strong> {booking.agency?.name}</p>
-                    {booking.notes && <p className={styles.timelineNotes}>"{booking.notes}"</p>}
+                    {history.customer && <p><strong>Customer:</strong> {history.customer.name}</p>}
+                    {history.agency && <p><strong>Agency:</strong> {history.agency.name}</p>}
+                    {history.notes && <p className={styles.timelineNotes}>"{history.notes}"</p>}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className={styles.emptyText}>Belum ada riwayat booking untuk unit ini.</p>
+            <p className={styles.emptyText}>Belum ada riwayat status untuk unit ini.</p>
           )}
         </div>
       </div>
