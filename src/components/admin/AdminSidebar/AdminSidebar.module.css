@@ -17,11 +17,21 @@
   padding: 32px 24px 24px;
 }
 
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.sidebarLogo {
+  border-radius: 4px;
+}
+
 .logo {
   font-family: var(--font-headline);
   font-size: 1.25rem;
   color: #FFFFFF;
-  margin-bottom: 4px;
 }
 
 .logoSubtitle {

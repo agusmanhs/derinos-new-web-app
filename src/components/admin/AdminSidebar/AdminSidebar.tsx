@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Role } from '@/types/auth';
 import { Project } from '@/types/project';
@@ -112,8 +113,11 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
   return (
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
       <div className={styles.logoContainer}>
-        <div className={styles.logo}>
-          Derinos Admin
+        <div className={styles.logoWrapper}>
+          <Image src="/logo.png" alt="Derinos Logo" width={32} height={32} className={styles.sidebarLogo} />
+          <div className={styles.logo}>
+            Derinos Admin
+          </div>
         </div>
         <div className={styles.logoSubtitle}>
           Estate Management
