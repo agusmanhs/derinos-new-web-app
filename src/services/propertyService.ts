@@ -104,12 +104,27 @@ export const PropertyService = {
     };
   },
 
-  async getPropertyById(id: string): Promise<PropertyUnit | null> {
+  async getPropertyById(id: string): Promise<any | null> {
     const property = await prisma.propertyUnit.findUnique({ 
       where: { id },
-      include: { customer: true, propertyStatus: true }
+      include: { 
+        customer: true, 
+        propertyStatus: true,
+        project: true,
+        phase: true,
+        bookings: {
+          orderBy: { date: 'desc' },
+          include: {
+            customer: true,
+            marketingAgency: true
+          }
+        },
+        constructionUpdates: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
     });
-    return property as unknown as PropertyUnit | null;
+    return property;
   },
 
   async getFilterOptions() {
