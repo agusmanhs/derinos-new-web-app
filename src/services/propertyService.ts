@@ -116,7 +116,7 @@ export const PropertyService = {
           orderBy: { date: 'desc' },
           include: {
             customer: true,
-            marketingAgency: true
+            agency: true
           }
         },
         constructionUpdates: {

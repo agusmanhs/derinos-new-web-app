@@ -24,15 +24,15 @@ export const PropertyDetailClient = ({ property }: { property: any }) => {
             </span>
           </div>
 
-          {(property.propertyStatus?.name !== 'Available' && activeBooking) ? (
+          {(property.propertyStatus?.name !== 'Available') ? (
             <div className={styles.ownershipInfo}>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>Customer</span>
-                <span className={styles.infoValue}>{activeBooking.customer?.name || '-'}</span>
+                <span className={styles.infoValue}>{property.customer?.name || activeBooking?.customer?.name || '-'}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>Agency</span>
-                <span className={styles.infoValue}>{activeBooking.marketingAgency?.name || '-'}</span>
+                <span className={styles.infoValue}>{activeBooking.agency?.name || '-'}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>Booked Date</span>
@@ -98,7 +98,7 @@ export const PropertyDetailClient = ({ property }: { property: any }) => {
                   </div>
                   <div className={styles.timelineBody}>
                     <p><strong>Customer:</strong> {booking.customer?.name}</p>
-                    <p><strong>Agency:</strong> {booking.marketingAgency?.name}</p>
+                    <p><strong>Agency:</strong> {booking.agency?.name}</p>
                     {booking.notes && <p className={styles.timelineNotes}>"{booking.notes}"</p>}
                   </div>
                 </div>

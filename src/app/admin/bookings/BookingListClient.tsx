@@ -30,7 +30,7 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
       header: 'Customer',
       accessor: (row: Booking) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <strong>{row.customer?.name || row.customerId}</strong>
+          <strong>{row.customer?.name || 'Unknown Customer'}</strong>
           <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>{new Date(row.date).toLocaleDateString()}</span>
         </div>
       )

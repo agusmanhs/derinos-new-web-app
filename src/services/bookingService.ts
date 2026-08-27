@@ -5,7 +5,13 @@ import { Prisma } from '../../generated/prisma/client';
 export const BookingService = {
   async getBookings(): Promise<Booking[]> {
     const bookings = await prisma.booking.findMany({
-      orderBy: { date: 'desc' }
+      orderBy: { date: 'desc' },
+      include: {
+        customer: true,
+        project: true,
+        agency: true,
+        propertyUnit: true
+      }
     });
     return bookings.map(b => ({
       ...b,
