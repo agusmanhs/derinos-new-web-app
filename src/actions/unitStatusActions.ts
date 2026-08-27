@@ -25,19 +25,22 @@ export async function updateUnitStatusFromSitePlan(
     // Prepare transaction operations
     const operations: any[] = [];
 
+    const isAvailable = newStatusName === 'Available' || newStatusName === 'Unmapped / Other';
+    const finalCustomerId = isAvailable ? null : (customerId || null);
+
     // 1. Update the property unit status
     operations.push(
       prisma.propertyUnit.update({
         where: { id: propertyUnitId },
         data: {
           statusId: newStatusId,
-          customerId: customerId || null,
+          customerId: finalCustomerId,
         }
       })
     );
 
     // 2. Logic based on status transition
-    const requiresCustomer = newStatusName !== 'Available' && newStatusName !== 'Unmapped / Other';
+    const requiresCustomer = !isAvailable;
     if (requiresCustomer && !customerId) {
       throw new Error(`Customer is required when changing status to ${newStatusName}`);
     }
