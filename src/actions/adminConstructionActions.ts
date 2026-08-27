@@ -7,7 +7,7 @@ import { verifySession } from '@/lib/session';
 
 export async function saveConstructionProgressAction(prevState: unknown, formData: FormData) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_construction') && session?.roleName !== 'Super Admin') {
     return { success: false, message: 'Unauthorized access' };
   }
 

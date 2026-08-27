@@ -83,7 +83,12 @@ export const PropertyService = {
       take: limit,
       include: {
         propertyStatus: true,
-        customer: { select: { id: true, name: true } }
+        customer: { select: { id: true, name: true } },
+        bookings: {
+          orderBy: { date: 'desc' },
+          take: 1,
+          select: { agencyId: true, status: true }
+        }
       }
     });
 

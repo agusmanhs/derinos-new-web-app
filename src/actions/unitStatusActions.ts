@@ -37,41 +37,55 @@ export async function updateUnitStatusFromSitePlan(
     );
 
     // 2. Logic based on status transition
-    if (newStatusName === 'Booking' || newStatusName === 'Sold') {
-      if (!customerId) {
-        throw new Error(`Customer is required when changing status to ${newStatusName}`);
-      }
-      
-      // Create a booking record
-      operations.push(
-        prisma.booking.create({
-          data: {
-            customerId,
-            agencyId: agencyId || null,
-            projectId: unit.projectId,
-            projectTitle: unit.projectTitle,
-            propertyUnitId,
-            unitNumber: unit.unitNumber,
-            price: unit.price,
-            bookingFee: bookingFee || 0,
-            paymentStatus: 'Pending',
-            status: newStatusName === 'Sold' ? 'Confirmed' : 'Awaiting Payment'
-          }
-        })
-      );
-    } 
-    else if (newStatusName === 'Available') {
-      // If returning to Available, cancel the latest active booking
-      const latestBooking = await prisma.booking.findFirst({
-        where: { propertyUnitId, status: { not: 'Cancelled' } },
-        orderBy: { date: 'desc' }
-      });
+    const requiresCustomer = newStatusName !== 'Available' && newStatusName !== 'Unmapped / Other';
+    if (requiresCustomer && !customerId) {
+      throw new Error(`Customer is required when changing status to ${newStatusName}`);
+    }
 
+    const latestBooking = await prisma.booking.findFirst({
+      where: { propertyUnitId, status: { not: 'Cancelled' } },
+      orderBy: { date: 'desc' }
+    });
+
+    if (newStatusName === 'Available') {
+      // If returning to Available, cancel the latest active booking
       if (latestBooking) {
         operations.push(
           prisma.booking.update({
             where: { id: latestBooking.id },
             data: { status: 'Cancelled' }
+          })
+        );
+      }
+    } else if (requiresCustomer) {
+      // For all active statuses, ensure we either update the existing booking or create a new one
+      if (latestBooking) {
+        operations.push(
+          prisma.booking.update({
+            where: { id: latestBooking.id },
+            data: {
+              customerId,
+              agencyId: agencyId || null,
+              ...(bookingFee ? { bookingFee } : {})
+            }
+          })
+        );
+      } else {
+        // No active booking exists (e.g. jumped straight from Available to Lunas)
+        operations.push(
+          prisma.booking.create({
+            data: {
+              customerId,
+              agencyId: agencyId || null,
+              projectId: unit.projectId,
+              projectTitle: unit.projectTitle,
+              propertyUnitId,
+              unitNumber: unit.unitNumber,
+              price: unit.price,
+              bookingFee: bookingFee || 0,
+              paymentStatus: 'Pending',
+              status: newStatusName === 'Sold' || newStatusName === 'Lunas' || newStatusName === 'Cash' ? 'Confirmed' : 'Awaiting Payment'
+            }
           })
         );
       }

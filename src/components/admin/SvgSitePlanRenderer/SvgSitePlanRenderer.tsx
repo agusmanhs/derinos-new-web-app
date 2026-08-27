@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PropertyUnit, PropertyStatus } from '@/types/project';
 import styles from './SvgSitePlanRenderer.module.css';
 import { UpdateUnitStatusModal } from './UpdateUnitStatusModal';
@@ -18,7 +19,17 @@ interface Props {
 
 type SelectedUnitState = { type: 'mapped'; unit: PropertyUnit } | { type: 'unmapped'; id: string };
 
-export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, statuses, customers, agencies, phaseId, onRegisterUnit, onEditSvgId }) => {
+export const SvgSitePlanRenderer: React.FC<Props> = ({ 
+  svgContent, 
+  properties, 
+  statuses,
+  customers,
+  agencies,
+  phaseId,
+  onRegisterUnit,
+  onEditSvgId
+}) => {
+  const router = useRouter();
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnitState | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
@@ -210,7 +221,7 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, s
                   <h4>Customer Info</h4>
                   <div className={styles.dataRow}>
                     <span className={styles.dataLabel}>Buyer</span>
-                    <span className={styles.dataValue}>{selectedUnit.unit.buyerName || '-'}</span>
+                    <span className={styles.dataValue}>{selectedUnit.unit.customer?.name || '-'}</span>
                   </div>
                 </div>
                 
@@ -267,8 +278,10 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({ svgContent, properties, s
           onSuccess={() => {
             // Wait for revalidation to complete or manually trigger refresh
             setTimeout(() => {
-              window.location.reload();
-            }, 500);
+              router.refresh();
+              // Update the local state immediately for better UX
+              setSelectedUnit(null);
+            }, 100);
           }}
         />
       )}

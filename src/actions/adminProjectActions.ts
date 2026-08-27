@@ -7,7 +7,7 @@ import { verifySession } from '@/lib/session';
 
 export async function archiveProjectAction(id: string) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_projects') && session?.roleName !== 'Super Admin') {
     throw new Error('Unauthorized');
   }
 
@@ -18,7 +18,7 @@ export async function archiveProjectAction(id: string) {
 
 export async function deleteProjectAction(id: string) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_projects') && session?.roleName !== 'Super Admin') {
     throw new Error('Unauthorized');
   }
 
@@ -29,7 +29,7 @@ export async function deleteProjectAction(id: string) {
 
 export async function saveProjectAction(prevState: unknown, formData: FormData) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'PROJECT_MANAGER'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_projects') && session?.roleName !== 'Super Admin') {
     return { success: false, message: 'Unauthorized access' };
   }
 

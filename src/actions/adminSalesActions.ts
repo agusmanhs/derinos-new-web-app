@@ -7,7 +7,7 @@ import { Sale } from '@/types/sale';
 
 export async function updateSaleStatusAction(id: string, status: Sale['status']) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_sales') && session?.roleName !== 'Super Admin') {
     throw new Error('Unauthorized');
   }
 

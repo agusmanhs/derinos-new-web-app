@@ -6,7 +6,7 @@ import { verifySession } from '@/lib/session';
 
 export async function createCustomerAction(formData: FormData) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_customers') && session?.roleName !== 'Super Admin') {
     throw new Error('Unauthorized');
   }
 
@@ -28,7 +28,7 @@ export async function createCustomerAction(formData: FormData) {
 
 export async function updateCustomerAction(id: string, formData: FormData) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_customers') && session?.roleName !== 'Super Admin') {
     throw new Error('Unauthorized');
   }
 
@@ -51,7 +51,7 @@ export async function updateCustomerAction(id: string, formData: FormData) {
 
 export async function deleteCustomerAction(id: string) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_customers') && session?.roleName !== 'Super Admin') {
     throw new Error('Unauthorized');
   }
 

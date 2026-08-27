@@ -31,7 +31,10 @@ export const UpdateUnitStatusModal: React.FC<UpdateUnitStatusModalProps> = ({
 }) => {
   const [selectedStatusId, setSelectedStatusId] = useState(currentStatusId);
   const [selectedCustomerId, setSelectedCustomerId] = useState(unit?.customerId || '');
-  const [selectedAgencyId, setSelectedAgencyId] = useState('');
+  const [selectedAgencyId, setSelectedAgencyId] = useState(() => {
+    const latestBooking = unit?.bookings?.[0];
+    return (latestBooking && latestBooking.status !== 'Cancelled') ? (latestBooking.agencyId || '') : '';
+  });
   const [bookingFee, setBookingFee] = useState<number | ''>('');
   
   const [isPending, startTransition] = useTransition();
@@ -41,7 +44,10 @@ export const UpdateUnitStatusModal: React.FC<UpdateUnitStatusModalProps> = ({
     if (isOpen) {
       setSelectedStatusId(currentStatusId);
       setSelectedCustomerId(unit?.customerId || '');
-      setSelectedAgencyId('');
+      
+      const latestBooking = unit?.bookings?.[0];
+      setSelectedAgencyId((latestBooking && latestBooking.status !== 'Cancelled') ? (latestBooking.agencyId || '') : '');
+      
       setBookingFee('');
     }
   }, [isOpen, unit, currentStatusId]);
@@ -49,12 +55,12 @@ export const UpdateUnitStatusModal: React.FC<UpdateUnitStatusModalProps> = ({
   if (!unit) return null;
 
   const selectedStatusName = statuses.find(s => s.id === selectedStatusId)?.name;
-  const requiresCustomer = selectedStatusName === 'Booking' || selectedStatusName === 'Sold';
+  const requiresCustomer = selectedStatusName && selectedStatusName !== 'Available' && selectedStatusName !== 'Unmapped / Other';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (requiresCustomer && !selectedCustomerId) {
-      alert("Customer is required for Booking or Sold status.");
+      alert(`Customer is required for ${selectedStatusName} status.`);
       return;
     }
 

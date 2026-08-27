@@ -7,7 +7,7 @@ import { Booking } from '@/types/booking';
 
 export async function updateBookingStatusAction(id: string, status: Booking['status'], paymentStatus: Booking['paymentStatus']) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_bookings') && session?.roleName !== 'Super Admin') {
     throw new Error('Unauthorized');
   }
 

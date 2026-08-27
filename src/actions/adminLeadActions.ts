@@ -7,7 +7,7 @@ import { Lead } from '@/types/lead';
 
 export async function updateLeadStatusAction(id: string, status: Lead['status']) {
   const session = await verifySession();
-  if (!session || !['SUPER_ADMIN', 'MANAGEMENT', 'SALES_MANAGER', 'SALES_AGENT'].includes(session.role)) {
+  if (!session?.permissions?.includes('manage_leads') && session?.roleName !== 'Super Admin') {
     throw new Error('Unauthorized');
   }
 
