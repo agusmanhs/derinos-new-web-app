@@ -35,7 +35,7 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnitState | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
-  const [viewImage, setViewImage] = useState<string | null>(null);
+  const [viewImageState, setViewImageState] = useState<{photos: string[], index: number} | null>(null);
 
   useEffect(() => {
     if (!svgContainerRef.current) return;
@@ -253,7 +253,7 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
                           {update.photos && update.photos.length > 0 && (
                             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                               {update.photos.map((photo: string, i: number) => (
-                                <div key={i} onClick={() => setViewImage(photo)} style={{ cursor: 'pointer', flexShrink: 0 }}>
+                                <div key={i} onClick={() => setViewImageState({ photos: update.photos, index: i })} style={{ cursor: 'pointer', flexShrink: 0 }}>
                                   <img src={photo} alt="Progress" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
                                 </div>
                               ))}
@@ -379,14 +379,33 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
           }}
         />
       )}
-      {viewImage && (
+      {viewImageState && (
           <div 
             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
-            onClick={() => setViewImage(null)}
+            onClick={() => setViewImageState(null)}
           >
-            <img src={viewImage} alt="Fullscreen Progress" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} />
+            {viewImageState.index > 0 && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); setViewImageState({ ...viewImageState, index: viewImageState.index - 1 }) }}
+                style={{ position: 'absolute', left: '32px', background: 'white', color: 'black', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                &#8592;
+              </button>
+            )}
+            
+            <img src={viewImageState.photos[viewImageState.index]} alt="Fullscreen Progress" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} />
+            
+            {viewImageState.index < viewImageState.photos.length - 1 && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); setViewImageState({ ...viewImageState, index: viewImageState.index + 1 }) }}
+                style={{ position: 'absolute', right: '32px', top: '50%', transform: 'translateY(-50%)', background: 'white', color: 'black', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                &#8594;
+              </button>
+            )}
+
             <button 
-              onClick={() => setViewImage(null)} 
+              onClick={() => setViewImageState(null)} 
               style={{ position: 'absolute', top: '24px', right: '32px', background: 'white', color: 'black', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
             >
               &times;
