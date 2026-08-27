@@ -11,15 +11,25 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('Start seeding...');
   
-  // 1. Seed Super Admin
+  // 1. Seed Super Admin Role
+  const superAdminRole = await prisma.role.upsert({
+    where: { name: 'SUPER_ADMIN' },
+    update: {},
+    create: {
+      name: 'SUPER_ADMIN',
+      description: 'Super Administrator',
+    }
+  });
+
+  // 2. Seed Super Admin User
   const superAdmin = await prisma.user.upsert({
     where: { email: 'admin@derinos.com' },
-    update: {},
+    update: { roleId: superAdminRole.id },
     create: {
       email: 'admin@derinos.com',
       name: 'Super Admin',
       password: 'password123', // In a real app, hash this!
-      role: 'SUPER_ADMIN',
+      roleId: superAdminRole.id,
     },
   });
   console.log(`Created user with id: ${superAdmin.id}`);
@@ -89,11 +99,28 @@ async function main() {
   });
   console.log(`Created phase with id: ${phase.id}`);
 
-  // 4. Seed Property Units linked to Phase
+  // 4. Seed Property Statuses
+  const statusAvailable = await prisma.propertyStatus.upsert({
+    where: { name: 'Available' },
+    update: {},
+    create: { name: 'Available', colorHex: '#22c55e', order: 1 }
+  });
+  const statusReserved = await prisma.propertyStatus.upsert({
+    where: { name: 'Reserved' },
+    update: {},
+    create: { name: 'Reserved', colorHex: '#eab308', order: 2 }
+  });
+  const statusSold = await prisma.propertyStatus.upsert({
+    where: { name: 'Sold' },
+    update: {},
+    create: { name: 'Sold', colorHex: '#ef4444', order: 3 }
+  });
+
+  // 5. Seed Property Units linked to Phase
   const units = [
-    { unitNumber: 'A-01', status: 'Available' },
-    { unitNumber: 'A-02', status: 'Reserved' },
-    { unitNumber: 'A-03', status: 'Sold' },
+    { unitNumber: 'A-01', statusId: statusAvailable.id },
+    { unitNumber: 'A-02', statusId: statusReserved.id },
+    { unitNumber: 'A-03', statusId: statusSold.id },
   ];
 
   for (const u of units) {
@@ -104,7 +131,7 @@ async function main() {
           unitNumber: u.unitNumber
         }
       },
-      update: { phaseId: phase.id },
+      update: { phaseId: phase.id, statusId: u.statusId },
       create: {
         projectId: project.id,
         phaseId: phase.id,
@@ -117,7 +144,7 @@ async function main() {
         bathrooms: 1,
         carports: 1,
         price: 250000,
-        status: u.status,
+        statusId: u.statusId,
         floorPlanImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750'
       }
     });

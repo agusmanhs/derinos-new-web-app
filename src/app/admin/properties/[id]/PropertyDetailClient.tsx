@@ -32,11 +32,11 @@ export const PropertyDetailClient = ({ property }: { property: any }) => {
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>Agency</span>
-                <span className={styles.infoValue}>{activeBooking.agency?.name || '-'}</span>
+                <span className={styles.infoValue}>{activeBooking?.agency?.name || '-'}</span>
               </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>Booked Date</span>
-                <span className={styles.infoValue}>{new Date(activeBooking.date).toLocaleDateString('id-ID')}</span>
+                <span className={styles.infoValue}>{activeBooking?.date ? new Date(activeBooking.date).toLocaleDateString('id-ID') : '-'}</span>
               </div>
             </div>
           ) : (

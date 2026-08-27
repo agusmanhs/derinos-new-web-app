@@ -20,7 +20,7 @@ export default async function ViewProjectPage(props: { params: Promise<{ id: str
     notFound();
   }
   
-  const { data: properties } = await PropertyService.getProperties({ project: project.title }, undefined, 1, 100);
+  const { data: properties } = await PropertyService.getProperties({ project: project.title }, undefined, 1, 1000);
   const statuses = await statusService.getStatuses();
   
   const [paginatedCustomers, paginatedAgencies] = await Promise.all([
