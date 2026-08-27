@@ -36,6 +36,23 @@ async function main() {
   const rawData = fs.readFileSync(dataPath, 'utf8');
   const data = JSON.parse(rawData);
 
+  console.log('Clearing existing data on VPS to avoid conflicts...');
+  await prisma.unitStatusHistory.deleteMany();
+  await prisma.commission.deleteMany();
+  await prisma.sale.deleteMany();
+  await prisma.booking.deleteMany();
+  await prisma.lead.deleteMany();
+  await prisma.propertyUnit.deleteMany();
+  await prisma.projectPhase.deleteMany();
+  await prisma.project.deleteMany();
+  await prisma.customer.deleteMany();
+  await prisma.marketingAgency.deleteMany();
+  await prisma.propertyStatus.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.rolePermission.deleteMany();
+  await prisma.permission.deleteMany();
+  await prisma.role.deleteMany();
+
   // 1. Roles & Permissions
   console.log('Seeding Roles...');
   await prisma.role.createMany({ data: mapDates(data.roles), skipDuplicates: true });
