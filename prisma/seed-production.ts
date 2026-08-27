@@ -3,15 +3,13 @@ import { PrismaClient } from '../generated/prisma/client';
 import fs from 'fs';
 import path from 'path';
 
-// If you are using pg adapter, uncomment these:
-// import { PrismaPg } from '@prisma/adapter-pg';
-// import { Pool } from 'pg';
-// const connectionString = process.env.DATABASE_URL;
-// const pool = new Pool({ connectionString });
-// const adapter = new PrismaPg(pool);
-// const prisma = new PrismaClient({ adapter });
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 function mapDates(arr: any[]) {
   if (!arr) return [];
