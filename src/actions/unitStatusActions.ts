@@ -102,3 +102,78 @@ export async function updateUnitStatusFromSitePlan(
     return { success: false, message: error.message || 'Failed to update status' };
   }
 }
+
+import fs from 'fs/promises';
+import path from 'path';
+
+export async function updateConstructionProgressAction(formData: FormData) {
+  try {
+    const propertyUnitId = formData.get('propertyUnitId') as string;
+    const progress = parseFloat(formData.get('progress') as string);
+    const notes = (formData.get('notes') as string) || null;
+    const files = formData.getAll('photos') as File[];
+
+    if (isNaN(progress) || progress < 0 || progress > 100) {
+      return { success: false, message: 'Invalid progress value' };
+    }
+
+    const unit = await prisma.propertyUnit.findUnique({
+      where: { id: propertyUnitId },
+      include: { project: true, phase: true }
+    });
+
+    if (!unit) {
+      return { success: false, message: 'Property unit not found' };
+    }
+
+    const uploadedUrls: string[] = [];
+
+    // Process file uploads
+    if (files && files.length > 0) {
+      const projectSlug = unit.project.slug;
+      const phaseName = unit.phase?.name.replace(/[^a-zA-Z0-9]/g, '-') || 'default-phase';
+      const unitNum = unit.unitNumber.replace(/[^a-zA-Z0-9]/g, '-');
+      
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'projects', projectSlug, phaseName, unitNum);
+      
+      await fs.mkdir(uploadDir, { recursive: true });
+
+      for (const file of files) {
+        if (file.size === 0) continue;
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        
+        const ext = file.name.split('.').pop();
+        const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+        const filePath = path.join(uploadDir, filename);
+        
+        await fs.writeFile(filePath, buffer);
+        uploadedUrls.push(`/uploads/projects/${projectSlug}/${phaseName}/${unitNum}/${filename}`);
+      }
+    }
+
+    // Prepare transaction
+    const operations = [
+      prisma.unitConstructionUpdate.create({
+        data: {
+          propertyUnitId,
+          progress,
+          notes,
+          photos: uploadedUrls
+        }
+      }),
+      prisma.propertyUnit.update({
+        where: { id: propertyUnitId },
+        data: { constructionProgress: progress }
+      })
+    ];
+
+    await prisma.$transaction(operations);
+
+    revalidatePath(`/admin/projects/${unit.projectId}`);
+    return { success: true, message: 'Construction progress updated successfully' };
+  } catch (error: any) {
+    console.error('Error updating construction progress:', error);
+    return { success: false, message: error.message || 'Failed to update construction progress' };
+  }
+}

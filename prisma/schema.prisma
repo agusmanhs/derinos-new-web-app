@@ -160,11 +160,25 @@ model PropertyUnit {
   archived       Boolean       @default(false)
 
   bookings       Booking[]
+  constructionUpdates UnitConstructionUpdate[]
 
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   @@unique([projectId, unitNumber])
+}
+
+model UnitConstructionUpdate {
+  id             String       @id @default(uuid())
+  propertyUnit   PropertyUnit @relation(fields: [propertyUnitId], references: [id], onDelete: Cascade)
+  propertyUnitId String
+  
+  progress       Float
+  photos         String[]     @default([])
+  notes          String?
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model Lead {

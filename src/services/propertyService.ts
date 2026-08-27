@@ -88,6 +88,9 @@ export const PropertyService = {
           orderBy: { date: 'desc' },
           take: 1,
           select: { agencyId: true, status: true }
+        },
+        constructionUpdates: {
+          orderBy: { createdAt: 'desc' }
         }
       }
     });

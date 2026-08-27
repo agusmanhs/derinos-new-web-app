@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { PropertyUnit, PropertyStatus } from '@/types/project';
 import styles from './SvgSitePlanRenderer.module.css';
 import { UpdateUnitStatusModal } from './UpdateUnitStatusModal';
+import { UpdateProgressModal } from './UpdateProgressModal';
 
 interface Props {
   svgContent: string;
@@ -33,6 +34,7 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnitState | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
 
   useEffect(() => {
     if (!svgContainerRef.current) return;
@@ -228,33 +230,111 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
                 <div className={styles.panelSection}>
                   <h4>Construction Progress</h4>
                   <div className={styles.dataRow}>
-                    <span className={styles.dataLabel}>Completion</span>
+                    <span className={styles.dataLabel}>Construction</span>
                     <span className={styles.dataValue}>{selectedUnit.unit.constructionProgress || 0}%</span>
                   </div>
                   <div className={styles.progressBarBg}>
-                    <div className={styles.progressBarFill} style={{ width: `${selectedUnit.unit.constructionProgress || 0}%` }}></div>
+                    <div className={styles.progressBarFill} style={{ width: `${selectedUnit.unit.constructionProgress || 0}%` }} />
                   </div>
                 </div>
+
+                {selectedUnit.unit.constructionUpdates && selectedUnit.unit.constructionUpdates.length > 0 && (
+                  <div className={styles.panelSection}>
+                    <h4>Progress History</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+                      {selectedUnit.unit.constructionUpdates.map((update: any) => (
+                        <div key={update.id} style={{ padding: '12px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+                            <span style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.875rem' }}>{update.progress}% Complete</span>
+                            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{new Date(update.createdAt).toLocaleDateString('id-ID')}</span>
+                          </div>
+                          {update.notes && <p style={{ fontSize: '0.875rem', color: '#475569', marginBottom: '8px', lineHeight: 1.5 }}>{update.notes}</p>}
+                          {update.photos && update.photos.length > 0 && (
+                            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                              {update.photos.map((photo: string, i: number) => (
+                                <a key={i} href={photo} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0 }}>
+                                  <img src={photo} alt="Progress" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ marginTop: '24px' }}>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
                       onClick={() => window.location.href = `/admin/properties/${selectedUnit.unit.id}/edit`}
-                      style={{ flex: 1, padding: '10px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
+                      style={{ 
+                        flex: 1, 
+                        padding: '10px', 
+                        backgroundColor: '#f1f5f9', 
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '6px', 
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
                     >
                       Edit Details
                     </button>
                     <button 
                       onClick={() => setIsStatusModalOpen(true)}
-                      style={{ flex: 1, padding: '10px', backgroundColor: '#3B82F6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}
+                      style={{ 
+                        flex: 1, 
+                        padding: '10px', 
+                        backgroundColor: '#3b82f6', 
+                        color: 'white',
+                        border: 'none', 
+                        borderRadius: '6px', 
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
                     >
                       Update Status
                     </button>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                     <button 
+                      onClick={() => setIsProgressModalOpen(true)}
+                      style={{ 
+                        flex: 1, 
+                        padding: '10px', 
+                        backgroundColor: '#10b981', 
+                        color: 'white',
+                        border: 'none', 
+                        borderRadius: '6px', 
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+                    >
+                      Update Progress
+                    </button>
+                    <button 
                       onClick={() => onEditSvgId && onEditSvgId(selectedUnit.unit.unitNumber)}
-                      style={{ flex: 1, padding: '10px', backgroundColor: 'white', color: '#4B5563', border: '1px solid #D1D5DB', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px' }}
+                      style={{ 
+                        flex: 1, 
+                        padding: '10px', 
+                        backgroundColor: '#f8fafc', 
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '6px', 
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
                     >
                       Edit SVG ID
                     </button>
@@ -280,6 +360,19 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
             setTimeout(() => {
               router.refresh();
               // Update the local state immediately for better UX
+              setSelectedUnit(null);
+            }, 100);
+          }}
+        />
+      )}
+      {selectedUnit?.type === 'mapped' && (
+        <UpdateProgressModal
+          isOpen={isProgressModalOpen}
+          onClose={() => setIsProgressModalOpen(false)}
+          unit={selectedUnit.unit}
+          onSuccess={() => {
+            setTimeout(() => {
+              router.refresh();
               setSelectedUnit(null);
             }, 100);
           }}
