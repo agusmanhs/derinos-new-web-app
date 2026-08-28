@@ -195,7 +195,7 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
 
           <div className={styles.filterGroup}>
             <label>Project</label>
-            <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className={styles.filterInput}>
+            <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className={styles.filterSelect}>
               <option value="">All Projects</option>
               {uniqueProjects.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -203,7 +203,7 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
 
           <div className={styles.filterGroup}>
             <label>Phase (Tahapan)</label>
-            <select value={phaseFilter} onChange={(e) => setPhaseFilter(e.target.value)} className={styles.filterInput}>
+            <select value={phaseFilter} onChange={(e) => setPhaseFilter(e.target.value)} className={styles.filterSelect}>
               <option value="">All Phases</option>
               {uniquePhases.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -211,7 +211,7 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
 
           <div className={styles.filterGroup}>
             <label>Payment Status</label>
-            <select value={paymentStatusFilter} onChange={(e) => setPaymentStatusFilter(e.target.value)} className={styles.filterInput}>
+            <select value={paymentStatusFilter} onChange={(e) => setPaymentStatusFilter(e.target.value)} className={styles.filterSelect}>
               <option value="">All Statuses</option>
               <option value="Pending">Pending</option>
               <option value="Paid">Paid</option>
@@ -221,7 +221,7 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
 
           <div className={styles.filterGroup}>
             <label>Booking Status</label>
-            <select value={bookingStatusFilter} onChange={(e) => setBookingStatusFilter(e.target.value)} className={styles.filterInput}>
+            <select value={bookingStatusFilter} onChange={(e) => setBookingStatusFilter(e.target.value)} className={styles.filterSelect}>
               <option value="">All Statuses</option>
               <option value="Awaiting Payment">Awaiting Payment</option>
               <option value="Confirmed">Confirmed</option>
