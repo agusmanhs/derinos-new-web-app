@@ -10,7 +10,11 @@ export const BookingService = {
         customer: true,
         project: true,
         agency: true,
-        propertyUnit: true
+        propertyUnit: {
+          include: {
+            phase: true
+          }
+        }
       }
     });
     return bookings.map(b => ({

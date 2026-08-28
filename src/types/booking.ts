@@ -12,4 +12,11 @@ export interface Booking {
   paymentStatus: 'Pending' | 'Paid' | 'Refunded';
   status: 'Awaiting Payment' | 'Confirmed' | 'Cancelled';
   date: string;
+  propertyUnit?: {
+    id: string;
+    phase?: {
+      id: string;
+      name: string;
+    } | null;
+  };
 }
