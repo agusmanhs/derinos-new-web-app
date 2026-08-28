@@ -35,7 +35,7 @@ export const SalesListClient: React.FC<Props> = ({ sales }) => {
       accessor: (row: Sale) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <strong>{row.projectTitle}</strong>
-          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Unit {row.unitNumber}</span>
+          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Unit {row.unitNumber.toUpperCase()}</span>
         </div>
       )
     },

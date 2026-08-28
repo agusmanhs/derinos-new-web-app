@@ -157,7 +157,7 @@ export const PropertyListClient: React.FC<Props> = ({ properties, pagination, fi
               ) : (
                 properties.map((row) => (
                   <tr key={row.id}>
-                    <td><strong>{row.unitNumber}</strong></td>
+                    <td><strong>{row.unitNumber.toUpperCase()}</strong></td>
                     <td>{row.projectTitle}</td>
                     <td>{row.typeName}</td>
                     <td>{row.landSize}/{row.buildingSize} sqm</td>

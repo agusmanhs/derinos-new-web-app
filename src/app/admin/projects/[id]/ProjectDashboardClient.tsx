@@ -383,7 +383,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
                   ) : (
                     properties.map(unit => (
                       <tr key={unit.id}>
-                        <td><strong>{unit.unitNumber}</strong></td>
+                        <td><strong>{unit.unitNumber.toUpperCase()}</strong></td>
                         <td>{unit.typeName}</td>
                         <td>{unit.phase?.name || '-'}</td>
                         <td>

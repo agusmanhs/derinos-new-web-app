@@ -107,7 +107,7 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
       header: 'Property Unit',
       accessor: (row: Booking) => (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <strong style={{ fontSize: '0.95rem', color: '#2563eb' }}>Unit {row.unitNumber}</strong>
+          <strong style={{ fontSize: '0.95rem', color: '#2563eb' }}>Unit {row.unitNumber.toUpperCase()}</strong>
           <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>
             {row.projectTitle} {row.propertyUnit?.phase?.name ? `- ${row.propertyUnit.phase.name}` : ''}
           </span>

@@ -54,12 +54,12 @@ export const AgencyDetailClient: React.FC<Props> = ({ agency }) => {
         <div>
           {row.booking && (
             <div>
-              <strong>Booking:</strong> {row.booking.unitNumber} ({row.booking.projectTitle})
+              <strong>Booking:</strong> {row.booking.unitNumber.toUpperCase()} ({row.booking.projectTitle})
             </div>
           )}
           {row.sale && (
             <div>
-              <strong>Sale:</strong> {row.sale.unitNumber} ({row.sale.projectTitle})
+              <strong>Sale:</strong> {row.sale.unitNumber.toUpperCase()} ({row.sale.projectTitle})
             </div>
           )}
         </div>
