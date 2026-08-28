@@ -33,6 +33,13 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
   const [isPending, startTransition] = useTransition();
   const [uploadedSvg, setUploadedSvg] = useState<string>('');
 
+  // Unit tab states
+  const [unitSearchTerm, setUnitSearchTerm] = useState('');
+  const [unitPhaseFilter, setUnitPhaseFilter] = useState('');
+  const [unitStatusFilter, setUnitStatusFilter] = useState('');
+  const [unitPage, setUnitPage] = useState(1);
+  const unitsPerPage = 10;
+
   const handleSvgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -220,6 +227,18 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
     }
   };
 
+  // Compute properties for Units Tab
+  const filteredProperties = properties.filter(unit => {
+    const searchLower = unitSearchTerm.toLowerCase();
+    const matchSearch = unit.unitNumber.toLowerCase().includes(searchLower) || unit.typeName.toLowerCase().includes(searchLower);
+    const matchPhase = unitPhaseFilter ? unit.phase?.id === unitPhaseFilter : true;
+    const matchStatus = unitStatusFilter ? unit.statusId === unitStatusFilter : true;
+    return matchSearch && matchPhase && matchStatus;
+  });
+
+  const totalUnitPages = Math.max(1, Math.ceil(filteredProperties.length / unitsPerPage));
+  const paginatedProperties = filteredProperties.slice((unitPage - 1) * unitsPerPage, unitPage * unitsPerPage);
+
   return (
     <div className={styles.container}>
       <div className={styles.tabs}>
@@ -358,15 +377,63 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
 
         {activeTab === 'units' && (
           <div className={styles.unitsTab}>
-            <div className={styles.card}>
-              <div className={styles.cardHeader}>
-                <h3>Property Units</h3>
-                {canManageProjects && (
-                  <button className={styles.primaryBtn} onClick={() => openAddUnitModal('')}>+ Add Unit</button>
-                )}
+            <div className={styles.cardHeader} style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827' }}>Property Units</h3>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280' }}>Manage all units in this project. Units can be linked to a Phase to appear on the Site Plan SVG.</p>
               </div>
-              <p>Manage all units in this project. Units can be linked to a Phase so they appear on the Site Plan SVG.</p>
-              
+              {canManageProjects && (
+                <button className={styles.primaryBtn} onClick={() => openAddUnitModal('')}>+ Add Unit</button>
+              )}
+            </div>
+
+            <div className={styles.filtersCard}>
+              <div className={styles.filterGrid}>
+                <div className={styles.filterGroup}>
+                  <label>Search Unit</label>
+                  <input 
+                    type="text" 
+                    placeholder="Search by unit number or type..." 
+                    value={unitSearchTerm} 
+                    onChange={(e) => {
+                      setUnitSearchTerm(e.target.value);
+                      setUnitPage(1);
+                    }}
+                    className={styles.filterInput}
+                  />
+                </div>
+                <div className={styles.filterGroup}>
+                  <label>Phase</label>
+                  <select 
+                    value={unitPhaseFilter} 
+                    onChange={(e) => {
+                      setUnitPhaseFilter(e.target.value);
+                      setUnitPage(1);
+                    }} 
+                    className={styles.filterSelect}
+                  >
+                    <option value="">All Phases</option>
+                    {project.phases?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div className={styles.filterGroup}>
+                  <label>Status</label>
+                  <select 
+                    value={unitStatusFilter} 
+                    onChange={(e) => {
+                      setUnitStatusFilter(e.target.value);
+                      setUnitPage(1);
+                    }} 
+                    className={styles.filterSelect}
+                  >
+                    <option value="">All Statuses</option>
+                    {statuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div className={styles.tableCard}>
               <table className={styles.table}>
                 <thead>
                   <tr>
@@ -378,12 +445,12 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
                   </tr>
                 </thead>
                 <tbody>
-                  {properties.length === 0 ? (
-                    <tr><td colSpan={5} style={{textAlign: 'center', padding: '24px'}}>No units found.</td></tr>
+                  {paginatedProperties.length === 0 ? (
+                    <tr><td colSpan={5} style={{textAlign: 'center', padding: '48px', color: '#6b7280'}}>No units found matching your filters.</td></tr>
                   ) : (
-                    properties.map(unit => (
+                    paginatedProperties.map(unit => (
                       <tr key={unit.id}>
-                        <td><strong>{unit.unitNumber.toUpperCase()}</strong></td>
+                        <td><strong style={{ color: '#2563eb' }}>{unit.unitNumber.toUpperCase()}</strong></td>
                         <td>{unit.typeName}</td>
                         <td>{unit.phase?.name || '-'}</td>
                         <td>
@@ -391,12 +458,39 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
                             {unit.propertyStatus?.name || 'Unknown'}
                           </span>
                         </td>
-                        <td>Rp {unit.price.toLocaleString()}</td>
+                        <td>Rp {unit.price.toLocaleString('id-ID')}</td>
                       </tr>
                     ))
                   )}
                 </tbody>
               </table>
+
+              {totalUnitPages > 0 && (
+                <div className={styles.pagination}>
+                  <div className={styles.pageInfo}>
+                    Showing {(unitPage - 1) * unitsPerPage + 1} to {Math.min(unitPage * unitsPerPage, filteredProperties.length)} of {filteredProperties.length} units
+                  </div>
+                  <div className={styles.pageControls}>
+                    <button 
+                      className={styles.pageButton} 
+                      disabled={unitPage <= 1}
+                      onClick={() => setUnitPage(prev => Math.max(prev - 1, 1))}
+                    >
+                      &lt;
+                    </button>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151', margin: '0 8px' }}>
+                      Page {unitPage} of {totalUnitPages}
+                    </span>
+                    <button 
+                      className={styles.pageButton} 
+                      disabled={unitPage >= totalUnitPages}
+                      onClick={() => setUnitPage(prev => Math.min(prev + 1, totalUnitPages))}
+                    >
+                      &gt;
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
