@@ -82,6 +82,7 @@ export const PropertyService = {
       skip: start,
       take: limit,
       include: {
+        phase: true,
         propertyStatus: true,
         customer: { select: { id: true, name: true } },
         bookings: {
