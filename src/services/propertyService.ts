@@ -199,6 +199,24 @@ export const PropertyService = {
         where: { id },
         data: updateData
       });
+
+      // SYNC LOGIC: If property unit status is updated to Available, cancel its active bookings
+      if (data.statusId) {
+        const availableStatus = await prisma.propertyStatus.findUnique({
+          where: { name: 'Available' }
+        });
+        
+        if (availableStatus && data.statusId === availableStatus.id) {
+          await prisma.booking.updateMany({
+            where: { 
+              propertyUnitId: id,
+              status: { notIn: ['Cancelled', 'Canceled'] } 
+            },
+            data: { status: 'Cancelled' }
+          });
+        }
+      }
+
       return property as unknown as PropertyUnit;
     } catch {
       return null;

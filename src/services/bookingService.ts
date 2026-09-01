@@ -29,6 +29,21 @@ export const BookingService = {
         where: { id },
         data: { status, paymentStatus }
       });
+
+      // SYNC LOGIC: If booking is cancelled, revert property unit to Available
+      if (status === 'Cancelled' || status === 'Canceled') {
+        const availableStatus = await prisma.propertyStatus.findUnique({
+          where: { name: 'Available' }
+        });
+        
+        if (availableStatus && booking.propertyUnitId) {
+          await prisma.propertyUnit.update({
+            where: { id: booking.propertyUnitId },
+            data: { statusId: availableStatus.id }
+          });
+        }
+      }
+
       return {
         ...booking,
         date: booking.date.toISOString(),
