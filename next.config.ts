@@ -20,6 +20,11 @@ const nextConfig: NextConfig = {
     // your project has type errors.
     ignoreBuildErrors: true,
   },
+  // Allow Herd local domain to fetch client scripts
+  // @ts-ignore
+  serverExternalPackages: [],
+  // @ts-ignore
+  allowedDevOrigins: ['derinos-new-web-app.test', 'localhost', '127.0.0.1'],
 };
 
 export default nextConfig;
