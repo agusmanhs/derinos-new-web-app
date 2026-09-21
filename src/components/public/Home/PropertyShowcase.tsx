@@ -20,7 +20,7 @@ export const PropertyShowcase: React.FC<{ projects: Project[] }> = ({ projects }
         
         <div className={styles.grid}>
           {projects.map((project) => {
-            const imageSrc = project.heroImage || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop';
+            const imageSrc = project.heroImage || '/mockups/hero_placeholder.jpg';
             return (
               <Card key={project.id} className={styles.card}>
                 <div className={styles.imageWrapper}>
