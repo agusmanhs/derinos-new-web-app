@@ -16,8 +16,14 @@ export const FacilitiesSection: React.FC<{ facilities: Facility[] }> = ({ facili
           {facilities.map((facility) => (
             <div key={facility.id} className={styles.card}>
               <div className={styles.iconWrapper}>
-                {facility.iconImage && (
+                {facility.iconImage ? (
                   <Image src={facility.iconImage} alt={facility.name} fill className={styles.iconImage} />
+                ) : (
+                  <svg className={styles.fallbackSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                  </svg>
                 )}
               </div>
               <h3 className={styles.facilityName}>{facility.name}</h3>
