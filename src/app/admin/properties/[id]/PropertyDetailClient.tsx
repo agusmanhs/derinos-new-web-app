@@ -3,12 +3,114 @@
 import React, { useState } from 'react';
 import styles from './page.module.css';
 
+const getTimelineStatusStyle = (statusName: string, customColor?: string) => {
+  const norm = (statusName || '').toLowerCase().trim();
+
+  // 1. Cancelled / Dibatalkan -> RED
+  if (norm.includes('cancel') || norm.includes('batal')) {
+    return {
+      backgroundColor: '#fee2e2',
+      color: '#991b1b',
+      border: '1px solid #fca5a5',
+      label: 'Cancelled',
+      dotColor: '#ef4444'
+    };
+  }
+
+  // 2. Available -> SLATE / NEUTRAL
+  if (norm === 'available') {
+    return {
+      backgroundColor: '#f1f5f9',
+      color: '#475569',
+      border: '1px solid #cbd5e1',
+      label: 'Available',
+      dotColor: '#94a3b8'
+    };
+  }
+
+  // 3. Booking -> EMERALD GREEN
+  if (norm.includes('booking')) {
+    return {
+      backgroundColor: '#d1fae5',
+      color: '#065f46',
+      border: '1px solid #6ee7b7',
+      label: statusName,
+      dotColor: '#10b981'
+    };
+  }
+
+  // 4. Proses Berkas -> BLUE
+  if (norm.includes('proses') || norm.includes('berkas')) {
+    return {
+      backgroundColor: '#dbeafe',
+      color: '#1e40af',
+      border: '1px solid #93c5fd',
+      label: statusName,
+      dotColor: '#3b82f6'
+    };
+  }
+
+  // 5. SP3K -> PURPLE
+  if (norm.includes('sp3k')) {
+    return {
+      backgroundColor: '#f3e8ff',
+      color: '#6b21a8',
+      border: '1px solid #d8b4fe',
+      label: statusName,
+      dotColor: '#a855f7'
+    };
+  }
+
+  // 6. Sudah Akad -> WARM ORANGE / AMBER
+  if (norm.includes('akad')) {
+    return {
+      backgroundColor: '#ffedd5',
+      color: '#9a3412',
+      border: '1px solid #fdba74',
+      label: statusName,
+      dotColor: '#f97316'
+    };
+  }
+
+  // 7. Cash / Lunas -> GOLD / BRONZE
+  if (norm.includes('cash') || norm.includes('lunas')) {
+    return {
+      backgroundColor: '#fef3c7',
+      color: '#92400e',
+      border: '1px solid #fcd34d',
+      label: statusName,
+      dotColor: '#eab308'
+    };
+  }
+
+  // 8. Custom color from PropertyStatus table if available
+  if (customColor) {
+    return {
+      backgroundColor: `${customColor}20`,
+      color: customColor,
+      border: `1px solid ${customColor}60`,
+      label: statusName,
+      dotColor: customColor
+    };
+  }
+
+  return {
+    backgroundColor: '#e2e8f0',
+    color: '#334155',
+    border: '1px solid #cbd5e1',
+    label: statusName,
+    dotColor: '#64748b'
+  };
+};
+
 export const PropertyDetailClient = ({ property }: { property: any }) => {
   const [viewImageState, setViewImageState] = useState<{ photos: string[], index: number } | null>(null);
 
   const activeBooking = property.bookings?.find((b: any) => 
     b.status === 'ACTIVE' || b.status === 'COMPLETED'
   ) || property.bookings?.[0]; 
+
+  const mainStatusColor = property.propertyStatus?.colorHex || property.propertyStatus?.color || '#64748b';
 
   return (
     <div className={styles.gridContainer}>
@@ -19,7 +121,7 @@ export const PropertyDetailClient = ({ property }: { property: any }) => {
         </div>
         <div className={styles.cardContent}>
           <div className={styles.statusBadgeWrapper}>
-            <span className={styles.statusBadge} style={{ backgroundColor: property.propertyStatus?.color || '#ccc' }}>
+            <span className={styles.statusBadge} style={{ backgroundColor: mainStatusColor }}>
               {property.propertyStatus?.name || 'Unknown Status'}
             </span>
           </div>
@@ -88,21 +190,43 @@ export const PropertyDetailClient = ({ property }: { property: any }) => {
         <div className={styles.cardContent}>
           {property.statusHistory && property.statusHistory.length > 0 ? (
             <div className={styles.timeline}>
-              {property.statusHistory.map((history: any) => (
-                <div key={history.id} className={styles.timelineItem}>
-                  <div className={styles.timelineHeader}>
-                    <span className={styles.timelineDate}>{new Date(history.createdAt).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
-                    <span className={`${styles.timelineStatus} ${history.statusName === 'Available' ? styles.statusCancelled : styles.statusActive}`}>
-                      {history.statusName}
-                    </span>
+              {property.statusHistory.map((history: any) => {
+                const badge = getTimelineStatusStyle(history.statusName, history.status?.colorHex);
+                const formattedDate = new Date(history.createdAt).toLocaleString('id-ID', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+
+                return (
+                  <div key={history.id} className={styles.timelineItem}>
+                    <div className={styles.timelineHeader}>
+                      <span className={styles.timelineDate}>{formattedDate}</span>
+                      <span 
+                        className={styles.timelineStatus} 
+                        style={{
+                          backgroundColor: badge.backgroundColor,
+                          color: badge.color,
+                          border: badge.border,
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
+                          padding: '3px 10px',
+                          borderRadius: '12px'
+                        }}
+                      >
+                        {badge.label}
+                      </span>
+                    </div>
+                    <div className={styles.timelineBody}>
+                      {history.customer && <p><strong>Customer:</strong> {history.customer.name}</p>}
+                      {history.agency && <p><strong>Agency:</strong> {history.agency.name}</p>}
+                      {history.notes && <p className={styles.timelineNotes}>"{history.notes}"</p>}
+                    </div>
                   </div>
-                  <div className={styles.timelineBody}>
-                    {history.customer && <p><strong>Customer:</strong> {history.customer.name}</p>}
-                    {history.agency && <p><strong>Agency:</strong> {history.agency.name}</p>}
-                    {history.notes && <p className={styles.timelineNotes}>"{history.notes}"</p>}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className={styles.emptyText}>Belum ada riwayat status untuk unit ini.</p>

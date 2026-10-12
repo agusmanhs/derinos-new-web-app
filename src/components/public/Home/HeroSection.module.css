@@ -71,6 +71,11 @@
   line-height: 1.6;
 }
 
+.actions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
 .stats {
   display: flex;
   gap: var(--spacing-2xl);

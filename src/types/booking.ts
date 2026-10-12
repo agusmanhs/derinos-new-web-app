@@ -9,9 +9,13 @@ export interface Booking {
   unitNumber: string;
   price: number;
   bookingFee: number;
-  paymentStatus: 'Pending' | 'Paid' | 'Refunded';
+  paymentStatus: 'Pending' | 'Paid' | 'Refunded' | 'Forfeited';
   status: 'Awaiting Payment' | 'Confirmed' | 'Cancelled';
   date: string;
+  cancellationReason?: string | null;
+  cancellationNotes?: string | null;
+  refundDecision?: 'Refunded' | 'Forfeited' | string | null;
+  cancelledAt?: string | null;
   propertyUnit?: {
     id: string;
     phase?: {

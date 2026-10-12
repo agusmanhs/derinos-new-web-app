@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { companyStats } from '@/lib/mockData';
 import styles from './IntroSection.module.css';
 
-export const IntroSection: React.FC = () => {
+export const IntroSection: React.FC<{ settings?: any }> = ({ settings }) => {
   return (
     <section className={styles.intro}>
       <div className={styles.container}>
         <div className={styles.textContent}>
-          <h2 className={styles.title}>Creating Places Worth<br/>Coming Home To.</h2>
+          <h2 className={styles.title}>{settings?.introTitle || 'Creating Places Worth Coming Home To.'}</h2>
           <p className={styles.description}>
-            With an unwavering commitment to architecture, integrity and sustainable design, we craft residences that elevate the standard of living. Our approach marries minimalist aesthetics with functional luxury, ensuring every detail serves a purpose.
+            {settings?.introDescription || 'With an unwavering commitment to architecture, integrity and sustainable design, we craft residences that elevate the standard of living.'}
           </p>
           <Link href="/about" className={styles.link}>Read Our Story</Link>
         </div>

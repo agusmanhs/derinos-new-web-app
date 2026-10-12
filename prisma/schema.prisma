@@ -229,9 +229,14 @@ model Booking {
 
   price         Float
   bookingFee    Float
-  paymentStatus String // 'Pending' | 'Paid' | 'Refunded'
+  paymentStatus String // 'Pending' | 'Paid' | 'Refunded' | 'Forfeited'
   status        String // 'Awaiting Payment' | 'Confirmed' | 'Cancelled'
   date          DateTime @default(now())
+
+  cancellationReason String?
+  cancellationNotes  String?
+  refundDecision     String?
+  cancelledAt        DateTime?
 
   sales Sale[]
 
@@ -341,4 +346,44 @@ model UnitStatusHistory {
   notes String?
 
   createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id               String   @id @default(uuid())
+  heroTitle        String   @default("Build Your Future.<br/>Live Beyond Expectations.")
+  heroSubtitle     String   @default("Developing strategic, high quality modern residences in harmony with nature.")
+  heroImage        String   @default("/mockups/hero_placeholder.jpg")
+  introTitle       String   @default("Experience Modern Living")
+  introDescription String   @default("We design homes that blend aesthetic architecture with sustainable environments.")
+  
+  // Contacts
+  contactEmail     String?
+  contactPhone     String?
+  contactAddress   String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model MasterFacility {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  iconSvg     String?  // Can store SVG string or URL
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MasterGallery {
+  id          String   @id @default(uuid())
+  title       String?
+  imageUrl    String
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

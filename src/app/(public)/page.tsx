@@ -6,21 +6,24 @@ import { FacilitiesSection } from '@/components/public/Home/FacilitiesSection';
 import { GallerySection } from '@/components/public/Home/GallerySection';
 import { CTASection } from '@/components/public/Home/CTASection';
 import { ProjectService } from '@/services/projectService';
+import { getSiteSettings, getMasterFacilities, getMasterGallery } from '@/actions/adminLandingActions';
 
 export default async function Home() {
   const stats = await ProjectService.getStats();
   const featuredProjects = await ProjectService.getFeaturedProjects();
-  const facilities = await ProjectService.getFacilities();
-  const galleryImages = await ProjectService.getGalleryImages();
   const projectOptions = await ProjectService.getProjectOptions();
+  
+  const settings = await getSiteSettings();
+  const masterFacilities = await getMasterFacilities();
+  const masterGallery = await getMasterGallery();
 
   return (
     <main>
-      <HeroSection stats={stats} />
-      <IntroSection />
+      <HeroSection stats={stats} settings={settings} />
+      <IntroSection settings={settings} />
       <PropertyShowcase projects={featuredProjects} />
-      <FacilitiesSection facilities={facilities} />
-      <GallerySection images={galleryImages} />
+      <FacilitiesSection facilities={masterFacilities} />
+      <GallerySection images={masterGallery} />
       <CTASection projectOptions={projectOptions} />
     </main>
   );

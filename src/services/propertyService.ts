@@ -127,7 +127,8 @@ export const PropertyService = {
           orderBy: { createdAt: 'desc' },
           include: {
             customer: true,
-            agency: true
+            agency: true,
+            status: true
           }
         }
       }
@@ -195,30 +196,56 @@ export const PropertyService = {
     delete updateData.id;
     
     try {
+      const currentUnit = await prisma.propertyUnit.findUnique({
+        where: { id },
+        select: { statusId: true, customerId: true }
+      });
+
       const property = await prisma.propertyUnit.update({
         where: { id },
         data: updateData
       });
 
-      // SYNC LOGIC: If property unit status is updated to Available, cancel its active bookings
-      if (data.statusId) {
-        const availableStatus = await prisma.propertyStatus.findUnique({
-          where: { name: 'Available' }
+      // SYNC LOGIC: If status changed, record UnitStatusHistory
+      if (data.statusId && currentUnit && currentUnit.statusId !== data.statusId) {
+        const newStatus = await prisma.propertyStatus.findUnique({
+          where: { id: data.statusId }
         });
-        
-        if (availableStatus && data.statusId === availableStatus.id) {
-          await prisma.booking.updateMany({
-            where: { 
+
+        if (newStatus) {
+          const isAvailable = newStatus.name === 'Available';
+          
+          if (isAvailable) {
+            // Cancel active bookings and clear customer assignment
+            await prisma.booking.updateMany({
+              where: { 
+                propertyUnitId: id,
+                status: { notIn: ['Cancelled', 'Canceled'] } 
+              },
+              data: { status: 'Cancelled' }
+            });
+
+            await prisma.propertyUnit.update({
+              where: { id },
+              data: { customerId: null }
+            });
+          }
+
+          await prisma.unitStatusHistory.create({
+            data: {
               propertyUnitId: id,
-              status: { notIn: ['Cancelled', 'Canceled'] } 
-            },
-            data: { status: 'Cancelled' }
+              statusId: newStatus.id,
+              statusName: newStatus.name,
+              customerId: isAvailable ? (currentUnit.customerId || null) : (data.customerId !== undefined ? data.customerId : currentUnit.customerId),
+              notes: `Status unit diubah ke ${newStatus.name}`
+            }
           });
         }
       }
 
       return property as unknown as PropertyUnit;
-    } catch {
+    } catch (err) {
+      console.error('Error updating property in PropertyService:', err);
       return null;
     }
   },

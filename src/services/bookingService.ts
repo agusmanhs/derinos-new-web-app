@@ -23,23 +23,77 @@ export const BookingService = {
     })) as unknown as Booking[];
   },
 
-  async updateBookingStatus(id: string, status: Booking['status'], paymentStatus: Booking['paymentStatus']): Promise<Booking | null> {
+  async updateBookingStatus(
+    id: string, 
+    status: Booking['status'], 
+    paymentStatus: Booking['paymentStatus'],
+    cancellationData?: {
+      cancellationReason?: string;
+      cancellationNotes?: string;
+      refundDecision?: string;
+    }
+  ): Promise<Booking | null> {
     try {
+      const updateData: any = { status, paymentStatus };
+
+      if (status === 'Cancelled') {
+        updateData.cancelledAt = new Date();
+        if (cancellationData?.cancellationReason) {
+          updateData.cancellationReason = cancellationData.cancellationReason;
+        }
+        if (cancellationData?.cancellationNotes !== undefined) {
+          updateData.cancellationNotes = cancellationData.cancellationNotes;
+        }
+        if (cancellationData?.refundDecision) {
+          updateData.refundDecision = cancellationData.refundDecision;
+          if (cancellationData.refundDecision === 'Refunded') {
+            updateData.paymentStatus = 'Refunded';
+          } else if (cancellationData.refundDecision === 'Forfeited') {
+            updateData.paymentStatus = 'Forfeited';
+          }
+        }
+      }
+
       const booking = await prisma.booking.update({
         where: { id },
-        data: { status, paymentStatus }
+        data: updateData
       });
 
-      // SYNC LOGIC: If booking is cancelled, revert property unit to Available
+      // SYNC LOGIC: If booking is cancelled, revert property unit to Available and record history
       if (status === 'Cancelled' || status === 'Canceled') {
         const availableStatus = await prisma.propertyStatus.findUnique({
           where: { name: 'Available' }
         });
         
         if (availableStatus && booking.propertyUnitId) {
+          // Revert unit status to Available and clear customer assignment
           await prisma.propertyUnit.update({
             where: { id: booking.propertyUnitId },
-            data: { statusId: availableStatus.id }
+            data: { 
+              statusId: availableStatus.id,
+              customerId: null
+            }
+          });
+
+          // Build descriptive note for unit status history
+          const reasonText = cancellationData?.cancellationReason || booking.cancellationReason || 'Dibatalkan';
+          const refundText = (cancellationData?.refundDecision || booking.refundDecision) === 'Refunded'
+            ? 'Dana Di-Refund (Dikembalikan)'
+            : 'Dana Hangus (Non-Refundable)';
+          const extraNotes = cancellationData?.cancellationNotes || booking.cancellationNotes;
+          
+          const historyNotes = `Booking Dibatalkan [Alasan: ${reasonText} | Kebijakan: ${refundText}]${extraNotes ? ` - Catatan: ${extraNotes}` : ''}`;
+
+          // Record history in UnitStatusHistory
+          await prisma.unitStatusHistory.create({
+            data: {
+              propertyUnitId: booking.propertyUnitId,
+              statusId: availableStatus.id,
+              statusName: 'Cancelled',
+              customerId: booking.customerId,
+              agencyId: booking.agencyId,
+              notes: historyNotes
+            }
           });
         }
       }
@@ -48,8 +102,9 @@ export const BookingService = {
         ...booking,
         date: booking.date.toISOString(),
       } as unknown as Booking;
-    } catch {
-      return null;
+    } catch (error) {
+      console.error('Error in BookingService.updateBookingStatus:', error);
+      throw error;
     }
   }
 };

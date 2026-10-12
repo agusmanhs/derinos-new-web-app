@@ -138,3 +138,141 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Cancellation Modal Styles */
+.modalSummary {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.summaryValue {
+  font-size: 0.95rem;
+  color: #111827;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.formLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.formSelect, .formTextarea {
+  padding: 0.625rem 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  color: #111827;
+  outline: none;
+  background-color: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formSelect:focus, .formTextarea:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.refundCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.refundCard {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.2s;
+  background-color: #ffffff;
+}
+
+.refundCardActiveRefund {
+  border-color: #059669;
+  background-color: #ecfdf5;
+}
+
+.refundCardActiveForfeit {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+.refundCardTitle {
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.refundCardDesc {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btnCancel {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.btnConfirmDanger {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnConfirmDanger:hover {
+  background: #b91c1c;
+}

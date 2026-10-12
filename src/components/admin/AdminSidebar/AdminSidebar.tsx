@@ -13,13 +13,12 @@ import {
   IconConstruction, 
   IconCRM, 
   IconSales, 
-  IconMedia, 
-  IconReports,
   IconSettings,
-  IconSupport,
   IconUser,
   IconBookings,
-  IconUsersGroup
+  IconUsersGroup,
+  IconGlobe,
+  IconExternalLink
 } from '@/components/ui/Icon/AdminIcons';
 import styles from './AdminSidebar.module.css';
 import { logoutAction } from '@/actions/authActions';
@@ -41,19 +40,19 @@ interface NavCategory {
 
 const NAV_CATEGORIES: NavCategory[] = [
   {
-    title: 'Main',
-    permissions: [], // empty means all authenticated users can see it
+    title: 'Overview',
+    permissions: [],
     items: [
       { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: <IconDashboard />, permissions: [] }
     ]
   },
   {
-    title: 'Property Management',
+    title: 'Properties & Projects',
     permissions: ['view_projects', 'manage_projects'],
     items: [
       { id: 'projects', label: 'Projects', href: '/admin/projects', icon: <IconProjects />, permissions: ['view_projects', 'manage_projects'], hasSubmenu: true },
-      { id: 'units', label: 'Units', href: '/admin/properties', icon: <IconUnits />, permissions: ['view_projects', 'manage_projects'] },
-      { id: 'construction', label: 'Construction', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects'] },
+      { id: 'units', label: 'Units & Inventory', href: '/admin/properties', icon: <IconUnits />, permissions: ['view_projects', 'manage_projects'] },
+      { id: 'construction', label: 'Construction Progress', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects'] },
       { id: 'statuses', label: 'Unit Statuses', href: '/admin/settings/statuses', icon: <IconSettings />, permissions: ['manage_projects'] },
     ]
   },
@@ -61,9 +60,9 @@ const NAV_CATEGORIES: NavCategory[] = [
     title: 'Sales & CRM',
     permissions: ['view_leads', 'manage_leads', 'view_bookings', 'manage_bookings'],
     items: [
-      { id: 'crm', label: 'CRM (Leads)', href: '/admin/leads', icon: <IconCRM />, permissions: ['view_leads', 'manage_leads'] },
+      { id: 'crm', label: 'Leads (CRM)', href: '/admin/leads', icon: <IconCRM />, permissions: ['view_leads', 'manage_leads'] },
       { id: 'bookings', label: 'Bookings', href: '/admin/bookings', icon: <IconBookings />, permissions: ['view_bookings', 'manage_bookings'] },
-      { id: 'sales', label: 'Sales', href: '/admin/sales', icon: <IconSales />, permissions: ['manage_bookings'] },
+      { id: 'sales', label: 'Sales Deals', href: '/admin/sales', icon: <IconSales />, permissions: ['manage_bookings'] },
     ]
   },
   {
@@ -75,11 +74,10 @@ const NAV_CATEGORIES: NavCategory[] = [
     ]
   },
   {
-    title: 'System & Content',
-    permissions: ['manage_users', 'manage_roles'],
+    title: 'Website & System',
+    permissions: ['manage_projects', 'manage_users', 'manage_roles'],
     items: [
-      { id: 'media', label: 'Media / Content', href: '/admin/content', icon: <IconMedia />, permissions: ['manage_projects'] }, // Adjust as needed
-      { id: 'reports', label: 'Reports', href: '/admin/reports', icon: <IconReports />, permissions: ['view_projects'] },
+      { id: 'landing', label: 'Landing Page', href: '/admin/landing', icon: <IconGlobe />, permissions: ['manage_projects'], hasSubmenu: true },
       { id: 'users', label: 'User Management', href: '/admin/users', icon: <IconUsersGroup />, permissions: ['manage_users', 'manage_roles'], hasSubmenu: true },
     ]
   }
@@ -193,6 +191,29 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
                       )}
                     </div>
                   )}
+
+                  {item.hasSubmenu && item.id === 'landing' && isSubmenuOpen && (
+                    <div className={styles.submenu}>
+                      <Link 
+                        href="/admin/landing/general"
+                        className={`${styles.submenuItem} ${pathname.includes('/landing/general') ? styles.active : ''}`}
+                      >
+                        General Settings
+                      </Link>
+                      <Link 
+                        href="/admin/landing/facilities"
+                        className={`${styles.submenuItem} ${pathname.includes('/landing/facilities') ? styles.active : ''}`}
+                      >
+                        Facilities
+                      </Link>
+                      <Link 
+                        href="/admin/landing/gallery"
+                        className={`${styles.submenuItem} ${pathname.includes('/landing/gallery') ? styles.active : ''}`}
+                      >
+                        Gallery
+                      </Link>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -201,16 +222,33 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
       </nav>
 
       <div className={styles.bottomNav}>
-        <Link href="/admin/settings" className={styles.navItem}>
-          <span className={styles.icon}><IconSettings /></span>
-          Settings
+        <Link 
+          href="/" 
+          target="_blank" 
+          className={styles.navItem}
+          title="Open live website in new tab"
+        >
+          <span className={styles.icon}><IconGlobe /></span>
+          <span className={styles.label}>Live Website</span>
+          <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center' }}>
+            <IconExternalLink />
+          </span>
         </Link>
-        <Link href="/admin/support" className={styles.navItem}>
-          <span className={styles.icon}><IconSupport /></span>
-          Support
-        </Link>
-        
-
+        <button 
+          type="button"
+          onClick={() => logoutAction()}
+          className={styles.navItem}
+          style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer' }}
+        >
+          <span className={styles.icon}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </span>
+          <span className={styles.label}>Sign Out</span>
+        </button>
       </div>
     </aside>
   );
