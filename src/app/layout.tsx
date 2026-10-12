@@ -16,6 +16,14 @@ const libreCaslonText = Libre_Caslon_Text({
 export const metadata: Metadata = {
   title: "Derinos Group - Property Developer",
   description: "High quality modern residences in harmony with nature.",
+  icons: {
+    icon: [
+      { url: "/icon.png" },
+      { url: "/favicon.ico" }
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
+  },
 };
 
 import NextTopLoader from 'nextjs-toploader';
