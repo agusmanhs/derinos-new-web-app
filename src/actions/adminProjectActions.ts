@@ -44,11 +44,16 @@ export async function saveProjectAction(prevState: unknown, formData: FormData) 
   }
 
   try {
+    const heroImage = (formData.get('heroImage') as string) || '';
+    const featured = formData.get('featured') === 'on' || formData.get('featured') === 'true';
+
     const payload = {
       title,
       slug,
       location,
       status,
+      heroImage: heroImage || '/mockups/hero_placeholder.jpg',
+      featured,
       startingPrice: (formData.get('startingPrice') as string) || '',
       description: (formData.get('description') as string) || '',
       totalArea: (formData.get('totalArea') as string) || '',

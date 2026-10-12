@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useActionState } from 'react';
+import React, { useActionState, useState } from 'react';
 import Link from 'next/link';
 import { Project } from '@/types/project';
 import { saveProjectAction } from '@/actions/adminProjectActions';
+import { uploadImageAjaxAction } from '@/actions/adminLandingActions';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import styles from './ProjectForm.module.css';
@@ -19,6 +20,23 @@ const initialState = {
 
 export const ProjectForm: React.FC<Props> = ({ project }) => {
   const [state, formAction, isPending] = useActionState(saveProjectAction, initialState);
+  const [heroImage, setHeroImage] = useState(project?.heroImage || '/mockups/hero_placeholder.jpg');
+  const [uploading, setUploading] = useState(false);
+
+  const handleUploadHero = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await uploadImageAjaxAction(formData);
+    setUploading(false);
+    if (res.success && res.url) {
+      setHeroImage(res.url);
+    } else {
+      alert('Upload failed: ' + (res.message || 'Unknown error'));
+    }
+  };
 
   return (
     <form className={styles.form} action={formAction}>
@@ -59,6 +77,58 @@ export const ProjectForm: React.FC<Props> = ({ project }) => {
               <option value="Ready to Move">Ready to Move</option>
             </select>
           </div>
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Project Media & Showcase</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label className={styles.label}>Hero / Cover Image</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input 
+              type="text" 
+              name="heroImage" 
+              value={heroImage} 
+              onChange={(e) => setHeroImage(e.target.value)} 
+              placeholder="Image URL or upload a file"
+              style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }} 
+            />
+            <input 
+              type="file" 
+              id="projectHeroUpload" 
+              accept="image/*" 
+              style={{ display: 'none' }} 
+              onChange={handleUploadHero} 
+            />
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              onClick={() => document.getElementById('projectHeroUpload')?.click()}
+              disabled={uploading}
+            >
+              {uploading ? 'Uploading...' : 'Upload File'}
+            </Button>
+          </div>
+          {heroImage && (
+            <div style={{ marginTop: '8px', width: '240px', height: '140px', position: 'relative', borderRadius: '6px', overflow: 'hidden', border: '1px solid #eee' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={heroImage} alt="Project Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input 
+            type="checkbox" 
+            name="featured" 
+            id="featuredCheckbox" 
+            defaultChecked={project?.featured || false} 
+            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <label htmlFor="featuredCheckbox" style={{ fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
+            Featured on Homepage ("Discover Our Properties")
+          </label>
         </div>
       </div>
 
