@@ -7,6 +7,7 @@ import { AdminTable } from '@/components/admin/AdminTable/AdminTable';
 import { Modal } from '@/components/ui/Modal/Modal';
 import { Booking } from '@/types/booking';
 import { updateBookingStatusAction } from '@/actions/adminBookingActions';
+import { createOrUpdateSaleAction } from '@/actions/adminSalesActions';
 import styles from './BookingListClient.module.css';
 
 interface Props {
@@ -38,9 +39,84 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
   const [refundDecision, setRefundDecision] = useState<'Refunded' | 'Forfeited'>('Refunded');
   const [cancellationNotes, setCancellationNotes] = useState('');
 
+  // Sales Deal Modal State
+  const [isDealModalOpen, setIsDealModalOpen] = useState(false);
+  const [selectedBookingForDeal, setSelectedBookingForDeal] = useState<Booking | null>(null);
+  const [dealPaymentMethod, setDealPaymentMethod] = useState<'Mortgage' | 'Cash' | 'Installment'>('Mortgage');
+  const [dealContractPrice, setDealContractPrice] = useState<number | ''>('');
+  const [dealStatus, setDealStatus] = useState<'In Progress' | 'Completed' | 'Cancelled'>('Completed');
+  const [dealNotes, setDealNotes] = useState('');
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const handleOpenDealModal = (booking: Booking) => {
+    setSelectedBookingForDeal(booking);
+    const standardPrice = booking.propertyUnit?.price || booking.price || 0;
+    if (booking.sale) {
+      setDealPaymentMethod((booking.sale.paymentMethod as any) || 'Mortgage');
+      setDealContractPrice(booking.sale.contractPrice || (standardPrice > 0 ? standardPrice : ''));
+      setDealStatus((booking.sale.status as any) || 'Completed');
+      setDealNotes(booking.sale.notes || '');
+    } else {
+      setDealPaymentMethod('Mortgage');
+      setDealContractPrice(standardPrice > 0 ? standardPrice : (booking.price > 0 ? booking.price : ''));
+      setDealStatus('Completed');
+      setDealNotes('');
+    }
+    setIsDealModalOpen(true);
+  };
+
+  const handleConfirmDeal = () => {
+    if (!selectedBookingForDeal) return;
+    const booking = selectedBookingForDeal;
+    const priceToSave = Number(dealContractPrice) || booking.price;
+
+    const updatedSale: any = {
+      id: booking.sale?.id || `temp-${Date.now()}`,
+      bookingId: booking.id,
+      customerId: booking.customerId,
+      agencyId: booking.agencyId || null,
+      projectTitle: booking.projectTitle,
+      unitNumber: booking.unitNumber,
+      contractPrice: priceToSave,
+      paymentMethod: dealPaymentMethod,
+      status: dealStatus,
+      notes: dealNotes || null,
+      date: new Date().toISOString()
+    };
+
+    setItems(prev => prev.map(b => b.id === booking.id ? {
+      ...b,
+      status: 'Confirmed',
+      sale: updatedSale
+    } : b));
+
+    setIsDealModalOpen(false);
+    setSelectedBookingForDeal(null);
+
+    startTransition(async () => {
+      try {
+        await createOrUpdateSaleAction({
+          bookingId: booking.id,
+          customerId: booking.customerId,
+          agencyId: booking.agencyId || null,
+          projectTitle: booking.projectTitle,
+          unitNumber: booking.unitNumber,
+          contractPrice: priceToSave,
+          paymentMethod: dealPaymentMethod,
+          status: dealStatus,
+          notes: dealNotes || null
+        });
+        router.refresh();
+      } catch (err: any) {
+        console.error('Failed to create/update sale:', err);
+        alert('Gagal menyimpan deal: ' + (err?.message || 'Terjadi kesalahan'));
+        router.refresh();
+      }
+    });
+  };
 
   const handleStatusChange = (id: string, newStatus: Booking['status'], currentPayment: Booking['paymentStatus']) => {
     setItems(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
@@ -288,6 +364,92 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
           </div>
         );
       }
+    },
+    {
+      header: 'Sales Deal',
+      accessor: (row: Booking) => {
+        if (row.sale) {
+          const isMortgage = row.sale.paymentMethod === 'Mortgage';
+          const isCash = row.sale.paymentMethod === 'Cash';
+          const methodLabel = isMortgage ? '🏦 KPR' : isCash ? '💵 Cash' : '🗓️ Bertahap';
+          const badgeBg = isMortgage ? '#eff6ff' : isCash ? '#ecfdf5' : '#fffbeb';
+          const badgeBorder = isMortgage ? '#bfdbfe' : isCash ? '#a7f3d0' : '#fde68a';
+          const badgeColor = isMortgage ? '#1e40af' : isCash ? '#065f46' : '#92400e';
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{
+                  padding: '2px 8px',
+                  borderRadius: '9999px',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  background: badgeBg,
+                  border: `1px solid ${badgeBorder}`,
+                  color: badgeColor
+                }}>
+                  {methodLabel}
+                </span>
+                <span style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  color: row.sale.status === 'Completed' ? '#059669' : row.sale.status === 'Cancelled' ? '#dc2626' : '#d97706'
+                }}>
+                  ● {row.sale.status}
+                </span>
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>
+                Rp {row.sale.contractPrice.toLocaleString('id-ID')}
+              </div>
+              <button
+                type="button"
+                onClick={() => handleOpenDealModal(row)}
+                disabled={isPending}
+                style={{
+                  alignSelf: 'flex-start',
+                  background: 'none',
+                  border: 'none',
+                  color: '#2563eb',
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  padding: 0,
+                  textDecoration: 'underline'
+                }}
+              >
+                Edit Deal
+              </button>
+            </div>
+          );
+        }
+
+        if (row.status === 'Cancelled') {
+          return <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>-</span>;
+        }
+
+        return (
+          <button
+            type="button"
+            onClick={() => handleOpenDealModal(row)}
+            disabled={isPending}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '5px 10px',
+              borderRadius: '6px',
+              border: '1px solid #cbd5e1',
+              background: '#ffffff',
+              color: '#334155',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            <span>💼</span> + Buat Deal
+          </button>
+        );
+      }
     }
   ];
 
@@ -380,6 +542,151 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
           </div>
         )}
       </div>
+
+      {/* Sales Deal Modal */}
+      <Modal 
+        isOpen={isDealModalOpen} 
+        onClose={() => setIsDealModalOpen(false)} 
+        title={selectedBookingForDeal?.sale ? "Edit Sales Deal (Closing)" : "Catat Sales Deal Baru"}
+      >
+        {selectedBookingForDeal && (
+          <div>
+            <div className={styles.modalSummary}>
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>Customer</span>
+                <span className={styles.summaryValue}>{selectedBookingForDeal.customer?.name || 'Customer'}</span>
+              </div>
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>Unit Properti</span>
+                <span className={styles.summaryValue}>Unit {selectedBookingForDeal.unitNumber.toUpperCase()} ({selectedBookingForDeal.projectTitle})</span>
+              </div>
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>Harga Standar Unit</span>
+                <span className={styles.summaryValue} style={{ color: '#2563eb' }}>
+                  Rp {(selectedBookingForDeal.propertyUnit?.price || selectedBookingForDeal.price || 0).toLocaleString('id-ID')}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Skema Pembayaran (Payment Scheme):</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {[
+                  { id: 'Mortgage', label: '🏦 KPR' },
+                  { id: 'Cash', label: '💵 Cash Keras' },
+                  { id: 'Installment', label: '🗓️ Cash Bertahap' }
+                ].map(method => (
+                  <button
+                    key={method.id}
+                    type="button"
+                    onClick={() => setDealPaymentMethod(method.id as any)}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: dealPaymentMethod === method.id ? '2px solid #2563eb' : '1px solid #d1d5db',
+                      background: dealPaymentMethod === method.id ? '#eff6ff' : '#ffffff',
+                      color: dealPaymentMethod === method.id ? '#1e40af' : '#374151',
+                      fontWeight: dealPaymentMethod === method.id ? 600 : 500,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {method.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Nilai Kesepakatan Kontrak / Harga Deal (Rp):</label>
+              <input 
+                type="number"
+                className={styles.formSelect}
+                value={dealContractPrice}
+                onChange={(e) => setDealContractPrice(e.target.value ? Number(e.target.value) : '')}
+                placeholder="Contoh: 500000000"
+              />
+              {dealContractPrice ? (
+                <span style={{ fontSize: '0.8rem', color: '#059669', fontWeight: 600, marginTop: '4px' }}>
+                  Rp {Number(dealContractPrice).toLocaleString('id-ID')}
+                </span>
+              ) : null}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Status Transaksi Deal:</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                {[
+                  { id: 'Completed', label: '🟢 Completed', desc: 'Selesai / Akad' },
+                  { id: 'In Progress', label: '🟡 In Progress', desc: 'Proses Berjalan' },
+                  { id: 'Cancelled', label: '🔴 Cancelled', desc: 'Dibatalkan' }
+                ].map(item => {
+                  const isActive = dealStatus === item.id;
+                  const activeBorder = item.id === 'Completed' ? '#059669' : item.id === 'Cancelled' ? '#dc2626' : '#d97706';
+                  const activeBg = item.id === 'Completed' ? '#ecfdf5' : item.id === 'Cancelled' ? '#fef2f2' : '#fffbeb';
+                  const activeColor = item.id === 'Completed' ? '#065f46' : item.id === 'Cancelled' ? '#991b1b' : '#92400e';
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setDealStatus(item.id as any)}
+                      style={{
+                        padding: '10px 8px',
+                        borderRadius: '8px',
+                        border: isActive ? `2px solid ${activeBorder}` : '1px solid #d1d5db',
+                        background: isActive ? activeBg : '#ffffff',
+                        color: isActive ? activeColor : '#374151',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '2px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{item.label}</span>
+                      <span style={{ fontSize: '0.7rem', color: isActive ? activeColor : '#6b7280' }}>{item.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Catatan Kesepakatan Khusus (Bonus, Kelebihan Tanah, dll):</label>
+              <textarea 
+                className={styles.formTextarea}
+                rows={2}
+                placeholder="Contoh: Gratis kanopi, AC 1 PK, tambah kelebihan tanah 15 m²..."
+                value={dealNotes}
+                onChange={(e) => setDealNotes(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.modalActions}>
+              <button 
+                type="button" 
+                className={styles.btnCancel}
+                onClick={() => setIsDealModalOpen(false)}
+                disabled={isPending}
+              >
+                Batal
+              </button>
+              <button 
+                type="button" 
+                className={styles.pageButton}
+                style={{ background: '#2563eb', color: '#ffffff', borderColor: '#2563eb', fontWeight: 600 }}
+                onClick={handleConfirmDeal}
+                disabled={isPending}
+              >
+                {isPending ? 'Menyimpan...' : 'Simpan Sales Deal'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Cancellation Modal */}
       <Modal 

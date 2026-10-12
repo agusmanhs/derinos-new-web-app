@@ -45,6 +45,7 @@ export type SaleMinAggregateOutputType = {
   paymentMethod: string | null
   status: string | null
   date: Date | null
+  notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +61,7 @@ export type SaleMaxAggregateOutputType = {
   paymentMethod: string | null
   status: string | null
   date: Date | null
+  notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -75,6 +77,7 @@ export type SaleCountAggregateOutputType = {
   paymentMethod: number
   status: number
   date: number
+  notes: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -100,6 +103,7 @@ export type SaleMinAggregateInputType = {
   paymentMethod?: true
   status?: true
   date?: true
+  notes?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -115,6 +119,7 @@ export type SaleMaxAggregateInputType = {
   paymentMethod?: true
   status?: true
   date?: true
+  notes?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -130,6 +135,7 @@ export type SaleCountAggregateInputType = {
   paymentMethod?: true
   status?: true
   date?: true
+  notes?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -232,6 +238,7 @@ export type SaleGroupByOutputType = {
   paymentMethod: string
   status: string
   date: Date
+  notes: string | null
   createdAt: Date
   updatedAt: Date
   _count: SaleCountAggregateOutputType | null
@@ -270,6 +277,7 @@ export type SaleWhereInput = {
   paymentMethod?: Prisma.StringFilter<"Sale"> | string
   status?: Prisma.StringFilter<"Sale"> | string
   date?: Prisma.DateTimeFilter<"Sale"> | Date | string
+  notes?: Prisma.StringNullableFilter<"Sale"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   booking?: Prisma.XOR<Prisma.BookingScalarRelationFilter, Prisma.BookingWhereInput>
@@ -289,6 +297,7 @@ export type SaleOrderByWithRelationInput = {
   paymentMethod?: Prisma.SortOrder
   status?: Prisma.SortOrder
   date?: Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   booking?: Prisma.BookingOrderByWithRelationInput
@@ -311,6 +320,7 @@ export type SaleWhereUniqueInput = Prisma.AtLeast<{
   paymentMethod?: Prisma.StringFilter<"Sale"> | string
   status?: Prisma.StringFilter<"Sale"> | string
   date?: Prisma.DateTimeFilter<"Sale"> | Date | string
+  notes?: Prisma.StringNullableFilter<"Sale"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   booking?: Prisma.XOR<Prisma.BookingScalarRelationFilter, Prisma.BookingWhereInput>
@@ -330,6 +340,7 @@ export type SaleOrderByWithAggregationInput = {
   paymentMethod?: Prisma.SortOrder
   status?: Prisma.SortOrder
   date?: Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SaleCountOrderByAggregateInput
@@ -353,6 +364,7 @@ export type SaleScalarWhereWithAggregatesInput = {
   paymentMethod?: Prisma.StringWithAggregatesFilter<"Sale"> | string
   status?: Prisma.StringWithAggregatesFilter<"Sale"> | string
   date?: Prisma.DateTimeWithAggregatesFilter<"Sale"> | Date | string
+  notes?: Prisma.StringNullableWithAggregatesFilter<"Sale"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Sale"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Sale"> | Date | string
 }
@@ -365,6 +377,7 @@ export type SaleCreateInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   booking: Prisma.BookingCreateNestedOneWithoutSalesInput
@@ -384,6 +397,7 @@ export type SaleUncheckedCreateInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   commission?: Prisma.CommissionUncheckedCreateNestedOneWithoutSaleInput
@@ -397,6 +411,7 @@ export type SaleUpdateInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   booking?: Prisma.BookingUpdateOneRequiredWithoutSalesNestedInput
@@ -416,6 +431,7 @@ export type SaleUncheckedUpdateInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commission?: Prisma.CommissionUncheckedUpdateOneWithoutSaleNestedInput
@@ -432,6 +448,7 @@ export type SaleCreateManyInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -444,6 +461,7 @@ export type SaleUpdateManyMutationInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -459,6 +477,7 @@ export type SaleUncheckedUpdateManyInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -484,6 +503,7 @@ export type SaleCountOrderByAggregateInput = {
   paymentMethod?: Prisma.SortOrder
   status?: Prisma.SortOrder
   date?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -503,6 +523,7 @@ export type SaleMaxOrderByAggregateInput = {
   paymentMethod?: Prisma.SortOrder
   status?: Prisma.SortOrder
   date?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -518,6 +539,7 @@ export type SaleMinOrderByAggregateInput = {
   paymentMethod?: Prisma.SortOrder
   status?: Prisma.SortOrder
   date?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -681,6 +703,7 @@ export type SaleCreateWithoutBookingInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutSalesInput
@@ -698,6 +721,7 @@ export type SaleUncheckedCreateWithoutBookingInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   commission?: Prisma.CommissionUncheckedCreateNestedOneWithoutSaleInput
@@ -743,6 +767,7 @@ export type SaleScalarWhereInput = {
   paymentMethod?: Prisma.StringFilter<"Sale"> | string
   status?: Prisma.StringFilter<"Sale"> | string
   date?: Prisma.DateTimeFilter<"Sale"> | Date | string
+  notes?: Prisma.StringNullableFilter<"Sale"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sale"> | Date | string
 }
@@ -755,6 +780,7 @@ export type SaleCreateWithoutCustomerInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   booking: Prisma.BookingCreateNestedOneWithoutSalesInput
@@ -772,6 +798,7 @@ export type SaleUncheckedCreateWithoutCustomerInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   commission?: Prisma.CommissionUncheckedCreateNestedOneWithoutSaleInput
@@ -811,6 +838,7 @@ export type SaleCreateWithoutAgencyInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   booking: Prisma.BookingCreateNestedOneWithoutSalesInput
@@ -828,6 +856,7 @@ export type SaleUncheckedCreateWithoutAgencyInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   commission?: Prisma.CommissionUncheckedCreateNestedOneWithoutSaleInput
@@ -867,6 +896,7 @@ export type SaleCreateWithoutCommissionInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   booking: Prisma.BookingCreateNestedOneWithoutSalesInput
@@ -885,6 +915,7 @@ export type SaleUncheckedCreateWithoutCommissionInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -913,6 +944,7 @@ export type SaleUpdateWithoutCommissionInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   booking?: Prisma.BookingUpdateOneRequiredWithoutSalesNestedInput
@@ -931,6 +963,7 @@ export type SaleUncheckedUpdateWithoutCommissionInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -945,6 +978,7 @@ export type SaleCreateManyBookingInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -957,6 +991,7 @@ export type SaleUpdateWithoutBookingInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutSalesNestedInput
@@ -974,6 +1009,7 @@ export type SaleUncheckedUpdateWithoutBookingInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commission?: Prisma.CommissionUncheckedUpdateOneWithoutSaleNestedInput
@@ -989,6 +1025,7 @@ export type SaleUncheckedUpdateManyWithoutBookingInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1003,6 +1040,7 @@ export type SaleCreateManyCustomerInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1015,6 +1053,7 @@ export type SaleUpdateWithoutCustomerInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   booking?: Prisma.BookingUpdateOneRequiredWithoutSalesNestedInput
@@ -1032,6 +1071,7 @@ export type SaleUncheckedUpdateWithoutCustomerInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commission?: Prisma.CommissionUncheckedUpdateOneWithoutSaleNestedInput
@@ -1047,6 +1087,7 @@ export type SaleUncheckedUpdateManyWithoutCustomerInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1061,6 +1102,7 @@ export type SaleCreateManyAgencyInput = {
   paymentMethod: string
   status: string
   date?: Date | string
+  notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1073,6 +1115,7 @@ export type SaleUpdateWithoutAgencyInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   booking?: Prisma.BookingUpdateOneRequiredWithoutSalesNestedInput
@@ -1090,6 +1133,7 @@ export type SaleUncheckedUpdateWithoutAgencyInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   commission?: Prisma.CommissionUncheckedUpdateOneWithoutSaleNestedInput
@@ -1105,6 +1149,7 @@ export type SaleUncheckedUpdateManyWithoutAgencyInput = {
   paymentMethod?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1122,6 +1167,7 @@ export type SaleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   paymentMethod?: boolean
   status?: boolean
   date?: boolean
+  notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
@@ -1141,6 +1187,7 @@ export type SaleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   paymentMethod?: boolean
   status?: boolean
   date?: boolean
+  notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
@@ -1159,6 +1206,7 @@ export type SaleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   paymentMethod?: boolean
   status?: boolean
   date?: boolean
+  notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
@@ -1177,11 +1225,12 @@ export type SaleSelectScalar = {
   paymentMethod?: boolean
   status?: boolean
   date?: boolean
+  notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SaleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "bookingId" | "customerId" | "agencyId" | "projectTitle" | "unitNumber" | "contractPrice" | "paymentMethod" | "status" | "date" | "createdAt" | "updatedAt", ExtArgs["result"]["sale"]>
+export type SaleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "bookingId" | "customerId" | "agencyId" | "projectTitle" | "unitNumber" | "contractPrice" | "paymentMethod" | "status" | "date" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["sale"]>
 export type SaleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   booking?: boolean | Prisma.BookingDefaultArgs<ExtArgs>
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -1218,6 +1267,7 @@ export type $SalePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     paymentMethod: string
     status: string
     date: Date
+    notes: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["sale"]>
@@ -1657,6 +1707,7 @@ export interface SaleFieldRefs {
   readonly paymentMethod: Prisma.FieldRef<"Sale", 'String'>
   readonly status: Prisma.FieldRef<"Sale", 'String'>
   readonly date: Prisma.FieldRef<"Sale", 'DateTime'>
+  readonly notes: Prisma.FieldRef<"Sale", 'String'>
   readonly createdAt: Prisma.FieldRef<"Sale", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Sale", 'DateTime'>
 }

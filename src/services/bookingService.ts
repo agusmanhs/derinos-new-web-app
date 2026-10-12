@@ -10,6 +10,7 @@ export const BookingService = {
         customer: true,
         project: true,
         agency: true,
+        sales: true,
         propertyUnit: {
           include: {
             phase: true
@@ -17,10 +18,17 @@ export const BookingService = {
         }
       }
     });
-    return bookings.map(b => ({
-      ...b,
-      date: b.date.toISOString(),
-    })) as unknown as Booking[];
+    return bookings.map(b => {
+      const saleRecord = (b as any).sales?.[0] || null;
+      return {
+        ...b,
+        date: b.date.toISOString(),
+        sale: saleRecord ? {
+          ...saleRecord,
+          date: saleRecord.date?.toISOString ? saleRecord.date.toISOString() : saleRecord.date
+        } : null,
+      };
+    }) as unknown as Booking[];
   },
 
   async updateBookingStatus(
@@ -60,7 +68,7 @@ export const BookingService = {
       });
 
       // SYNC LOGIC: If booking is cancelled, revert property unit to Available and record history
-      if (status === 'Cancelled' || status === 'Canceled') {
+      if (status === 'Cancelled') {
         const availableStatus = await prisma.propertyStatus.findUnique({
           where: { name: 'Available' }
         });

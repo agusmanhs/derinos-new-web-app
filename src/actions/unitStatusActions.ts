@@ -3,6 +3,16 @@
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+import { SalesService } from '@/services/salesService';
+
+export interface DealInputData {
+  createDeal?: boolean;
+  paymentMethod?: 'Cash' | 'Mortgage' | 'Installment';
+  contractPrice?: number;
+  dealStatus?: 'In Progress' | 'Completed' | 'Cancelled';
+  notes?: string;
+}
+
 export async function updateUnitStatusFromSitePlan(
   propertyUnitId: string,
   newStatusId: string,
@@ -10,7 +20,8 @@ export async function updateUnitStatusFromSitePlan(
   customerId?: string,
   agencyId?: string,
   bookingFee?: number,
-  notes?: string
+  notes?: string,
+  dealData?: DealInputData
 ) {
   try {
     const unit = await prisma.propertyUnit.findUnique({
@@ -22,37 +33,31 @@ export async function updateUnitStatusFromSitePlan(
       return { success: false, message: 'Property unit not found' };
     }
 
-    // Prepare transaction operations
-    const operations: any[] = [];
-
     const isAvailable = newStatusName === 'Available' || newStatusName === 'Unmapped / Other';
     const finalCustomerId = isAvailable ? null : (customerId || null);
 
     // 1. Update the property unit status
-    operations.push(
-      prisma.propertyUnit.update({
-        where: { id: propertyUnitId },
-        data: {
-          statusId: newStatusId,
-          customerId: finalCustomerId,
-        }
-      })
-    );
+    await prisma.propertyUnit.update({
+      where: { id: propertyUnitId },
+      data: {
+        statusId: newStatusId,
+        customerId: finalCustomerId,
+      }
+    });
 
     // 1.5. Record the status change in UnitStatusHistory
     const historyCustomerId = isAvailable ? (unit.customerId || customerId || null) : finalCustomerId;
-    operations.push(
-      prisma.unitStatusHistory.create({
-        data: {
-          propertyUnitId,
-          statusId: newStatusId,
-          statusName: newStatusName,
-          customerId: historyCustomerId,
-          agencyId: agencyId || null,
-          notes: notes || null
-        }
-      })
-    );
+    const finalNotes = dealData?.notes || notes || null;
+    await prisma.unitStatusHistory.create({
+      data: {
+        propertyUnitId,
+        statusId: newStatusId,
+        statusName: newStatusName,
+        customerId: historyCustomerId,
+        agencyId: agencyId || null,
+        notes: finalNotes
+      }
+    });
 
     // 2. Logic based on status transition
     const requiresCustomer = !isAvailable;
@@ -66,53 +71,84 @@ export async function updateUnitStatusFromSitePlan(
     });
 
     if (newStatusName === 'Available') {
-      // If returning to Available, cancel the latest active booking
+      // If returning to Available, cancel the latest active booking and any associated deal
       if (latestBooking) {
-        operations.push(
-          prisma.booking.update({
-            where: { id: latestBooking.id },
+        await prisma.booking.update({
+          where: { id: latestBooking.id },
+          data: { status: 'Cancelled' }
+        });
+
+        const existingSale = await prisma.sale.findUnique({
+          where: { bookingId: latestBooking.id }
+        });
+        if (existingSale) {
+          await prisma.sale.update({
+            where: { id: existingSale.id },
             data: { status: 'Cancelled' }
-          })
-        );
+          });
+        }
       }
-    } else if (requiresCustomer) {
-      // For all active statuses, ensure we either update the existing booking or create a new one
+    } else if (requiresCustomer && customerId) {
+      let activeBookingId = latestBooking?.id;
+
+      const isClosingStatus = newStatusName === 'Sudah Akad' || newStatusName === 'Cash/Lunas' || newStatusName === 'Sold' || newStatusName === 'Lunas';
+
       if (latestBooking) {
-        operations.push(
-          prisma.booking.update({
-            where: { id: latestBooking.id },
-            data: {
-              customerId,
-              agencyId: agencyId || null,
-              ...(bookingFee ? { bookingFee } : {})
-            }
-          })
-        );
+        await prisma.booking.update({
+          where: { id: latestBooking.id },
+          data: {
+            customerId,
+            agencyId: agencyId || null,
+            ...(bookingFee !== undefined && bookingFee > 0 ? { bookingFee } : {}),
+            status: isClosingStatus ? 'Confirmed' : latestBooking.status,
+            paymentStatus: isClosingStatus ? 'Paid' : latestBooking.paymentStatus,
+          }
+        });
       } else {
-        // No active booking exists (e.g. jumped straight from Available to Lunas)
-        operations.push(
-          prisma.booking.create({
-            data: {
-              customerId,
-              agencyId: agencyId || null,
-              projectId: unit.projectId,
-              projectTitle: unit.projectTitle,
-              propertyUnitId,
-              unitNumber: unit.unitNumber,
-              price: unit.price,
-              bookingFee: bookingFee || 0,
-              paymentStatus: 'Pending',
-              status: newStatusName === 'Sold' || newStatusName === 'Lunas' || newStatusName === 'Cash' ? 'Confirmed' : 'Awaiting Payment'
-            }
-          })
-        );
+        // No active booking exists (e.g. jumped straight from Available to Akad/Lunas)
+        const newBooking = await prisma.booking.create({
+          data: {
+            customerId,
+            agencyId: agencyId || null,
+            projectId: unit.projectId,
+            projectTitle: unit.projectTitle,
+            propertyUnitId,
+            unitNumber: unit.unitNumber,
+            price: unit.price,
+            bookingFee: bookingFee || 0,
+            paymentStatus: isClosingStatus ? 'Paid' : 'Pending',
+            status: isClosingStatus || dealData?.createDeal ? 'Confirmed' : 'Awaiting Payment'
+          }
+        });
+        activeBookingId = newBooking.id;
+      }
+
+      // Check if we should create or update a Sales Deal
+      const shouldCreateDeal = dealData?.createDeal || isClosingStatus;
+      if (shouldCreateDeal && activeBookingId) {
+        const paymentMethod = dealData?.paymentMethod || (newStatusName === 'Cash/Lunas' ? 'Cash' : 'Mortgage');
+        const contractPrice = Number(dealData?.contractPrice) || unit.price;
+        const dealStatus = dealData?.dealStatus || (isClosingStatus ? 'Completed' : 'In Progress');
+
+        await SalesService.createOrUpdateSale({
+          bookingId: activeBookingId,
+          customerId,
+          agencyId: agencyId || null,
+          projectTitle: unit.projectTitle,
+          unitNumber: unit.unitNumber,
+          contractPrice,
+          paymentMethod,
+          status: dealStatus,
+          notes: dealData?.notes || notes || null
+        });
       }
     }
 
-    // Execute transaction
-    await prisma.$transaction(operations);
-
     revalidatePath(`/admin/projects/${unit.projectId}`);
+    revalidatePath('/admin/sales');
+    revalidatePath('/admin/bookings');
+    revalidatePath('/admin/properties', 'layout');
+
     return { success: true, message: `Successfully updated status to ${newStatusName}` };
 
   } catch (error: any) {

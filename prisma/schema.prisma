@@ -263,6 +263,7 @@ model Sale {
   paymentMethod String // 'Cash' | 'Mortgage' | 'Installment'
   status        String // 'In Progress' | 'Completed' | 'Cancelled'
   date          DateTime @default(now())
+  notes         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
