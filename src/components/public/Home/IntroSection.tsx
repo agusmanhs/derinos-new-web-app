@@ -5,6 +5,11 @@ import { companyStats } from '@/lib/mockData';
 import styles from './IntroSection.module.css';
 
 export const IntroSection: React.FC<{ settings?: any }> = ({ settings }) => {
+  const mainImage = settings?.introImageMain || '/mockups/gallery_1.jpg';
+  const secondaryImage = settings?.introImageSecondary || 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2067&auto=format&fit=crop';
+  const yearsExp = settings?.yearsExperience || companyStats.yearsExperience;
+  const completedProj = settings?.completedProjects || companyStats.completedProjects;
+
   return (
     <section className={styles.intro}>
       <div className={styles.container}>
@@ -20,7 +25,7 @@ export const IntroSection: React.FC<{ settings?: any }> = ({ settings }) => {
           <div className={styles.imageGrid}>
             <div className={styles.imageWrapperMain}>
               <Image 
-                src="https://images.unsplash.com/photo-1600566753086-00f18efc204b?q=80&w=2070&auto=format&fit=crop" 
+                src={mainImage} 
                 alt="Architecture Detail" 
                 fill 
                 className={styles.image} 
@@ -28,7 +33,7 @@ export const IntroSection: React.FC<{ settings?: any }> = ({ settings }) => {
             </div>
             <div className={styles.imageWrapperSecondary}>
               <Image 
-                src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2067&auto=format&fit=crop" 
+                src={secondaryImage} 
                 alt="Interior Detail" 
                 fill 
                 className={styles.image} 
@@ -38,11 +43,11 @@ export const IntroSection: React.FC<{ settings?: any }> = ({ settings }) => {
           
           <div className={styles.statsGrid}>
             <div className={styles.statBox}>
-              <span className={styles.statNumber}>{companyStats.yearsExperience}</span>
+              <span className={styles.statNumber}>{yearsExp}</span>
               <span className={styles.statLabel}>Years Experience</span>
             </div>
             <div className={styles.statBox}>
-              <span className={styles.statNumber}>{companyStats.completedProjects}</span>
+              <span className={styles.statNumber}>{completedProj}</span>
               <span className={styles.statLabel}>Completed Projects</span>
             </div>
           </div>

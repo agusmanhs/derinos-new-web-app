@@ -31,6 +31,10 @@ export type SiteSettingsMinAggregateOutputType = {
   heroImage: string | null
   introTitle: string | null
   introDescription: string | null
+  introImageMain: string | null
+  introImageSecondary: string | null
+  yearsExperience: string | null
+  completedProjects: string | null
   contactEmail: string | null
   contactPhone: string | null
   contactAddress: string | null
@@ -45,6 +49,10 @@ export type SiteSettingsMaxAggregateOutputType = {
   heroImage: string | null
   introTitle: string | null
   introDescription: string | null
+  introImageMain: string | null
+  introImageSecondary: string | null
+  yearsExperience: string | null
+  completedProjects: string | null
   contactEmail: string | null
   contactPhone: string | null
   contactAddress: string | null
@@ -59,6 +67,10 @@ export type SiteSettingsCountAggregateOutputType = {
   heroImage: number
   introTitle: number
   introDescription: number
+  introImageMain: number
+  introImageSecondary: number
+  yearsExperience: number
+  completedProjects: number
   contactEmail: number
   contactPhone: number
   contactAddress: number
@@ -75,6 +87,10 @@ export type SiteSettingsMinAggregateInputType = {
   heroImage?: true
   introTitle?: true
   introDescription?: true
+  introImageMain?: true
+  introImageSecondary?: true
+  yearsExperience?: true
+  completedProjects?: true
   contactEmail?: true
   contactPhone?: true
   contactAddress?: true
@@ -89,6 +105,10 @@ export type SiteSettingsMaxAggregateInputType = {
   heroImage?: true
   introTitle?: true
   introDescription?: true
+  introImageMain?: true
+  introImageSecondary?: true
+  yearsExperience?: true
+  completedProjects?: true
   contactEmail?: true
   contactPhone?: true
   contactAddress?: true
@@ -103,6 +123,10 @@ export type SiteSettingsCountAggregateInputType = {
   heroImage?: true
   introTitle?: true
   introDescription?: true
+  introImageMain?: true
+  introImageSecondary?: true
+  yearsExperience?: true
+  completedProjects?: true
   contactEmail?: true
   contactPhone?: true
   contactAddress?: true
@@ -190,6 +214,10 @@ export type SiteSettingsGroupByOutputType = {
   heroImage: string
   introTitle: string
   introDescription: string
+  introImageMain: string | null
+  introImageSecondary: string | null
+  yearsExperience: string | null
+  completedProjects: string | null
   contactEmail: string | null
   contactPhone: string | null
   contactAddress: string | null
@@ -225,6 +253,10 @@ export type SiteSettingsWhereInput = {
   heroImage?: Prisma.StringFilter<"SiteSettings"> | string
   introTitle?: Prisma.StringFilter<"SiteSettings"> | string
   introDescription?: Prisma.StringFilter<"SiteSettings"> | string
+  introImageMain?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
+  introImageSecondary?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
+  yearsExperience?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
+  completedProjects?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
   contactEmail?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
   contactPhone?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
   contactAddress?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
@@ -239,6 +271,10 @@ export type SiteSettingsOrderByWithRelationInput = {
   heroImage?: Prisma.SortOrder
   introTitle?: Prisma.SortOrder
   introDescription?: Prisma.SortOrder
+  introImageMain?: Prisma.SortOrderInput | Prisma.SortOrder
+  introImageSecondary?: Prisma.SortOrderInput | Prisma.SortOrder
+  yearsExperience?: Prisma.SortOrderInput | Prisma.SortOrder
+  completedProjects?: Prisma.SortOrderInput | Prisma.SortOrder
   contactEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   contactPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   contactAddress?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -256,6 +292,10 @@ export type SiteSettingsWhereUniqueInput = Prisma.AtLeast<{
   heroImage?: Prisma.StringFilter<"SiteSettings"> | string
   introTitle?: Prisma.StringFilter<"SiteSettings"> | string
   introDescription?: Prisma.StringFilter<"SiteSettings"> | string
+  introImageMain?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
+  introImageSecondary?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
+  yearsExperience?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
+  completedProjects?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
   contactEmail?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
   contactPhone?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
   contactAddress?: Prisma.StringNullableFilter<"SiteSettings"> | string | null
@@ -270,6 +310,10 @@ export type SiteSettingsOrderByWithAggregationInput = {
   heroImage?: Prisma.SortOrder
   introTitle?: Prisma.SortOrder
   introDescription?: Prisma.SortOrder
+  introImageMain?: Prisma.SortOrderInput | Prisma.SortOrder
+  introImageSecondary?: Prisma.SortOrderInput | Prisma.SortOrder
+  yearsExperience?: Prisma.SortOrderInput | Prisma.SortOrder
+  completedProjects?: Prisma.SortOrderInput | Prisma.SortOrder
   contactEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   contactPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   contactAddress?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -290,6 +334,10 @@ export type SiteSettingsScalarWhereWithAggregatesInput = {
   heroImage?: Prisma.StringWithAggregatesFilter<"SiteSettings"> | string
   introTitle?: Prisma.StringWithAggregatesFilter<"SiteSettings"> | string
   introDescription?: Prisma.StringWithAggregatesFilter<"SiteSettings"> | string
+  introImageMain?: Prisma.StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
+  introImageSecondary?: Prisma.StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
+  yearsExperience?: Prisma.StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
+  completedProjects?: Prisma.StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
   contactEmail?: Prisma.StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
   contactPhone?: Prisma.StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
   contactAddress?: Prisma.StringNullableWithAggregatesFilter<"SiteSettings"> | string | null
@@ -304,6 +352,10 @@ export type SiteSettingsCreateInput = {
   heroImage?: string
   introTitle?: string
   introDescription?: string
+  introImageMain?: string | null
+  introImageSecondary?: string | null
+  yearsExperience?: string | null
+  completedProjects?: string | null
   contactEmail?: string | null
   contactPhone?: string | null
   contactAddress?: string | null
@@ -318,6 +370,10 @@ export type SiteSettingsUncheckedCreateInput = {
   heroImage?: string
   introTitle?: string
   introDescription?: string
+  introImageMain?: string | null
+  introImageSecondary?: string | null
+  yearsExperience?: string | null
+  completedProjects?: string | null
   contactEmail?: string | null
   contactPhone?: string | null
   contactAddress?: string | null
@@ -332,6 +388,10 @@ export type SiteSettingsUpdateInput = {
   heroImage?: Prisma.StringFieldUpdateOperationsInput | string
   introTitle?: Prisma.StringFieldUpdateOperationsInput | string
   introDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  introImageMain?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  introImageSecondary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearsExperience?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedProjects?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -346,6 +406,10 @@ export type SiteSettingsUncheckedUpdateInput = {
   heroImage?: Prisma.StringFieldUpdateOperationsInput | string
   introTitle?: Prisma.StringFieldUpdateOperationsInput | string
   introDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  introImageMain?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  introImageSecondary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearsExperience?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedProjects?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -360,6 +424,10 @@ export type SiteSettingsCreateManyInput = {
   heroImage?: string
   introTitle?: string
   introDescription?: string
+  introImageMain?: string | null
+  introImageSecondary?: string | null
+  yearsExperience?: string | null
+  completedProjects?: string | null
   contactEmail?: string | null
   contactPhone?: string | null
   contactAddress?: string | null
@@ -374,6 +442,10 @@ export type SiteSettingsUpdateManyMutationInput = {
   heroImage?: Prisma.StringFieldUpdateOperationsInput | string
   introTitle?: Prisma.StringFieldUpdateOperationsInput | string
   introDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  introImageMain?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  introImageSecondary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearsExperience?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedProjects?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -388,6 +460,10 @@ export type SiteSettingsUncheckedUpdateManyInput = {
   heroImage?: Prisma.StringFieldUpdateOperationsInput | string
   introTitle?: Prisma.StringFieldUpdateOperationsInput | string
   introDescription?: Prisma.StringFieldUpdateOperationsInput | string
+  introImageMain?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  introImageSecondary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  yearsExperience?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completedProjects?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -402,6 +478,10 @@ export type SiteSettingsCountOrderByAggregateInput = {
   heroImage?: Prisma.SortOrder
   introTitle?: Prisma.SortOrder
   introDescription?: Prisma.SortOrder
+  introImageMain?: Prisma.SortOrder
+  introImageSecondary?: Prisma.SortOrder
+  yearsExperience?: Prisma.SortOrder
+  completedProjects?: Prisma.SortOrder
   contactEmail?: Prisma.SortOrder
   contactPhone?: Prisma.SortOrder
   contactAddress?: Prisma.SortOrder
@@ -416,6 +496,10 @@ export type SiteSettingsMaxOrderByAggregateInput = {
   heroImage?: Prisma.SortOrder
   introTitle?: Prisma.SortOrder
   introDescription?: Prisma.SortOrder
+  introImageMain?: Prisma.SortOrder
+  introImageSecondary?: Prisma.SortOrder
+  yearsExperience?: Prisma.SortOrder
+  completedProjects?: Prisma.SortOrder
   contactEmail?: Prisma.SortOrder
   contactPhone?: Prisma.SortOrder
   contactAddress?: Prisma.SortOrder
@@ -430,6 +514,10 @@ export type SiteSettingsMinOrderByAggregateInput = {
   heroImage?: Prisma.SortOrder
   introTitle?: Prisma.SortOrder
   introDescription?: Prisma.SortOrder
+  introImageMain?: Prisma.SortOrder
+  introImageSecondary?: Prisma.SortOrder
+  yearsExperience?: Prisma.SortOrder
+  completedProjects?: Prisma.SortOrder
   contactEmail?: Prisma.SortOrder
   contactPhone?: Prisma.SortOrder
   contactAddress?: Prisma.SortOrder
@@ -446,6 +534,10 @@ export type SiteSettingsSelect<ExtArgs extends runtime.Types.Extensions.Internal
   heroImage?: boolean
   introTitle?: boolean
   introDescription?: boolean
+  introImageMain?: boolean
+  introImageSecondary?: boolean
+  yearsExperience?: boolean
+  completedProjects?: boolean
   contactEmail?: boolean
   contactPhone?: boolean
   contactAddress?: boolean
@@ -460,6 +552,10 @@ export type SiteSettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   heroImage?: boolean
   introTitle?: boolean
   introDescription?: boolean
+  introImageMain?: boolean
+  introImageSecondary?: boolean
+  yearsExperience?: boolean
+  completedProjects?: boolean
   contactEmail?: boolean
   contactPhone?: boolean
   contactAddress?: boolean
@@ -474,6 +570,10 @@ export type SiteSettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   heroImage?: boolean
   introTitle?: boolean
   introDescription?: boolean
+  introImageMain?: boolean
+  introImageSecondary?: boolean
+  yearsExperience?: boolean
+  completedProjects?: boolean
   contactEmail?: boolean
   contactPhone?: boolean
   contactAddress?: boolean
@@ -488,6 +588,10 @@ export type SiteSettingsSelectScalar = {
   heroImage?: boolean
   introTitle?: boolean
   introDescription?: boolean
+  introImageMain?: boolean
+  introImageSecondary?: boolean
+  yearsExperience?: boolean
+  completedProjects?: boolean
   contactEmail?: boolean
   contactPhone?: boolean
   contactAddress?: boolean
@@ -495,7 +599,7 @@ export type SiteSettingsSelectScalar = {
   updatedAt?: boolean
 }
 
-export type SiteSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "heroTitle" | "heroSubtitle" | "heroImage" | "introTitle" | "introDescription" | "contactEmail" | "contactPhone" | "contactAddress" | "createdAt" | "updatedAt", ExtArgs["result"]["siteSettings"]>
+export type SiteSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "heroTitle" | "heroSubtitle" | "heroImage" | "introTitle" | "introDescription" | "introImageMain" | "introImageSecondary" | "yearsExperience" | "completedProjects" | "contactEmail" | "contactPhone" | "contactAddress" | "createdAt" | "updatedAt", ExtArgs["result"]["siteSettings"]>
 
 export type $SiteSettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "SiteSettings"
@@ -507,6 +611,10 @@ export type $SiteSettingsPayload<ExtArgs extends runtime.Types.Extensions.Intern
     heroImage: string
     introTitle: string
     introDescription: string
+    introImageMain: string | null
+    introImageSecondary: string | null
+    yearsExperience: string | null
+    completedProjects: string | null
     contactEmail: string | null
     contactPhone: string | null
     contactAddress: string | null
@@ -941,6 +1049,10 @@ export interface SiteSettingsFieldRefs {
   readonly heroImage: Prisma.FieldRef<"SiteSettings", 'String'>
   readonly introTitle: Prisma.FieldRef<"SiteSettings", 'String'>
   readonly introDescription: Prisma.FieldRef<"SiteSettings", 'String'>
+  readonly introImageMain: Prisma.FieldRef<"SiteSettings", 'String'>
+  readonly introImageSecondary: Prisma.FieldRef<"SiteSettings", 'String'>
+  readonly yearsExperience: Prisma.FieldRef<"SiteSettings", 'String'>
+  readonly completedProjects: Prisma.FieldRef<"SiteSettings", 'String'>
   readonly contactEmail: Prisma.FieldRef<"SiteSettings", 'String'>
   readonly contactPhone: Prisma.FieldRef<"SiteSettings", 'String'>
   readonly contactAddress: Prisma.FieldRef<"SiteSettings", 'String'>

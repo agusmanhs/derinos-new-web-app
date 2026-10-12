@@ -356,6 +356,10 @@ model SiteSettings {
   heroImage        String   @default("/mockups/hero_placeholder.jpg")
   introTitle       String   @default("Experience Modern Living")
   introDescription String   @default("We design homes that blend aesthetic architecture with sustainable environments.")
+  introImageMain   String?  @default("/mockups/gallery_1.jpg")
+  introImageSecondary String? @default("https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=2067&auto=format&fit=crop")
+  yearsExperience  String?  @default("15+")
+  completedProjects String? @default("24")
   
   // Contacts
   contactEmail     String?
