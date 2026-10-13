@@ -1,0 +1,187 @@
+.section {
+  width: 100%;
+  padding: 90px 0;
+  background-color: #F8FAFC;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-xl);
+}
+
+.header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 56px auto;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #D97706;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 2.375rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 1.0625rem;
+  color: #64748B;
+  line-height: 1.6;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 40px;
+  align-items: stretch;
+}
+
+.imageColumn {
+  position: relative;
+  display: flex;
+}
+
+.imageCard {
+  position: relative;
+  width: 100%;
+  min-height: 480px;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: 0 16px 36px -10px rgba(11, 25, 44, 0.12);
+  border: 1px solid #E2E8F0;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.badgeOverlay {
+  position: absolute;
+  bottom: 24px;
+  left: 20px;
+  right: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badgeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #FEF3C7;
+  color: #D97706;
+  font-size: 1.2rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.badgeText {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.badgeSub {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+.pillarsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.pillarCard {
+  background: #FFFFFF;
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.pillarCard:hover {
+  border-color: #CBD5E1;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(11, 25, 44, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background-color: #F8FAFC;
+  border: 1px solid #F1F5F9;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.pillarTitle {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.pillarDesc {
+  font-size: 0.875rem;
+  color: #64748B;
+  line-height: 1.55;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .imageCard {
+    height: 360px;
+    min-height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 1.875rem;
+  }
+  .pillarsGrid {
+    grid-template-columns: 1fr;
+  }
+}

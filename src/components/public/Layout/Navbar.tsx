@@ -12,15 +12,16 @@ export const Navbar: React.FC = () => {
           <span>DERINOS GROUP</span>
         </Link>
         <nav className={styles.navLinks}>
-          <Link href="/projects" className={styles.link}>Projects</Link>
-          <Link href="/properties" className={styles.link}>Properties</Link>
-          <Link href="/construction" className={styles.link}>Construction</Link>
-          <Link href="/about" className={styles.link}>About</Link>
-          <Link href="/contact" className={styles.link}>Contact</Link>
+          <Link href="/" className={styles.link}>Beranda</Link>
+          <Link href="/about" className={styles.link}>Tentang Kami</Link>
+          <Link href="/projects" className={styles.link}>Proyek</Link>
+          <Link href="/#tipe-rumah" className={styles.link}>Tipe Rumah</Link>
+          <Link href="/#fasilitas" className={styles.link}>Fasilitas</Link>
+          <Link href="/#berita" className={styles.link}>Berita</Link>
         </nav>
         <div className={styles.actions}>
-          <Link href="/properties" className={styles.cta}>
-            Explore Properties
+          <Link href="/#kontak" className={styles.ctaButton}>
+            Hubungi Kami
           </Link>
         </div>
       </div>

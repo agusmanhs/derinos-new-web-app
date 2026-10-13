@@ -1,30 +1,62 @@
 import React from 'react';
 import { HeroSection } from '@/components/public/Home/HeroSection';
-import { IntroSection } from '@/components/public/Home/IntroSection';
-import { PropertyShowcase } from '@/components/public/Home/PropertyShowcase';
-import { FacilitiesSection } from '@/components/public/Home/FacilitiesSection';
-import { GallerySection } from '@/components/public/Home/GallerySection';
-import { CTASection } from '@/components/public/Home/CTASection';
+import { QuickSearchBar } from '@/components/public/Home/QuickSearchBar';
+import { StatsCounter } from '@/components/public/Home/StatsCounter';
+import { FeaturedProjectsSection } from '@/components/public/Home/FeaturedProjectsSection';
+import { HighlightClusterSection } from '@/components/public/Home/HighlightClusterSection';
+import { ValuePillarsSection } from '@/components/public/Home/ValuePillarsSection';
+import { HouseTypesSection } from '@/components/public/Home/HouseTypesSection';
+import { AmenitiesSection } from '@/components/public/Home/AmenitiesSection';
+import { LocationAccessSection } from '@/components/public/Home/LocationAccessSection';
+import { TestimonialsSection } from '@/components/public/Home/TestimonialsSection';
+import { ArticlesSection } from '@/components/public/Home/ArticlesSection';
+import { ConsultationCTA } from '@/components/public/Home/ConsultationCTA';
+
 import { ProjectService } from '@/services/projectService';
-import { getSiteSettings, getMasterFacilities, getMasterGallery } from '@/actions/adminLandingActions';
+import { getSiteSettings, getMasterFacilities } from '@/actions/adminLandingActions';
 
 export default async function Home() {
-  const stats = await ProjectService.getStats();
   const featuredProjects = await ProjectService.getFeaturedProjects();
-  const projectOptions = await ProjectService.getProjectOptions();
-  
   const settings = await getSiteSettings();
   const masterFacilities = await getMasterFacilities();
-  const masterGallery = await getMasterGallery();
 
   return (
-    <main>
-      <HeroSection stats={stats} settings={settings} />
-      <IntroSection settings={settings} />
-      <PropertyShowcase projects={featuredProjects} />
-      <FacilitiesSection facilities={masterFacilities} />
-      <GallerySection images={masterGallery} />
-      <CTASection projectOptions={projectOptions} />
+    <main style={{ minHeight: '100vh', backgroundColor: '#FFFFFF' }}>
+      {/* 1. Hero Section */}
+      <HeroSection settings={settings} />
+
+      {/* 2. Floating Quick Search */}
+      <QuickSearchBar />
+
+      {/* 3. Statistics Counter Strip */}
+      <StatsCounter settings={settings} />
+
+      {/* 4. Proyek Pilihan untuk Anda */}
+      <FeaturedProjectsSection projects={featuredProjects} />
+
+      {/* 5. Highlight Cluster (Tinggal Nyaman, Bertumbuh Bersama Keluarga) */}
+      <HighlightClusterSection />
+
+      {/* 6. Nilai & Komitmen (Lebih dari Sekadar Rumah) */}
+      <ValuePillarsSection />
+
+      {/* 7. Pilihan Tipe Rumah (Pilih Tipe Rumah yang Sesuai) */}
+      <HouseTypesSection />
+
+      {/* 8. Fasilitas Kawasan (Dirancang untuk Kehidupan yang Lebih Nyaman) */}
+      <AmenitiesSection facilities={masterFacilities} />
+
+      {/* 9. Lokasi & Aksesibilitas (Lokasi Strategis, Aktivitas Lebih Mudah) */}
+      <LocationAccessSection />
+
+      {/* 10. Testimoni Konsumen (Cerita dari Pemilik Rumah Kami) */}
+      <TestimonialsSection />
+
+      {/* 11. Artikel & Insight Properti */}
+      <ArticlesSection />
+
+      {/* 12. Mega Consultation CTA */}
+      <ConsultationCTA settings={settings} />
     </main>
   );
 }
