@@ -25,7 +25,7 @@ export const AdminLayoutClient: React.FC<Props> = ({ user, projects = [], childr
 
   return (
     <div className={styles.adminLayout}>
-      <AdminSidebar userRole={user.role} isOpen={isSidebarOpen} projects={projects} />
+      <AdminSidebar user={user} userRole={user.role} isOpen={isSidebarOpen} projects={projects} />
       
       {isSidebarOpen && (
         <div 

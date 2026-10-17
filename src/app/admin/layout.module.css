@@ -1,20 +1,23 @@
 .adminLayout {
   display: flex;
   min-height: 100vh;
-  background-color: var(--color-neutral);
+  background-color: #F8FAFC;
 }
 
 .mainContent {
   flex: 1;
-  margin-left: 260px; /* Width of sidebar */
+  margin-left: 260px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: #F8FAFC;
 }
 
 .pageContent {
-  padding: var(--spacing-2xl) var(--spacing-xl);
+  padding: 24px 28px;
   flex: 1;
+  max-width: 1600px;
+  width: 100%;
 }
 
 .overlay {
@@ -26,6 +29,10 @@
     margin-left: 0;
   }
   
+  .pageContent {
+    padding: 16px;
+  }
+
   .overlay {
     display: block;
     position: fixed;
@@ -33,7 +40,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(11, 25, 44, 0.6);
+    backdrop-filter: blur(4px);
     z-index: 40;
   }
 }

@@ -14,6 +14,8 @@ export default async function AdminDashboardPage() {
   const totalProjects = await prisma.project.count({ where: { archived: false } });
   const totalUnits = await prisma.propertyUnit.count({ where: { archived: false } });
   const totalCustomers = await prisma.customer.count();
+  const totalLeads = await prisma.lead.count();
+  const totalSales = await prisma.sale.count();
   
   // Calculate total revenue from Booked/Sold properties (Or just use Booking table)
   // Let's use Booking table for confirmed bookings
@@ -27,8 +29,24 @@ export default async function AdminDashboardPage() {
     totalProjects,
     totalUnits,
     totalCustomers,
+    totalLeads,
+    totalSales,
     totalRevenue
   };
+
+  // 1b. Leads for Pipeline Stage Monitor
+  const recentLeads = await prisma.lead.findMany({
+    take: 6,
+    orderBy: { createdAt: 'desc' },
+    include: { project: true }
+  });
+
+  // 1c. Units for Site Plan & Unit Matrix Monitor
+  const sampleUnits = await prisma.propertyUnit.findMany({
+    take: 12,
+    where: { archived: false },
+    include: { propertyStatus: true, customer: true }
+  });
 
   // 2. Recent Bookings
   const recentBookings = await prisma.booking.findMany({
@@ -110,6 +128,8 @@ export default async function AdminDashboardPage() {
       recentCustomers={recentCustomers}
       chartData={chartData}
       unitStatusData={unitStatusData}
+      recentLeads={recentLeads}
+      sampleUnits={sampleUnits}
     />
   );
 }

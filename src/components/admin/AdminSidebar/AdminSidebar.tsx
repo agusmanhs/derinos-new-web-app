@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Role } from '@/types/auth';
+import { User, Role } from '@/types/auth';
 import { Project } from '@/types/project';
 import { 
   IconDashboard, 
@@ -18,7 +18,10 @@ import {
   IconBookings,
   IconUsersGroup,
   IconGlobe,
-  IconExternalLink
+  IconExternalLink,
+  IconCockpit,
+  IconFileLegal,
+  IconWhatsApp
 } from '@/components/ui/Icon/AdminIcons';
 import styles from './AdminSidebar.module.css';
 import { logoutAction } from '@/actions/authActions';
@@ -30,6 +33,8 @@ interface NavItem {
   icon: React.ReactNode;
   permissions: string[];
   hasSubmenu?: boolean;
+  badge?: string;
+  badgeType?: 'live' | 'avail' | 'ok' | 'dot';
 }
 
 interface NavCategory {
@@ -40,98 +45,115 @@ interface NavCategory {
 
 const NAV_CATEGORIES: NavCategory[] = [
   {
-    title: 'Overview',
+    title: 'OPERASIONAL PROPERTI',
     permissions: [],
     items: [
-      { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: <IconDashboard />, permissions: [] }
+      { id: 'dashboard', label: 'Ringkasan Dashboard', href: '/admin', icon: <IconDashboard />, permissions: [] },
+      { id: 'cockpit', label: 'Executive Cockpit', href: '/admin', icon: <IconCockpit />, permissions: [], badge: 'LIVE', badgeType: 'live' },
+      { id: 'units', label: 'Unit & Stok Kavling', href: '/admin/properties', icon: <IconUnits />, permissions: ['view_projects', 'manage_projects'], badge: '24 Avail', badgeType: 'avail' },
+      { id: 'projects', label: 'Master Proyek & Site Plan', href: '/admin/projects', icon: <IconProjects />, permissions: ['view_projects', 'manage_projects'], hasSubmenu: true },
+      { id: 'legal', label: 'Berkas KPR & Legalitas', href: '/admin/sales', icon: <IconFileLegal />, permissions: ['manage_bookings'], badge: '•', badgeType: 'dot' },
+      { id: 'construction', label: 'Progres Konstruksi', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects'] },
+      { id: 'statuses', label: 'Master Status Kavling', href: '/admin/settings/statuses', icon: <IconSettings />, permissions: ['manage_projects'] },
     ]
   },
   {
-    title: 'Properties & Projects',
-    permissions: ['view_projects', 'manage_projects'],
+    title: 'SALES & CRM',
+    permissions: ['view_leads', 'manage_leads', 'view_bookings', 'manage_bookings', 'manage_customers', 'manage_agencies'],
     items: [
-      { id: 'projects', label: 'Projects', href: '/admin/projects', icon: <IconProjects />, permissions: ['view_projects', 'manage_projects'], hasSubmenu: true },
-      { id: 'units', label: 'Units & Inventory', href: '/admin/properties', icon: <IconUnits />, permissions: ['view_projects', 'manage_projects'] },
-      { id: 'construction', label: 'Construction Progress', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects'] },
-      { id: 'statuses', label: 'Unit Statuses', href: '/admin/settings/statuses', icon: <IconSettings />, permissions: ['manage_projects'] },
-    ]
-  },
-  {
-    title: 'Sales & CRM',
-    permissions: ['view_leads', 'manage_leads', 'view_bookings', 'manage_bookings'],
-    items: [
-      { id: 'crm', label: 'Leads (CRM)', href: '/admin/leads', icon: <IconCRM />, permissions: ['view_leads', 'manage_leads'] },
-      { id: 'bookings', label: 'Bookings', href: '/admin/bookings', icon: <IconBookings />, permissions: ['view_bookings', 'manage_bookings'] },
-      { id: 'sales', label: 'Sales Deals', href: '/admin/sales', icon: <IconSales />, permissions: ['manage_bookings'] },
-    ]
-  },
-  {
-    title: 'Contacts & Partners',
-    permissions: ['manage_customers', 'manage_agencies'], 
-    items: [
-      { id: 'customers', label: 'Customers', href: '/admin/customers', icon: <IconUser />, permissions: ['manage_customers'] },
+      { id: 'crm', label: 'Leads (CRM Prospek)', href: '/admin/leads', icon: <IconCRM />, permissions: ['view_leads', 'manage_leads'] },
+      { id: 'bookings', label: 'Bookings & NUP', href: '/admin/bookings', icon: <IconBookings />, permissions: ['view_bookings', 'manage_bookings'] },
+      { id: 'sales', label: 'Sales Deals & Akad', href: '/admin/sales', icon: <IconSales />, permissions: ['manage_bookings'] },
+      { id: 'customers', label: 'Data Konsumen', href: '/admin/customers', icon: <IconUser />, permissions: ['manage_customers'] },
       { id: 'agencies', label: 'Marketing Agencies', href: '/admin/agencies', icon: <IconUsersGroup />, permissions: ['manage_agencies'] },
     ]
   },
   {
-    title: 'Website & System',
+    title: 'INTEGRASI & SISTEM',
     permissions: ['manage_projects', 'manage_users', 'manage_roles'],
     items: [
-      { id: 'landing', label: 'Landing Page', href: '/admin/landing', icon: <IconGlobe />, permissions: ['manage_projects'], hasSubmenu: true },
-      { id: 'users', label: 'User Management', href: '/admin/users', icon: <IconUsersGroup />, permissions: ['manage_users', 'manage_roles'], hasSubmenu: true },
+      { id: 'landing', label: 'Landing Page Web', href: '/admin/landing', icon: <IconGlobe />, permissions: ['manage_projects'], hasSubmenu: true },
+      { id: 'whatsapp', label: 'WA Blast & Automasi', href: '#wa-automation', icon: <IconWhatsApp />, permissions: [], badge: 'API OK', badgeType: 'ok' },
+      { id: 'users', label: 'Pengaturan & Akses Tim', href: '/admin/users', icon: <IconSettings />, permissions: ['manage_users', 'manage_roles'], hasSubmenu: true },
     ]
   }
 ];
 
-export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen: boolean; projects?: Project[] }> = ({ userRole, isOpen, projects = [] }) => {
+export const AdminSidebar: React.FC<{ 
+  user?: User;
+  userRole: Role | null | undefined; 
+  isOpen: boolean; 
+  projects?: Project[] 
+}> = ({ user, userRole, isOpen, projects = [] }) => {
   const pathname = usePathname();
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
     projects: pathname.startsWith('/admin/projects'),
-    users: pathname.startsWith('/admin/users')
+    users: pathname.startsWith('/admin/users'),
+    landing: pathname.startsWith('/admin/landing')
   });
 
   const userPermissions = userRole?.permissions || [];
   const hasPermission = (requiredPerms: string[]) => {
-    if (requiredPerms.length === 0) return true; // Empty means no specific permission needed
-    // Assuming Super Admin has all permissions, but the userPermissions list should be exhaustive from DB
+    if (requiredPerms.length === 0) return true;
     return requiredPerms.some(p => userPermissions.includes(p));
   };
 
-  // Filter categories that have at least one allowed item for this role
   const allowedCategories = NAV_CATEGORIES.map(category => ({
     ...category,
     items: category.items.filter(item => hasPermission(item.permissions))
   })).filter(category => category.items.length > 0);
 
   const toggleSubmenu = (id: string, e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to the parent href so it just toggles the menu
+    e.preventDefault();
     setOpenSubmenus(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const currentProjectName = projects.length > 0 ? projects[0].title : 'Cluster Alam Asri';
+
   return (
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+      {/* Brand Header */}
       <div className={styles.logoContainer}>
-        <div className={styles.logoWrapper}>
-          <Image src="/logo.png" alt="Derinos Logo" width={32} height={32} className={styles.sidebarLogo} />
-          <div className={styles.logo}>
-            Derinos Admin
+        <div className={styles.logoRow}>
+          <div className={styles.logoImgWrapper}>
+            <Image 
+              src="/logo.png" 
+              alt="Derinos Logo" 
+              width={36} 
+              height={36} 
+              className={styles.sidebarLogo} 
+              priority
+            />
+          </div>
+          <div className={styles.logoTextWrapper}>
+            <div className={styles.brandTitle}>
+              <span>DERINOS</span>
+              <span className={styles.cmsBadge}>CMS</span>
+              <span className={styles.versionBadge}>v4.2</span>
+            </div>
+            <div className={styles.logoSubtitle}>
+              Executive Cockpit Suite
+            </div>
           </div>
         </div>
-        <div className={styles.logoSubtitle}>
-          Estate Management
+
+        {/* Active Cluster Pill Indicator */}
+        <div className={styles.clusterPill}>
+          <span className={styles.clusterDot} />
+          <span className={styles.clusterName}>{currentProjectName}</span>
+          <span className={styles.clusterSold}>92% Terjual</span>
         </div>
       </div>
-      
 
-
+      {/* Nav Menu Categories */}
       <nav className={styles.nav}>
         {allowedCategories.map((category) => (
-          <div key={category.title}>
-            {category.title !== 'Main' && (
-              <div className={styles.categoryHeader}>{category.title}</div>
-            )}
+          <div key={category.title} className={styles.categorySection}>
+            <div className={styles.categoryHeader}>{category.title}</div>
+            
             {category.items.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href) && !item.hasSubmenu);
+              const isActive = (item.id === 'cockpit' && pathname === '/admin') || 
+                               (item.id !== 'cockpit' && (pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href) && !item.hasSubmenu)));
               const isSubmenuOpen = openSubmenus[item.id];
               
               return (
@@ -144,9 +166,18 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
                     <span className={styles.icon}>{item.icon}</span>
                     <span className={styles.label}>{item.label}</span>
                     
+                    {/* Badges matching mockup */}
+                    {item.badge && (
+                      <span className={`${styles.itemBadge} ${styles[item.badgeType || 'live']}`}>
+                        {item.badge}
+                      </span>
+                    )}
+
                     {item.hasSubmenu && (
                       <span className={`${styles.chevron} ${isSubmenuOpen ? styles.chevronOpen : ''}`}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
                       </span>
                     )}
                   </Link>
@@ -155,17 +186,17 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
                     <div className={styles.submenu}>
                       <Link 
                         href="/admin/projects"
-                        className={`${styles.submenuItem} ${pathname === '/admin/projects' ? styles.active : ''}`}
+                        className={`${styles.submenuItem} ${pathname === '/admin/projects' ? styles.activeSubmenu : ''}`}
                       >
-                        All Projects
+                        Semua Proyek
                       </Link>
                       {projects.map(project => (
                         <Link 
                           key={project.id}
                           href={`/admin/projects/${project.slug}`}
-                          className={`${styles.submenuItem} ${pathname === `/admin/projects/${project.slug}` ? styles.active : ''}`}
+                          className={`${styles.submenuItem} ${pathname === `/admin/projects/${project.slug}` ? styles.activeSubmenu : ''}`}
                         >
-                          {project.slug}
+                          {project.title}
                         </Link>
                       ))}
                     </div>
@@ -176,17 +207,17 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
                       {hasPermission(['manage_users']) && (
                         <Link 
                           href="/admin/users?refresh=1"
-                          className={`${styles.submenuItem} ${pathname === '/admin/users' ? styles.active : ''}`}
+                          className={`${styles.submenuItem} ${pathname === '/admin/users' ? styles.activeSubmenu : ''}`}
                         >
-                          Users
+                          Users & Tim
                         </Link>
                       )}
                       {hasPermission(['manage_roles']) && (
                         <Link 
                           href="/admin/users/roles?refresh=1"
-                          className={`${styles.submenuItem} ${pathname.startsWith('/admin/users/roles') ? styles.active : ''}`}
+                          className={`${styles.submenuItem} ${pathname.startsWith('/admin/users/roles') ? styles.activeSubmenu : ''}`}
                         >
-                          Roles & Permissions
+                          Roles & Hak Akses
                         </Link>
                       )}
                     </div>
@@ -196,21 +227,21 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
                     <div className={styles.submenu}>
                       <Link 
                         href="/admin/landing/general"
-                        className={`${styles.submenuItem} ${pathname.includes('/landing/general') ? styles.active : ''}`}
+                        className={`${styles.submenuItem} ${pathname.includes('/landing/general') ? styles.activeSubmenu : ''}`}
                       >
-                        General Settings
+                        Pengaturan Umum
                       </Link>
                       <Link 
                         href="/admin/landing/facilities"
-                        className={`${styles.submenuItem} ${pathname.includes('/landing/facilities') ? styles.active : ''}`}
+                        className={`${styles.submenuItem} ${pathname.includes('/landing/facilities') ? styles.activeSubmenu : ''}`}
                       >
-                        Facilities
+                        Fasilitas Kawasan
                       </Link>
                       <Link 
                         href="/admin/landing/gallery"
-                        className={`${styles.submenuItem} ${pathname.includes('/landing/gallery') ? styles.active : ''}`}
+                        className={`${styles.submenuItem} ${pathname.includes('/landing/gallery') ? styles.activeSubmenu : ''}`}
                       >
-                        Gallery
+                        Galeri Foto
                       </Link>
                     </div>
                   )}
@@ -221,34 +252,40 @@ export const AdminSidebar: React.FC<{ userRole: Role | null | undefined; isOpen:
         ))}
       </nav>
 
+      {/* Bottom Profile Bar */}
       <div className={styles.bottomNav}>
         <Link 
           href="/" 
           target="_blank" 
-          className={styles.navItem}
-          title="Open live website in new tab"
+          className={styles.liveWebLink}
+          title="Buka Website Derinos di Tab Baru"
         >
-          <span className={styles.icon}><IconGlobe /></span>
-          <span className={styles.label}>Live Website</span>
-          <span style={{ opacity: 0.6, display: 'flex', alignItems: 'center' }}>
-            <IconExternalLink />
-          </span>
+          <span className={styles.liveWebIcon}><IconGlobe /></span>
+          <span className={styles.liveWebLabel}>Pratinjau Web Publik</span>
+          <span style={{ opacity: 0.6 }}><IconExternalLink /></span>
         </Link>
-        <button 
-          type="button"
-          onClick={() => logoutAction()}
-          className={styles.navItem}
-          style={{ width: '100%', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer' }}
-        >
-          <span className={styles.icon}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+        <div className={styles.userProfileRow}>
+          <div className={styles.userAvatar}>
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+          </div>
+          <div className={styles.userInfo}>
+            <div className={styles.userName}>{user?.name || 'Raden Ayu'}</div>
+            <div className={styles.userRole}>{user?.role?.name || 'Lead Sales Admin'}</div>
+          </div>
+          <button 
+            type="button"
+            onClick={() => logoutAction()}
+            className={styles.logoutBtn}
+            title="Keluar / Sign Out"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16 17 21 12 16 7"></polyline>
               <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
-          </span>
-          <span className={styles.label}>Sign Out</span>
-        </button>
+          </button>
+        </div>
       </div>
     </aside>
   );
