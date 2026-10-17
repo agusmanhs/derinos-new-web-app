@@ -4,14 +4,14 @@
   gap: 20px;
 }
 
-/* Header & Tab Switcher */
+/* Header */
 .headerRow {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   gap: 20px;
   flex-wrap: wrap;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .titleGroup {
@@ -44,43 +44,33 @@
 }
 
 .pageSubtitle {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: #64748B;
   margin: 0;
 }
 
-.tabSwitcher {
-  display: flex;
-  background: #E2E8F0;
-  padding: 4px;
-  border-radius: 12px;
-  gap: 4px;
-}
-
-.tabBtn {
+.headerRightActions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: #64748B;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  gap: 10px;
 }
 
-.tabBtn:hover {
-  color: #0F172A;
-}
-
-.tabActive {
-  background: #FFFFFF;
+.quickInputBtn {
+  display: inline-flex;
+  align-items: center;
+  background: #F59E0B;
   color: #0B192C;
   font-weight: 700;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-size: 0.82rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+  transition: all 0.15s;
+}
+
+.quickInputBtn:hover {
+  background: #D97706;
 }
 
 /* 1. TOP 5 EXECUTIVE KPI CARDS */
@@ -241,7 +231,89 @@
   border-radius: 9999px;
 }
 
-/* 2. COCKPIT WORKSPACE (2-COLUMN GRID) */
+/* 2. CHARTS SECTION (LANGSUNG TAMPIL DI HALAMAN UTAMA) */
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+}
+
+.chartHeaderBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #065F46;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.trendDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+}
+
+.viewInventoryLink {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0B192C;
+  text-decoration: none;
+}
+
+.viewInventoryLink:hover {
+  color: #F59E0B;
+  text-decoration: underline;
+}
+
+.chartWrapper {
+  flex: 1;
+  min-height: 270px;
+  margin-top: 6px;
+}
+
+.customTooltip {
+  background: #FFFFFF;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.tooltipLabel {
+  margin: 0 0 2px 0;
+  font-size: 0.78rem;
+  color: #64748B;
+}
+
+.tooltipValue {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0B192C;
+}
+
+/* 3. COCKPIT WORKSPACE (2-COLUMN GRID) */
 .cockpitWorkspace {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
@@ -266,7 +338,6 @@
   gap: 20px;
 }
 
-/* Cockpit Standard Card */
 .cockpitCard {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
@@ -407,7 +478,7 @@
   color: #FFFFFF;
 }
 
-/* Leads List & Lead Cards */
+/* Leads List & Cards */
 .leadsList {
   display: flex;
   flex-direction: column;
@@ -1373,62 +1444,10 @@
   background: #D97706;
 }
 
-/* 3. ANALYTICS & REPORTS TAB */
-.analyticsWorkspace {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.mainGrid {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr;
-  gap: 20px;
-}
-
-@media (max-width: 1024px) {
-  .mainGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.chartCard {
-  background: #FFFFFF;
-  border-radius: 14px;
-  padding: 22px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-.chartWrapper {
-  flex: 1;
-  min-height: 280px;
-}
-
-.customTooltip {
-  background: #FFFFFF;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-}
-
-.tooltipLabel {
-  margin: 0 0 2px 0;
-  font-size: 0.78rem;
-  color: #64748B;
-}
-
-.tooltipValue {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #0B192C;
-}
-
+/* 4. RECENT BOOKINGS & CUSTOMERS SECTION */
 .bottomGrid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.8fr 1fr;
   gap: 20px;
 }
 
@@ -1440,7 +1459,7 @@
 
 .listCard {
   background: #FFFFFF;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 22px;
   border: 1px solid #E2E8F0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -1454,6 +1473,7 @@
 }
 
 .viewAll:hover {
+  color: #F59E0B;
   text-decoration: underline;
 }
 
