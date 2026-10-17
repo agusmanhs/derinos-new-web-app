@@ -2,6 +2,14 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { landingMockData } from '@/lib/landingMockData';
+import {
+  CarIcon,
+  TrainIcon,
+  ShoppingBagIcon,
+  HospitalIcon,
+  MapPinIcon,
+  HomeIcon
+} from '@/components/ui/Icon/LandingIcons';
 import styles from './LocationAccessSection.module.css';
 
 export const LocationAccessSection: React.FC = () => {
@@ -10,15 +18,15 @@ export const LocationAccessSection: React.FC = () => {
   const renderIcon = (type: string) => {
     switch (type) {
       case 'car':
-        return '🚗';
+        return <CarIcon size={22} color="#0B192C" />;
       case 'train':
-        return '🚆';
+        return <TrainIcon size={22} color="#0B192C" />;
       case 'shopping-bag':
-        return '🛍️';
+        return <ShoppingBagIcon size={22} color="#0B192C" />;
       case 'heart-pulse':
-        return '🏥';
+        return <HospitalIcon size={22} color="#0B192C" />;
       default:
-        return '📍';
+        return <MapPinIcon size={22} color="#0B192C" />;
     }
   };
 
@@ -30,7 +38,9 @@ export const LocationAccessSection: React.FC = () => {
           <div className={styles.mapColumn}>
             <div className={styles.mapCard}>
               <div className={styles.mapHeader}>
-                <span className={styles.mapPinIcon}>📍</span>
+                <span className={styles.mapPinIcon}>
+                  <MapPinIcon size={22} color="#D97706" />
+                </span>
                 <div>
                   <h4 className={styles.mapTitle}>Akses Cepat Menuju Segala Kebutuhan</h4>
                   <p className={styles.mapSub}>Terhubung langsung dengan jalan arteri & tol lingkar luar</p>
@@ -48,7 +58,8 @@ export const LocationAccessSection: React.FC = () => {
                 <div className={styles.pinMarker}>
                   <div className={styles.pulseEffect} />
                   <div className={styles.pinBadge}>
-                    <span>🏠 Derinos Hub</span>
+                    <HomeIcon size={14} color="#F59E0B" />
+                    <span>Derinos Hub</span>
                   </div>
                 </div>
               </div>

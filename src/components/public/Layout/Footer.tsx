@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ClockIcon, MapPinIcon, PhoneIcon, MailIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './Footer.module.css';
 
 export const Footer: React.FC<{ settings?: any }> = ({ settings }) => {
@@ -22,7 +23,9 @@ export const Footer: React.FC<{ settings?: any }> = ({ settings }) => {
               Pengembang properti terpercaya yang berkomitmen menghadirkan kawasan hunian modern, asri, dan bernilai investasi tinggi untuk masa depan keluarga Anda.
             </p>
             <div className={styles.operatingHours}>
-              <span className={styles.hoursIcon}>🕒</span>
+              <span className={styles.hoursIcon}>
+                <ClockIcon size={18} color="#F59E0B" />
+              </span>
               <div>
                 <strong>Jam Operasional Kantor:</strong>
                 <p>09.00 - 17.00 WITA (Senin - Minggu)</p>
@@ -59,15 +62,21 @@ export const Footer: React.FC<{ settings?: any }> = ({ settings }) => {
             <h4 className={styles.colTitle}>HUBUNGI KAMI</h4>
             <div className={styles.contactList}>
               <div className={styles.contactItem}>
-                <span className={styles.contactIcon}>📍</span>
+                <span className={styles.contactIcon}>
+                  <MapPinIcon size={18} color="#F59E0B" />
+                </span>
                 <span>{address}</span>
               </div>
               <div className={styles.contactItem}>
-                <span className={styles.contactIcon}>📞</span>
+                <span className={styles.contactIcon}>
+                  <PhoneIcon size={18} color="#F59E0B" />
+                </span>
                 <span>{phone}</span>
               </div>
               <div className={styles.contactItem}>
-                <span className={styles.contactIcon}>✉️</span>
+                <span className={styles.contactIcon}>
+                  <MailIcon size={18} color="#F59E0B" />
+                </span>
                 <span>{email}</span>
               </div>
             </div>

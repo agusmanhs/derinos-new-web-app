@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { CheckIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './HeroSection.module.css';
 
 export const HeroSection: React.FC<{ settings?: any }> = ({ settings }) => {
@@ -44,15 +45,21 @@ export const HeroSection: React.FC<{ settings?: any }> = ({ settings }) => {
 
           <div className={styles.trustBadges}>
             <div className={styles.badgeItem}>
-              <span className={styles.checkIcon}>✓</span>
+              <span className={styles.checkIcon}>
+                <CheckIcon size={12} color="#F59E0B" />
+              </span>
               <span>Legalitas Jelas & SHM</span>
             </div>
             <div className={styles.badgeItem}>
-              <span className={styles.checkIcon}>✓</span>
+              <span className={styles.checkIcon}>
+                <CheckIcon size={12} color="#F59E0B" />
+              </span>
               <span>Fasilitas Komplit</span>
             </div>
             <div className={styles.badgeItem}>
-              <span className={styles.checkIcon}>✓</span>
+              <span className={styles.checkIcon}>
+                <CheckIcon size={12} color="#F59E0B" />
+              </span>
               <span>Lokasi Bebas Banjir</span>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { landingMockData, MockTestimonial } from '@/lib/landingMockData';
+import { StarIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './TestimonialsSection.module.css';
 
 export const TestimonialsSection: React.FC = () => {
@@ -22,7 +23,7 @@ export const TestimonialsSection: React.FC = () => {
             <div key={item.id} className={styles.card}>
               <div className={styles.starsRow}>
                 {Array.from({ length: item.rating }).map((_, i) => (
-                  <span key={i} className={styles.star}>★</span>
+                  <StarIcon key={i} size={18} color="#F59E0B" filled />
                 ))}
               </div>
 

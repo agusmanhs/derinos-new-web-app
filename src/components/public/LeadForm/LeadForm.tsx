@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { Select } from '@/components/ui/Select/Select';
 import { submitLead } from '@/actions/leadActions';
+import { CheckIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './LeadForm.module.css';
 
 export interface LeadFormProps {
@@ -60,7 +61,9 @@ export const LeadForm: React.FC<LeadFormProps> = ({
   if (successMsg) {
     return (
       <div className={styles.successState}>
-        <div className={styles.successIcon}>✓</div>
+        <div className={styles.successIcon}>
+          <CheckIcon size={24} color="#10B981" />
+        </div>
         <h3>Request Received</h3>
         <p>{successMsg}</p>
         <Button variant="outlined" onClick={() => setSuccessMsg('')}>Send Another Request</Button>

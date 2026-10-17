@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { landingMockData, MockHouseType } from '@/lib/landingMockData';
+import { BedIcon, BathIcon, CarIcon, AreaIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './HouseTypesSection.module.css';
 
 export const HouseTypesSection: React.FC = () => {
@@ -46,19 +47,31 @@ export const HouseTypesSection: React.FC = () => {
 
                 <div className={styles.specsList}>
                   <div className={styles.specRow}>
-                    <span className={styles.specLabel}>🛏️ Kamar Tidur</span>
+                    <span className={styles.specLabel}>
+                      <BedIcon size={16} color="#0B192C" />
+                      <span>Kamar Tidur</span>
+                    </span>
                     <span className={styles.specVal}>{item.specs.bedrooms} Kamar</span>
                   </div>
                   <div className={styles.specRow}>
-                    <span className={styles.specLabel}>🚿 Kamar Mandi</span>
+                    <span className={styles.specLabel}>
+                      <BathIcon size={16} color="#0B192C" />
+                      <span>Kamar Mandi</span>
+                    </span>
                     <span className={styles.specVal}>{item.specs.bathrooms} Kamar</span>
                   </div>
                   <div className={styles.specRow}>
-                    <span className={styles.specLabel}>🚗 Carport</span>
+                    <span className={styles.specLabel}>
+                      <CarIcon size={16} color="#0B192C" />
+                      <span>Carport</span>
+                    </span>
                     <span className={styles.specVal}>{item.specs.carports} Mobil</span>
                   </div>
                   <div className={styles.specRow}>
-                    <span className={styles.specLabel}>📐 Luas Bangunan / Tanah</span>
+                    <span className={styles.specLabel}>
+                      <AreaIcon size={16} color="#0B192C" />
+                      <span>Luas Bangunan / Tanah</span>
+                    </span>
                     <span className={styles.specVal}>{item.specs.buildingArea} / {item.specs.landArea} m²</span>
                   </div>
                 </div>

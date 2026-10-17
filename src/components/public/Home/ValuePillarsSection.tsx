@@ -1,6 +1,15 @@
 import React from 'react';
 import Image from 'next/image';
 import { landingMockData } from '@/lib/landingMockData';
+import { 
+  MapPinIcon, 
+  BuildingIcon, 
+  DocumentIcon, 
+  LeafIcon, 
+  PoolIcon, 
+  TrendingUpIcon, 
+  StarIcon 
+} from '@/components/ui/Icon/LandingIcons';
 import styles from './ValuePillarsSection.module.css';
 
 export const ValuePillarsSection: React.FC = () => {
@@ -9,19 +18,19 @@ export const ValuePillarsSection: React.FC = () => {
   const renderIcon = (index: number) => {
     switch (index) {
       case 0:
-        return '📍';
+        return <MapPinIcon size={20} color="#0B192C" />;
       case 1:
-        return '🏗️';
+        return <BuildingIcon size={20} color="#0B192C" />;
       case 2:
-        return '📜';
+        return <DocumentIcon size={20} color="#0B192C" />;
       case 3:
-        return '🌿';
+        return <LeafIcon size={20} color="#0B192C" />;
       case 4:
-        return '🏊';
+        return <PoolIcon size={20} color="#0B192C" />;
       case 5:
-        return '📈';
+        return <TrendingUpIcon size={20} color="#0B192C" />;
       default:
-        return '✨';
+        return <StarIcon size={20} color="#0B192C" />;
     }
   };
 
@@ -46,7 +55,9 @@ export const ValuePillarsSection: React.FC = () => {
                 sizes="(max-width: 1024px) 100vw, 40vw"
               />
               <div className={styles.badgeOverlay}>
-                <span className={styles.badgeIcon}>★</span>
+                <span className={styles.badgeIcon}>
+                  <StarIcon size={20} color="#D97706" filled />
+                </span>
                 <div>
                   <span className={styles.badgeText}>{valuePillars.imageBadge}</span>
                   <span className={styles.badgeSub}>Berdasarkan survey kepuasan penghuni</span>

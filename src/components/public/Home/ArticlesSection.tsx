@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { landingMockData, MockArticle } from '@/lib/landingMockData';
+import { CalendarIcon, ClockIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './ArticlesSection.module.css';
 
 export const ArticlesSection: React.FC = () => {
@@ -43,9 +44,15 @@ export const ArticlesSection: React.FC = () => {
 
               <div className={styles.cardContent}>
                 <div className={styles.metaRow}>
-                  <span>📅 {item.date}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <CalendarIcon size={14} color="#64748B" />
+                    <span>{item.date}</span>
+                  </span>
                   <span>•</span>
-                  <span>⏱️ {item.readTime}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <ClockIcon size={14} color="#64748B" />
+                    <span>{item.readTime}</span>
+                  </span>
                 </div>
 
                 <h3 className={styles.articleTitle}>{item.title}</h3>

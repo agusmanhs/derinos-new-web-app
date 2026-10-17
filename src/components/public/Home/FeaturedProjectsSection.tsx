@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Project } from '@/types/project';
 import { landingMockData, MockProjectCard } from '@/lib/landingMockData';
+import { BedIcon, BathIcon, CarIcon, AreaIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './FeaturedProjectsSection.module.css';
 
 interface Props {
@@ -85,19 +86,19 @@ export const FeaturedProjectsSection: React.FC<Props> = ({ projects = [] }) => {
 
                 <div className={styles.specsRow}>
                   <div className={styles.specItem} title="Kamar Tidur">
-                    <span className={styles.specIcon}>🛏️</span>
+                    <span className={styles.specIcon}><BedIcon size={16} color="#0B192C" /></span>
                     <span>{item.specs.bedrooms} KT</span>
                   </div>
                   <div className={styles.specItem} title="Kamar Mandi">
-                    <span className={styles.specIcon}>🚿</span>
+                    <span className={styles.specIcon}><BathIcon size={16} color="#0B192C" /></span>
                     <span>{item.specs.bathrooms} KM</span>
                   </div>
                   <div className={styles.specItem} title="Carport">
-                    <span className={styles.specIcon}>🚗</span>
+                    <span className={styles.specIcon}><CarIcon size={16} color="#0B192C" /></span>
                     <span>{item.specs.carports} Mobil</span>
                   </div>
                   <div className={styles.specItem} title="Luas Tanah">
-                    <span className={styles.specIcon}>📐</span>
+                    <span className={styles.specIcon}><AreaIcon size={16} color="#0B192C" /></span>
                     <span>{item.specs.landArea} m²</span>
                   </div>
                 </div>

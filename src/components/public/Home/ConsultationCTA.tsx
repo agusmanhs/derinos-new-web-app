@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { WhatsAppIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './ConsultationCTA.module.css';
 
 export const ConsultationCTA: React.FC<{ settings?: any }> = ({ settings }) => {
@@ -33,7 +34,7 @@ export const ConsultationCTA: React.FC<{ settings?: any }> = ({ settings }) => {
             </Link>
 
             <Link href={waUrl} target="_blank" rel="noopener noreferrer" className={styles.whatsappButton}>
-              <span className={styles.waIcon}>💬</span>
+              <WhatsAppIcon size={20} color="#25D366" />
               <span>Chat WhatsApp</span>
             </Link>
           </div>

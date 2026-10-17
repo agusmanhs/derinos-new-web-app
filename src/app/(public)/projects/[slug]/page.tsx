@@ -6,6 +6,7 @@ import { ProjectService } from '@/services/projectService';
 import { CTASection } from '@/components/public/Home/CTASection';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Card } from '@/components/ui/Card/Card';
+import { BedIcon, BathIcon, CarIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './page.module.css';
 
 interface PageProps {
@@ -80,9 +81,15 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                       LB: {type.size.building}m² | LT: {type.size.land}m²
                     </p>
                     <div className={styles.typeIcons}>
-                      <span>🛏 {type.specs.bedrooms} Bed</span>
-                      <span>🚿 {type.specs.bathrooms} Bath</span>
-                      <span>🚗 {type.specs.carports} Car</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <BedIcon size={15} color="#64748B" /> {type.specs.bedrooms} Bed
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <BathIcon size={15} color="#64748B" /> {type.specs.bathrooms} Bath
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <CarIcon size={15} color="#64748B" /> {type.specs.carports} Car
+                      </span>
                     </div>
                     <div className={styles.typePrice}>
                       Starting from <strong>{type.startingPrice}</strong>
