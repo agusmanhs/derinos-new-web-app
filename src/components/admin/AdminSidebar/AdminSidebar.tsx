@@ -48,11 +48,10 @@ const NAV_CATEGORIES: NavCategory[] = [
     title: 'OPERASIONAL PROPERTI',
     permissions: [],
     items: [
-      { id: 'dashboard', label: 'Ringkasan Dashboard', href: '/admin', icon: <IconDashboard />, permissions: [] },
       { id: 'cockpit', label: 'Executive Cockpit', href: '/admin', icon: <IconCockpit />, permissions: [], badge: 'LIVE', badgeType: 'live' },
       { id: 'units', label: 'Unit & Stok Kavling', href: '/admin/properties', icon: <IconUnits />, permissions: ['view_projects', 'manage_projects'], badge: '24 Avail', badgeType: 'avail' },
       { id: 'projects', label: 'Master Proyek & Site Plan', href: '/admin/projects', icon: <IconProjects />, permissions: ['view_projects', 'manage_projects'], hasSubmenu: true },
-      { id: 'legal', label: 'Berkas KPR & Legalitas', href: '/admin/sales', icon: <IconFileLegal />, permissions: ['manage_bookings'], badge: '•', badgeType: 'dot' },
+      { id: 'legal', label: 'Berkas KPR & Legalitas', href: '/admin/legal', icon: <IconFileLegal />, permissions: ['manage_bookings'], badge: 'KPR/SHM', badgeType: 'avail' },
       { id: 'construction', label: 'Progres Konstruksi', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects'] },
       { id: 'statuses', label: 'Master Status Kavling', href: '/admin/settings/statuses', icon: <IconSettings />, permissions: ['manage_projects'] },
     ]
