@@ -70,8 +70,8 @@ Berdasarkan 5 gambar desain Google Stitch yang diberikan, berikut adalah hasil a
 - **Danger**: Merah (dari icon trash) untuk aksi destruktif.
 
 ### 2. Typography
-- **Headlines / Titles**: `Libre Caslon Text` (Serif) - Memberikan kesan premium, elegan, dan arsitektural.
-- **Body & Labels**: `Inter` (Sans-Serif) - Sangat bersih dan mudah dibaca untuk data, UI element, dan paragraf.
+- **Headlines / Titles**: `Urbanist` (Non-Serif / Geometric Sans-Serif) - Memberikan kesan ultra-clean, kontemporer, mewah, dan arsitektur modern.
+- **Body & Labels**: `Urbanist` / `Inter` (Sans-Serif) - Sangat tajam dan mudah dibaca untuk angka harga, spesifikasi kavling, dan antarmuka admin.
 
 ### 3. Spacing & Layout
 - Penggunaan *white-space* yang sangat lega (airy) untuk kesan mewah.

@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Libre_Caslon_Text } from "next/font/google";
+import { Urbanist, Inter } from "next/font/google";
 import "./globals.css";
+
+const urbanist = Urbanist({
+  variable: "--font-urbanist",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const libreCaslonText = Libre_Caslon_Text({
-  weight: ["400", "700"],
-  variable: "--font-libre-caslon-text",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -36,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${libreCaslonText.variable}`}>
+      <body className={`${urbanist.variable} ${inter.variable}`}>
         <Suspense fallback={null}>
           <NextTopLoader
             color="var(--color-primary)"
