@@ -1,28 +1,28 @@
 import React from 'react';
-import { landingMockData } from '@/lib/landingMockData';
 import styles from './StatsCounter.module.css';
 
 export const StatsCounter: React.FC<{ settings?: any }> = ({ settings }) => {
+  const statsBadge = settings?.statsBadgeText || 'TERPERCAYA & BERPENGALAMAN';
   const stats = [
     {
-      value: settings?.yearsExperience || landingMockData.stats[0].value,
-      label: landingMockData.stats[0].label,
-      desc: landingMockData.stats[0].desc,
+      value: settings?.yearsExperience || '15+',
+      label: settings?.yearsExperienceLabel || 'Tahun Pengalaman',
+      desc: settings?.yearsExperienceDesc || 'Dedikasi melayani dan membangun hunian berkualitas tinggi sejak 2014',
     },
     {
-      value: settings?.completedProjects || landingMockData.stats[1].value,
-      label: landingMockData.stats[1].label,
-      desc: landingMockData.stats[1].desc,
+      value: settings?.completedProjects || '24',
+      label: settings?.completedProjectsLabel || 'Proyek Selesai',
+      desc: settings?.completedProjectsDesc || 'Cluster perumahan terpadu di kawasan strategis berkembang',
     },
     {
-      value: landingMockData.stats[2].value,
-      label: landingMockData.stats[2].label,
-      desc: landingMockData.stats[2].desc,
+      value: settings?.unitsSold || '1.000+',
+      label: settings?.unitsSoldLabel || 'Unit Terjual',
+      desc: settings?.unitsSoldDesc || 'Keluarga yang telah mempercayakan hunian impian mereka',
     },
     {
-      value: landingMockData.stats[3].value,
-      label: landingMockData.stats[3].label,
-      desc: landingMockData.stats[3].desc,
+      value: settings?.customerSatisfaction || '95%',
+      label: settings?.customerSatisfactionLabel || 'Kepuasan Klien',
+      desc: settings?.customerSatisfactionDesc || 'Testimoni positif terhadap kualitas bangunan & legalitas',
     },
   ];
 
@@ -32,7 +32,7 @@ export const StatsCounter: React.FC<{ settings?: any }> = ({ settings }) => {
         <div className={styles.topBadgeWrapper}>
           <span className={styles.topBadge}>
             <span className={styles.dot} />
-            TERPERCAYA & BERPENGALAMAN
+            {statsBadge}
           </span>
         </div>
 

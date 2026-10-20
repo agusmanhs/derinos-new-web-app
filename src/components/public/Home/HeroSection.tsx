@@ -8,6 +8,10 @@ export const HeroSection: React.FC<{ settings?: any }> = ({ settings }) => {
   const heroImage = settings?.heroImage || '/mockups/hero_placeholder.jpg';
   const heroTitle = settings?.heroTitle || 'Temukan Hunian yang Tepat untuk Masa Depan Anda';
   const heroSubtitle = settings?.heroSubtitle || 'Hunian modern dengan lokasi strategis, lingkungan nyaman, dan fasilitas yang memudahkan kehidupan keluarga.';
+  const heroBadge = settings?.heroBadgeText || 'SOLUSI PROPERTI MASA DEPAN';
+  const trustBadge1 = settings?.trustBadge1 || 'Legalitas Jelas & SHM';
+  const trustBadge2 = settings?.trustBadge2 || 'Fasilitas Komplit';
+  const trustBadge3 = settings?.trustBadge3 || 'Lokasi Bebas Banjir';
 
   return (
     <section className={styles.hero}>
@@ -24,7 +28,7 @@ export const HeroSection: React.FC<{ settings?: any }> = ({ settings }) => {
         <div className={styles.content}>
           <div className={styles.pillBadge}>
             <span className={styles.pillDot} />
-            <span>SOLUSI PROPERTI MASA DEPAN</span>
+            <span>{heroBadge}</span>
           </div>
 
           <h1 className={styles.title} dangerouslySetInnerHTML={{ __html: heroTitle }} />
@@ -44,24 +48,30 @@ export const HeroSection: React.FC<{ settings?: any }> = ({ settings }) => {
           </div>
 
           <div className={styles.trustBadges}>
-            <div className={styles.badgeItem}>
-              <span className={styles.checkIcon}>
-                <CheckIcon size={12} color="#F59E0B" />
-              </span>
-              <span>Legalitas Jelas & SHM</span>
-            </div>
-            <div className={styles.badgeItem}>
-              <span className={styles.checkIcon}>
-                <CheckIcon size={12} color="#F59E0B" />
-              </span>
-              <span>Fasilitas Komplit</span>
-            </div>
-            <div className={styles.badgeItem}>
-              <span className={styles.checkIcon}>
-                <CheckIcon size={12} color="#F59E0B" />
-              </span>
-              <span>Lokasi Bebas Banjir</span>
-            </div>
+            {trustBadge1 && (
+              <div className={styles.badgeItem}>
+                <span className={styles.checkIcon}>
+                  <CheckIcon size={12} color="#F59E0B" />
+                </span>
+                <span>{trustBadge1}</span>
+              </div>
+            )}
+            {trustBadge2 && (
+              <div className={styles.badgeItem}>
+                <span className={styles.checkIcon}>
+                  <CheckIcon size={12} color="#F59E0B" />
+                </span>
+                <span>{trustBadge2}</span>
+              </div>
+            )}
+            {trustBadge3 && (
+              <div className={styles.badgeItem}>
+                <span className={styles.checkIcon}>
+                  <CheckIcon size={12} color="#F59E0B" />
+                </span>
+                <span>{trustBadge3}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
