@@ -37,8 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${urbanist.variable} ${inter.variable}`}>
+    <html lang="en" className={`${urbanist.variable} ${inter.variable}`}>
+      <body className={`${urbanist.className} ${urbanist.variable} ${inter.variable}`}>
         <Suspense fallback={null}>
           <NextTopLoader
             color="var(--color-primary)"

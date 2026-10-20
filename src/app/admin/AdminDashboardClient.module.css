@@ -36,6 +36,7 @@
 }
 
 .pageTitle {
+  font-family: var(--font-headline);
   font-size: 1.6rem;
   font-weight: 800;
   color: #0F172A;
