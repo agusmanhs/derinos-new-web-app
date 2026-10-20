@@ -1,6 +1,5 @@
 import React from 'react';
 import { HeroSection } from '@/components/public/Home/HeroSection';
-import { KprCalculatorBar } from '@/components/public/Home/KprCalculatorBar';
 import { StatsCounter } from '@/components/public/Home/StatsCounter';
 import { FeaturedProjectsSection } from '@/components/public/Home/FeaturedProjectsSection';
 import { HighlightClusterSection } from '@/components/public/Home/HighlightClusterSection';
@@ -25,10 +24,7 @@ export default async function Home() {
       {/* 1. Hero Section */}
       <HeroSection settings={settings} />
 
-      {/* 2. Floating Quick KPR Calculator */}
-      <KprCalculatorBar />
-
-      {/* 3. Statistics Counter Strip */}
+      {/* 2. Statistics Counter Strip */}
       <StatsCounter settings={settings} />
 
       {/* 4. Proyek Pilihan untuk Anda */}
