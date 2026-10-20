@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Project } from '@/types/project';
 import { saveProjectAction } from '@/actions/adminProjectActions';
 import { uploadImageAjaxAction } from '@/actions/adminLandingActions';
+import { Select } from '@/components/ui/Select/Select';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import styles from './ProjectForm.module.css';
@@ -69,14 +70,17 @@ export const ProjectForm: React.FC<Props> = ({ project }) => {
             defaultValue={project?.location || ''} 
             required 
           />
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Status *</label>
-            <select name="status" className={styles.select} defaultValue={project?.status || 'Pre-Selling'} required>
-              <option value="Pre-Selling">Pre-Selling</option>
-              <option value="Under Construction">Under Construction</option>
-              <option value="Ready to Move">Ready to Move</option>
-            </select>
-          </div>
+          <Select
+            name="status"
+            label="Status *"
+            defaultValue={project?.status || 'Pre-Selling'}
+            options={[
+              { label: 'Pre-Selling', value: 'Pre-Selling' },
+              { label: 'Under Construction', value: 'Under Construction' },
+              { label: 'Ready to Move', value: 'Ready to Move' },
+            ]}
+            required
+          />
         </div>
       </div>
 
@@ -91,7 +95,7 @@ export const ProjectForm: React.FC<Props> = ({ project }) => {
               value={heroImage} 
               onChange={(e) => setHeroImage(e.target.value)} 
               placeholder="Image URL or upload a file"
-              style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }} 
+              className={styles.heroInput}
             />
             <input 
               type="file" 
@@ -111,25 +115,25 @@ export const ProjectForm: React.FC<Props> = ({ project }) => {
             </Button>
           </div>
           {heroImage && (
-            <div style={{ marginTop: '8px', width: '240px', height: '140px', position: 'relative', borderRadius: '6px', overflow: 'hidden', border: '1px solid #eee' }}>
+            <div style={{ marginTop: '8px', width: '240px', height: '140px', position: 'relative', borderRadius: '8px', overflow: 'hidden', border: '1px solid #E2E8F0' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={heroImage} alt="Project Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
           )}
         </div>
 
-        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label className={styles.checkboxContainer} htmlFor="featuredCheckbox">
           <input 
             type="checkbox" 
             name="featured" 
             id="featuredCheckbox" 
             defaultChecked={project?.featured || false} 
-            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+            className={styles.checkbox}
           />
-          <label htmlFor="featuredCheckbox" style={{ fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
+          <span className={styles.checkboxLabel}>
             Featured on Homepage ("Discover Our Properties")
-          </label>
-        </div>
+          </span>
+        </label>
       </div>
 
       <div className={styles.section}>
