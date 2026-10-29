@@ -14,6 +14,9 @@ interface Props {
   customers: any[];
   agencies: any[];
   phaseId: string;
+  canManageProjects?: boolean;
+  canUpdateStatus?: boolean;
+  canUpdateProgress?: boolean;
   onRegisterUnit?: (unitId: string) => void;
   onEditSvgId?: (oldId: string) => void;
 }
@@ -27,6 +30,9 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
   customers,
   agencies,
   phaseId,
+  canManageProjects = false,
+  canUpdateStatus = false,
+  canUpdateProgress = false,
   onRegisterUnit,
   onEditSvgId
 }) => {
@@ -176,18 +182,24 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
                   This unit is present in the SVG Site Plan but has not been created in the database yet.
                 </div>
                 
-                <button 
-                  onClick={() => onRegisterUnit && onRegisterUnit(selectedUnit.id)}
-                  style={{ width: '100%', padding: '12px', backgroundColor: '#1D4ED8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
-                >
-                  + Register Unit {selectedUnit.id}
-                </button>
-                <button 
-                  onClick={() => onEditSvgId && onEditSvgId(selectedUnit.id)}
-                  style={{ width: '100%', padding: '10px', backgroundColor: 'white', color: '#4B5563', border: '1px solid #D1D5DB', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px' }}
-                >
-                  Edit SVG ID
-                </button>
+                {canManageProjects && (
+                  <>
+                    <button 
+                      onClick={() => onRegisterUnit && onRegisterUnit(selectedUnit.id)}
+                      style={{ width: '100%', padding: '12px', backgroundColor: '#1D4ED8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+                    >
+                      + Register Unit {selectedUnit.id}
+                    </button>
+                    {onEditSvgId && (
+                      <button 
+                        onClick={() => onEditSvgId(selectedUnit.id)}
+                        style={{ width: '100%', padding: '10px', backgroundColor: 'white', color: '#4B5563', border: '1px solid #D1D5DB', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, fontSize: '13px' }}
+                      >
+                        Edit SVG ID
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -265,89 +277,104 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
                   </div>
                 )}
 
-                <div style={{ marginTop: '24px' }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      onClick={() => window.location.href = `/admin/properties/${selectedUnit.unit.id}/edit`}
-                      style={{ 
-                        flex: 1, 
-                        padding: '10px', 
-                        backgroundColor: '#f1f5f9', 
-                        border: '1px solid #e2e8f0', 
-                        borderRadius: '6px', 
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                    >
-                      Edit Details
-                    </button>
-                    <button 
-                      onClick={() => setIsStatusModalOpen(true)}
-                      style={{ 
-                        flex: 1, 
-                        padding: '10px', 
-                        backgroundColor: '#3b82f6', 
-                        color: 'white',
-                        border: 'none', 
-                        borderRadius: '6px', 
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
-                    >
-                      Update Status
-                    </button>
+                {(canManageProjects || canUpdateStatus || canUpdateProgress) && (
+                  <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {(canManageProjects || canUpdateStatus) && (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {canManageProjects && (
+                          <button 
+                            onClick={() => window.location.href = `/admin/properties/${selectedUnit.unit.id}/edit`}
+                            style={{ 
+                              flex: 1, 
+                              padding: '10px', 
+                              backgroundColor: '#f1f5f9', 
+                              border: '1px solid #e2e8f0', 
+                              borderRadius: '6px', 
+                              cursor: 'pointer',
+                              fontWeight: 500,
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                          >
+                            Edit Details
+                          </button>
+                        )}
+                        {canUpdateStatus && (
+                          <button 
+                            onClick={() => setIsStatusModalOpen(true)}
+                            style={{ 
+                              flex: 1, 
+                              padding: '10px', 
+                              backgroundColor: '#3b82f6', 
+                              color: 'white',
+                              border: 'none', 
+                              borderRadius: '6px', 
+                              cursor: 'pointer',
+                              fontWeight: 500,
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+                          >
+                            Update Status
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {(canUpdateProgress || (canManageProjects && onEditSvgId)) && (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {canUpdateProgress && (
+                          <button 
+                            onClick={() => setIsProgressModalOpen(true)}
+                            style={{ 
+                              flex: 1, 
+                              padding: '10px', 
+                              backgroundColor: '#10b981', 
+                              color: 'white',
+                              border: 'none', 
+                              borderRadius: '6px', 
+                              cursor: 'pointer',
+                              fontWeight: 500,
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+                          >
+                            Update Progress
+                          </button>
+                        )}
+                        {canManageProjects && onEditSvgId && (
+                          <button 
+                            onClick={() => onEditSvgId(selectedUnit.unit.unitNumber)}
+                            style={{ 
+                              flex: 1, 
+                              padding: '10px', 
+                              backgroundColor: '#f8fafc', 
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '6px', 
+                              cursor: 'pointer',
+                              fontWeight: 500,
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                          >
+                            Edit SVG ID
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                    <button 
-                      onClick={() => setIsProgressModalOpen(true)}
-                      style={{ 
-                        flex: 1, 
-                        padding: '10px', 
-                        backgroundColor: '#10b981', 
-                        color: 'white',
-                        border: 'none', 
-                        borderRadius: '6px', 
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
-                    >
-                      Update Progress
-                    </button>
-                    <button 
-                      onClick={() => onEditSvgId && onEditSvgId(selectedUnit.unit.unitNumber)}
-                      style={{ 
-                        flex: 1, 
-                        padding: '10px', 
-                        backgroundColor: '#f8fafc', 
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '6px', 
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
-                    >
-                      Edit SVG ID
-                    </button>
-                  </div>
-                </div>
+                )}
               </>
             )}
           </>
         )}
       </div>
       
-      {selectedUnit?.type === 'mapped' && (
+      {selectedUnit?.type === 'mapped' && canUpdateStatus && (
         <UpdateUnitStatusModal
           isOpen={isStatusModalOpen}
           onClose={() => setIsStatusModalOpen(false)}
@@ -366,7 +393,7 @@ export const SvgSitePlanRenderer: React.FC<Props> = ({
           }}
         />
       )}
-      {selectedUnit?.type === 'mapped' && (
+      {selectedUnit?.type === 'mapped' && canUpdateProgress && (
         <UpdateProgressModal
           isOpen={isProgressModalOpen}
           onClose={() => setIsProgressModalOpen(false)}

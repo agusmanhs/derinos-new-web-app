@@ -6,6 +6,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHea
 import { ProjectDashboardClient } from './ProjectDashboardClient';
 import { statusService } from '@/services/statusService';
 import { verifySession } from '@/lib/session';
+import { AuthService } from '@/services/authService';
 import { MarketingService } from '@/services/marketingService';
 import { CustomerService } from '@/services/customerService';
 
@@ -29,7 +30,21 @@ export default async function ViewProjectPage(props: { params: Promise<{ id: str
   ]);
   
   const session = await verifySession();
-  const canManageProjects = session?.permissions.includes('manage_projects') || session?.roleName === 'Super Admin';
+  let userPermissions: string[] = session?.permissions || [];
+  let roleName = session?.roleName || '';
+
+  if (session?.userId) {
+    const liveUser = await AuthService.getUserById(session.userId);
+    if (liveUser?.role) {
+      roleName = liveUser.role.name;
+      userPermissions = liveUser.role.permissions || [];
+    }
+  }
+
+  const isSuperAdmin = roleName === 'Super Admin';
+  const canManageProjects = isSuperAdmin || userPermissions.includes('manage_projects');
+  const canUpdateStatus = isSuperAdmin || canManageProjects || userPermissions.includes('update_unit_status');
+  const canUpdateProgress = isSuperAdmin || canManageProjects || userPermissions.includes('update_construction_progress');
 
   return (
     <div>
@@ -45,6 +60,8 @@ export default async function ViewProjectPage(props: { params: Promise<{ id: str
         customers={paginatedCustomers.data}
         agencies={paginatedAgencies.data}
         canManageProjects={canManageProjects} 
+        canUpdateStatus={canUpdateStatus}
+        canUpdateProgress={canUpdateProgress}
       />
     </div>
   );

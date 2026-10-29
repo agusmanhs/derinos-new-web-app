@@ -19,9 +19,20 @@ interface Props {
   customers: any[];
   agencies: any[];
   canManageProjects?: boolean;
+  canUpdateStatus?: boolean;
+  canUpdateProgress?: boolean;
 }
 
-export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, statuses, customers, agencies, canManageProjects = false }) => {
+export const ProjectDashboardClient: React.FC<Props> = ({ 
+  project, 
+  properties, 
+  statuses, 
+  customers, 
+  agencies, 
+  canManageProjects = false,
+  canUpdateStatus = false,
+  canUpdateProgress = false
+}) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'units' | 'settings'>('overview');
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(project.phases?.[0]?.id || null);
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
@@ -357,6 +368,9 @@ export const ProjectDashboardClient: React.FC<Props> = ({ project, properties, s
                             customers={customers}
                             agencies={agencies}
                             phaseId={phase.id}
+                            canManageProjects={canManageProjects}
+                            canUpdateStatus={canUpdateStatus}
+                            canUpdateProgress={canUpdateProgress}
                             onRegisterUnit={openAddUnitModal}
                             onEditSvgId={(id) => {
                               setEditingSvgId(id);
