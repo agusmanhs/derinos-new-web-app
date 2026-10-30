@@ -5,11 +5,13 @@ import { Prisma } from '../../generated/prisma/client';
 export interface PropertyFilters {
   search?: string;
   project?: string;
+  phaseId?: string;
   type?: string;
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
   statusId?: string;
+  progressStatus?: 'all' | 'not_started' | 'in_progress' | 'completed' | string;
 }
 
 export interface PaginatedResult<T> {
@@ -35,11 +37,15 @@ export const PropertyService = {
         const q = filters.search;
         where.OR = [
           { unitNumber: { contains: q, mode: 'insensitive' } },
-          { projectTitle: { contains: q, mode: 'insensitive' } }
+          { projectTitle: { contains: q, mode: 'insensitive' } },
+          { customer: { name: { contains: q, mode: 'insensitive' } } }
         ];
       }
       if (filters.project && filters.project !== 'All') {
         where.projectTitle = filters.project;
+      }
+      if (filters.phaseId && filters.phaseId !== 'All') {
+        where.phaseId = filters.phaseId;
       }
       if (filters.type && filters.type !== 'All') {
         where.typeName = filters.type;
@@ -55,6 +61,15 @@ export const PropertyService = {
       if (filters.statusId && filters.statusId !== 'All') {
         where.statusId = filters.statusId;
       }
+      if (filters.progressStatus && filters.progressStatus !== 'all') {
+        if (filters.progressStatus === 'not_started') {
+          where.constructionProgress = 0;
+        } else if (filters.progressStatus === 'in_progress') {
+          where.constructionProgress = { gt: 0, lt: 100 };
+        } else if (filters.progressStatus === 'completed') {
+          where.constructionProgress = { gte: 100 };
+        }
+      }
     }
 
     let orderBy: Prisma.PropertyUnitOrderByWithRelationInput = { createdAt: 'desc' };
@@ -65,6 +80,15 @@ export const PropertyService = {
           break;
         case 'price_desc':
           orderBy = { price: 'desc' };
+          break;
+        case 'progress_desc':
+          orderBy = { constructionProgress: 'desc' };
+          break;
+        case 'progress_asc':
+          orderBy = { constructionProgress: 'asc' };
+          break;
+        case 'unitNumber_asc':
+          orderBy = { unitNumber: 'asc' };
           break;
         case 'newest':
           orderBy = { createdAt: 'desc' };
@@ -137,10 +161,16 @@ export const PropertyService = {
   },
 
   async getFilterOptions() {
-    const units = await prisma.propertyUnit.findMany({
-      where: { archived: false },
-      select: { projectTitle: true, typeName: true, propertyStatus: { select: { id: true, name: true } } }
-    });
+    const [units, phases] = await Promise.all([
+      prisma.propertyUnit.findMany({
+        where: { archived: false },
+        select: { projectTitle: true, typeName: true, propertyStatus: { select: { id: true, name: true } } }
+      }),
+      prisma.projectPhase.findMany({
+        select: { id: true, name: true, projectId: true, project: { select: { title: true } } },
+        orderBy: { name: 'asc' }
+      })
+    ]);
     const projects = Array.from(new Set(units.map(p => p.projectTitle)));
     const types = Array.from(new Set(units.map(p => p.typeName)));
     
@@ -156,7 +186,38 @@ export const PropertyService = {
     return { 
       projects: ['All', ...projects], 
       types: ['All', ...types], 
-      statuses: [{ id: 'All', name: 'All' }, ...statuses] 
+      statuses: [{ id: 'All', name: 'All' }, ...statuses],
+      phases: [{ id: 'All', name: 'All Phases', projectId: 'All' }, ...phases.map(ph => ({ id: ph.id, name: `${ph.name} (${ph.project?.title || ''})`, projectId: ph.projectId }))]
+    };
+  },
+
+  async getConstructionStats(filters?: { project?: string; phaseId?: string }) {
+    const where: Prisma.PropertyUnitWhereInput = { archived: false };
+    if (filters?.project && filters.project !== 'All') {
+      where.projectTitle = filters.project;
+    }
+    if (filters?.phaseId && filters.phaseId !== 'All') {
+      where.phaseId = filters.phaseId;
+    }
+
+    const [total, notStarted, inProgress, completed, units] = await Promise.all([
+      prisma.propertyUnit.count({ where }),
+      prisma.propertyUnit.count({ where: { ...where, constructionProgress: 0 } }),
+      prisma.propertyUnit.count({ where: { ...where, constructionProgress: { gt: 0, lt: 100 } } }),
+      prisma.propertyUnit.count({ where: { ...where, constructionProgress: { gte: 100 } } }),
+      prisma.propertyUnit.findMany({ where, select: { constructionProgress: true } })
+    ]);
+
+    const avgProgress = total > 0 
+      ? Math.round(units.reduce((acc, u) => acc + (u.constructionProgress || 0), 0) / total)
+      : 0;
+
+    return {
+      total,
+      notStarted,
+      inProgress,
+      completed,
+      avgProgress
     };
   },
 

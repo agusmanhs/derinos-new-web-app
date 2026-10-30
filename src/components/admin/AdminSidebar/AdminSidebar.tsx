@@ -52,7 +52,7 @@ const NAV_CATEGORIES: NavCategory[] = [
       { id: 'units', label: 'Unit & Stok Kavling', href: '/admin/properties', icon: <IconUnits />, permissions: ['view_projects', 'manage_projects'], badge: '24 Avail', badgeType: 'avail' },
       { id: 'projects', label: 'Master Proyek & Site Plan', href: '/admin/projects', icon: <IconProjects />, permissions: ['view_projects', 'manage_projects'], hasSubmenu: true },
       { id: 'legal', label: 'Berkas KPR & Legalitas', href: '/admin/legal', icon: <IconFileLegal />, permissions: ['manage_bookings'], badge: 'KPR/SHM', badgeType: 'avail' },
-      { id: 'construction', label: 'Progres Konstruksi', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects'] },
+      { id: 'construction', label: 'Progres Konstruksi', href: '/admin/construction', icon: <IconConstruction />, permissions: ['manage_projects', 'update_construction_progress', 'view_projects'] },
       { id: 'statuses', label: 'Master Status Kavling', href: '/admin/settings/statuses', icon: <IconSettings />, permissions: ['manage_projects'] },
     ]
   },
