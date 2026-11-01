@@ -238,6 +238,74 @@ export const ProjectDashboardClient: React.FC<Props> = ({
     }
   };
 
+  // Helper to count interactable shapes in site plan SVG
+  const getSvgBlockCount = (svgContent?: string | null) => {
+    if (!svgContent) return 0;
+    const matches = svgContent.match(/<(path|polygon|rect)[^>]+(id|data-id)=["'][^"']+["']/gi) || [];
+    return matches.length;
+  };
+
+  // Dynamic Project-wide totals from actual property units
+  const totalProjectUnits = properties.length;
+  const totalProjectAvailable = properties.filter(
+    (p) => p.propertyStatus?.name?.toLowerCase().includes('available') || p.statusId === 'available'
+  ).length;
+  const totalProjectBooked = properties.filter((p) => p.propertyStatus?.name?.toLowerCase().includes('book')).length;
+  const totalProjectBerkas = properties.filter((p) => p.propertyStatus?.name?.toLowerCase().includes('berkas')).length;
+  const totalProjectAkad = properties.filter(
+    (p) =>
+      p.propertyStatus?.name?.toLowerCase().includes('akad') ||
+      p.propertyStatus?.name?.toLowerCase().includes('lunas') ||
+      p.propertyStatus?.name?.toLowerCase().includes('sold')
+  ).length;
+  const totalProjectCommitted = totalProjectUnits - totalProjectAvailable;
+  const projectSoldPct = totalProjectUnits > 0 ? Math.round((totalProjectCommitted / totalProjectUnits) * 100) : 0;
+
+  const allValidPrices = properties.map((p) => p.price).filter((pr) => pr && pr > 0);
+  const lowestPrice = allValidPrices.length > 0 ? Math.min(...allValidPrices) : null;
+  const formattedStartingPrice = lowestPrice
+    ? `Rp ${lowestPrice.toLocaleString('id-ID')}`
+    : project.startingPrice;
+
+  // Breakdown per phase
+  const phasesData = (project.phases || []).map((phase) => {
+    const phaseUnits = properties.filter(
+      (p) => p.phaseId === phase.id || p.phase?.id === phase.id
+    );
+    const totalUnits = phaseUnits.length;
+    const available = phaseUnits.filter(
+      (p) => p.propertyStatus?.name?.toLowerCase().includes('available') || p.statusId === 'available'
+    ).length;
+    const booked = phaseUnits.filter((p) => p.propertyStatus?.name?.toLowerCase().includes('book')).length;
+    const berkas = phaseUnits.filter((p) => p.propertyStatus?.name?.toLowerCase().includes('berkas')).length;
+    const akad = phaseUnits.filter(
+      (p) =>
+        p.propertyStatus?.name?.toLowerCase().includes('akad') ||
+        p.propertyStatus?.name?.toLowerCase().includes('lunas') ||
+        p.propertyStatus?.name?.toLowerCase().includes('sold')
+    ).length;
+    const sold = totalUnits - available;
+    const soldPct = totalUnits > 0 ? Math.round((sold / totalUnits) * 100) : 0;
+
+    const svgBlocks = getSvgBlockCount(phase.sitePlanSvg);
+    const phasePrices = phaseUnits.map((p) => p.price).filter((pr) => pr && pr > 0);
+    const minPrice = phasePrices.length > 0 ? Math.min(...phasePrices) : null;
+
+    return {
+      phase,
+      phaseUnits,
+      totalUnits,
+      available,
+      booked,
+      berkas,
+      akad,
+      sold,
+      soldPct,
+      svgBlocks,
+      minPrice,
+    };
+  });
+
   // Compute properties for Units Tab
   const filteredProperties = properties.filter(unit => {
     const searchLower = unitSearchTerm.toLowerCase();
@@ -276,28 +344,209 @@ export const ProjectDashboardClient: React.FC<Props> = ({
       <div className={styles.content}>
         {activeTab === 'overview' && (
           <div className={styles.overviewTab}>
-            <div className={styles.card}>
-              <h3>Details</h3>
-              <p><strong>Starting Price:</strong> {project.startingPrice}</p>
-              <p><strong>Total Units:</strong> {project.totalUnits}</p>
-              <p><strong>Available Units:</strong> {project.availableUnits}</p>
-              <p><strong>Area:</strong> {project.totalArea}</p>
-              <p><strong>Description:</strong> {project.description}</p>
-            </div>
-            <div className={styles.card}>
-              <h3>SEO Info</h3>
-              <p><strong>Meta Title:</strong> {project.metaTitle}</p>
-              <p><strong>Meta Description:</strong> {project.metaDescription}</p>
-            </div>
-            {canManageProjects && (
-              <div className={styles.card} style={{ marginTop: '24px' }}>
-                <h3>Project Settings</h3>
-                <p>Project settings are currently managed through the central edit page.</p>
-                <Button variant="primary" onClick={() => window.location.href = `/admin/projects/${project.id}/edit`}>
-                  Edit Project Info
-                </Button>
+            {/* 1. Global KPI Stat Cards */}
+            <div className={styles.kpiGrid}>
+              <div className={styles.kpiCard}>
+                <span className={styles.kpiLabel}>Total Kavling Proyek</span>
+                <span className={styles.kpiValue}>{totalProjectUnits}</span>
+                <span className={styles.kpiSubtext}>
+                  Terakumulasi dari {project.phases?.length || 0} tahapan aktif
+                </span>
               </div>
-            )}
+
+              <div className={styles.kpiCard}>
+                <span className={styles.kpiLabel}>Unit Tersedia (Available)</span>
+                <span className={styles.kpiValue} style={{ color: '#10b981' }}>
+                  {totalProjectAvailable}
+                </span>
+                <span className={styles.kpiSubtext}>Siap ditawarkan & dibooking</span>
+              </div>
+
+              <div className={styles.kpiCard}>
+                <span className={styles.kpiLabel}>Terjual / Akad / Berkas</span>
+                <span className={styles.kpiValue} style={{ color: '#2563eb' }}>
+                  {totalProjectCommitted}
+                </span>
+                <span className={styles.kpiSubtext}>
+                  {totalProjectAkad} Akad • {totalProjectBerkas} Berkas • {totalProjectBooked} Booking
+                </span>
+              </div>
+
+              <div className={styles.kpiCard}>
+                <span className={styles.kpiLabel}>Tingkat Keterjualan</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span className={styles.kpiValue} style={{ color: '#0f172a' }}>
+                    {projectSoldPct}%
+                  </span>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Terjual</span>
+                </div>
+                <div style={{ width: '100%', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', marginTop: '6px', overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      width: `${projectSoldPct}%`,
+                      height: '100%',
+                      backgroundColor: '#10b981',
+                      borderRadius: '3px',
+                      transition: 'width 0.4s ease',
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Breakdown Per Tahapan (Phases Breakdown) */}
+            <div className={styles.phaseSection}>
+              <div className={styles.phaseSectionHeader}>
+                <div>
+                  <h3>Rincian Tahapan & Site Plan</h3>
+                  <p>
+                    Data ketersediaan kavling dan sinkronisasi blok site plan otomatis per masing-masing tahapan.
+                  </p>
+                </div>
+                {canManageProjects && (
+                  <button className={styles.primaryBtn} onClick={openAddModal}>
+                    + Tambah Tahap
+                  </button>
+                )}
+              </div>
+
+              {phasesData.length === 0 ? (
+                <div className={styles.emptyState}>
+                  Belum ada tahapan yang dibuat. Silakan tambahkan tahapan baru untuk memulai pemetaan site plan.
+                </div>
+              ) : (
+                <div className={styles.phaseGrid}>
+                  {phasesData.map(({ phase, totalUnits, available, booked, berkas, akad, sold, soldPct, svgBlocks, minPrice }) => (
+                    <div key={phase.id} className={styles.phaseCardItem}>
+                      <div className={styles.phaseCardTop}>
+                        <div>
+                          <div className={styles.phaseName}>
+                            <span>{phase.name}</span>
+                            <span className={styles.phaseStatusBadge}>{phase.status}</span>
+                          </div>
+                          {phase.description && (
+                            <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+                              {phase.description}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          className={styles.btnOpenSitePlan}
+                          onClick={() => {
+                            setSelectedPhaseId(phase.id);
+                            setActiveTab('phases');
+                          }}
+                          title="Buka dan interaksi dengan denah Site Plan SVG tahap ini"
+                        >
+                          Buka Site Plan ➔
+                        </button>
+                      </div>
+
+                      {/* Metrics 3-box row */}
+                      <div className={styles.phaseMetricsRow}>
+                        <div className={styles.phaseMetricItem}>
+                          <span className={styles.phaseMetricLabel}>Total Unit</span>
+                          <span className={styles.phaseMetricVal}>{totalUnits}</span>
+                        </div>
+                        <div className={styles.phaseMetricItem}>
+                          <span className={styles.phaseMetricLabel}>Tersedia</span>
+                          <span className={styles.phaseMetricVal} style={{ color: '#10b981' }}>
+                            {available}
+                          </span>
+                        </div>
+                        <div className={styles.phaseMetricItem}>
+                          <span className={styles.phaseMetricLabel}>Terjual/Akad</span>
+                          <span className={styles.phaseMetricVal} style={{ color: '#2563eb' }}>
+                            {sold}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Sales Progress Bar */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 600, marginBottom: '4px' }}>
+                          <span style={{ color: '#64748b' }}>Keterjualan Tahap Ini</span>
+                          <span style={{ color: '#0f172a' }}>{soldPct}% Terjual</span>
+                        </div>
+                        <div className={styles.phaseProgressBarBg}>
+                          <div
+                            className={styles.phaseProgressBarFill}
+                            style={{ width: `${soldPct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Status Badges Distribution */}
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', fontSize: '0.725rem' }}>
+                        <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: '#dcfce7', color: '#15803d', fontWeight: 600 }}>
+                          {available} Available
+                        </span>
+                        {booked > 0 && (
+                          <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: '#fef3c7', color: '#b45309', fontWeight: 600 }}>
+                            {booked} Booking
+                          </span>
+                        )}
+                        {berkas > 0 && (
+                          <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: '#ffedd5', color: '#c2410c', fontWeight: 600 }}>
+                            {berkas} Berkas
+                          </span>
+                        )}
+                        <span style={{ padding: '2px 8px', borderRadius: '4px', backgroundColor: '#dbeafe', color: '#1d4ed8', fontWeight: 600 }}>
+                          {akad} Akad / Lunas
+                        </span>
+                      </div>
+
+                      {/* Site Plan & Price Footer */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
+                        <div className={styles.phaseSitePlanBadge}>
+                          {phase.sitePlanSvg ? (
+                            <>
+                              <span style={{ color: '#10b981' }}>●</span>
+                              <span>SVG Aktif ({svgBlocks > 0 ? `${svgBlocks} Blok Site Plan` : 'File Ada'})</span>
+                            </>
+                          ) : (
+                            <>
+                              <span style={{ color: '#f59e0b' }}>○</span>
+                              <span style={{ color: '#94a3b8' }}>Belum Upload SVG</span>
+                            </>
+                          )}
+                        </div>
+                        {minPrice && (
+                          <div style={{ fontWeight: 600, color: '#334155' }}>
+                            Mulai Rp {minPrice.toLocaleString('id-ID')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 3. General Project Details & SEO */}
+            <div className={styles.infoCardsGrid}>
+              <div className={styles.card}>
+                <h3>Informasi Umum Kawasan</h3>
+                <p><strong>Harga Mulai Proyek:</strong> {formattedStartingPrice}</p>
+                <p><strong>Total Luas Kawasan:</strong> {project.totalArea || '-'}</p>
+                <p><strong>Status Proyek:</strong> {project.status}</p>
+                <p><strong>Lokasi:</strong> {project.location}</p>
+                <p><strong>Deskripsi:</strong> {project.description || '-'}</p>
+              </div>
+
+              <div className={styles.card}>
+                <h3>SEO & Pengaturan Proyek</h3>
+                <p><strong>Meta Title:</strong> {project.metaTitle || '-'}</p>
+                <p><strong>Meta Description:</strong> {project.metaDescription || '-'}</p>
+                {canManageProjects && (
+                  <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+                    <Button variant="primary" onClick={() => (window.location.href = `/admin/projects/${project.id}/edit`)}>
+                      Edit Info Proyek
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
