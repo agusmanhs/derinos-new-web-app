@@ -8,6 +8,11 @@ import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { createPhaseAction, deletePhaseAction, updatePhaseAction } from '@/actions/adminPhaseActions';
 import { createPropertyAjaxAction } from '@/actions/adminPropertyActions';
+import { 
+  saveHouseTypeAction, 
+  deleteHouseTypeAction, 
+  seedInitialHouseTypesFromUnitsAction 
+} from '@/actions/adminHouseTypeActions';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import styles from './ProjectDashboardClient.module.css';
@@ -33,7 +38,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({
   canUpdateStatus = false,
   canUpdateProgress = false
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'units' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'units' | 'houseTypes' | 'settings'>('overview');
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(project.phases?.[0]?.id || null);
   const [isPhaseModalOpen, setIsPhaseModalOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<any | null>(null);
@@ -43,6 +48,24 @@ export const ProjectDashboardClient: React.FC<Props> = ({
   const [editingSvgId, setEditingSvgId] = useState<string>('');
   const [isPending, startTransition] = useTransition();
   const [uploadedSvg, setUploadedSvg] = useState<string>('');
+
+  // House Types State
+  const [isHouseTypeModalOpen, setIsHouseTypeModalOpen] = useState(false);
+  const [editingHouseType, setEditingHouseType] = useState<any | null>(null);
+  const [selectedHouseTypeId, setSelectedHouseTypeId] = useState<string>('');
+
+  // Form data state for Register Unit Modal (for auto-fill)
+  const [unitFormData, setUnitFormData] = useState({
+    unitNumber: '',
+    typeName: '',
+    price: 0,
+    statusId: statuses[0]?.id || '',
+    landSize: 0,
+    buildingSize: 0,
+    bedrooms: 0,
+    bathrooms: 0,
+    carports: 0,
+  });
 
   // Unit tab states
   const [unitSearchTerm, setUnitSearchTerm] = useState('');
@@ -127,7 +150,91 @@ export const ProjectDashboardClient: React.FC<Props> = ({
 
   const openAddUnitModal = (unitId: string = '') => {
     setPrefilledUnitId(unitId);
+    setSelectedHouseTypeId('');
+    const defaultStatus = statuses.find(s => s.name?.toLowerCase().includes('available'))?.id || statuses[0]?.id || '';
+    setUnitFormData({
+      unitNumber: unitId,
+      typeName: '',
+      price: 0,
+      statusId: defaultStatus,
+      landSize: 0,
+      buildingSize: 0,
+      bedrooms: 0,
+      bathrooms: 0,
+      carports: 0,
+    });
     setIsAddUnitModalOpen(true);
+  };
+
+  const handleSelectHouseTypeForUnit = (houseTypeId: string) => {
+    setSelectedHouseTypeId(houseTypeId);
+    const ht = ((project.houseTypes as any[]) || []).find((h: any) => h.id === houseTypeId);
+    if (ht) {
+      setUnitFormData((prev) => ({
+        ...prev,
+        typeName: ht.name || prev.typeName,
+        landSize: ht.landSize ?? ht.size?.land ?? prev.landSize,
+        buildingSize: ht.buildingSize ?? ht.size?.building ?? prev.buildingSize,
+        bedrooms: ht.bedrooms ?? ht.specs?.bedrooms ?? prev.bedrooms,
+        bathrooms: ht.bathrooms ?? ht.specs?.bathrooms ?? prev.bathrooms,
+        carports: ht.carports ?? ht.specs?.carports ?? prev.carports,
+        price: ht.price ?? (typeof ht.startingPrice === 'number' ? ht.startingPrice : prev.price),
+      }));
+    }
+  };
+
+  const openAddHouseTypeModal = () => {
+    setEditingHouseType(null);
+    setIsHouseTypeModalOpen(true);
+  };
+
+  const openEditHouseTypeModal = (ht: any) => {
+    setEditingHouseType(ht);
+    setIsHouseTypeModalOpen(true);
+  };
+
+  const handleSaveHouseType = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      id: editingHouseType?.id || undefined,
+      name: (formData.get('name') as string).trim(),
+      buildingSize: parseFloat(formData.get('buildingSize') as string) || 0,
+      landSize: parseFloat(formData.get('landSize') as string) || 0,
+      bedrooms: parseInt(formData.get('bedrooms') as string) || 0,
+      bathrooms: parseInt(formData.get('bathrooms') as string) || 0,
+      carports: parseInt(formData.get('carports') as string) || 0,
+      price: parseFloat(formData.get('price') as string) || 0,
+      description: (formData.get('description') as string) || '',
+    };
+
+    startTransition(async () => {
+      const res = await saveHouseTypeAction(project.id, data, project.slug);
+      if (res.success) {
+        setIsHouseTypeModalOpen(false);
+        setEditingHouseType(null);
+      } else {
+        alert(res.message);
+      }
+    });
+  };
+
+  const handleDeleteHouseType = async (houseTypeId: string, name: string) => {
+    if (!confirm(`Hapus tipe rumah "${name}"?`)) return;
+    startTransition(async () => {
+      const res = await deleteHouseTypeAction(project.id, houseTypeId, project.slug);
+      if (!res.success) {
+        alert(res.message);
+      }
+    });
+  };
+
+  const handleSeedHouseTypes = async () => {
+    if (!confirm('Ekstrak dan buat master tipe rumah otomatis berdasarkan kavling yang sudah ada?')) return;
+    startTransition(async () => {
+      const res = await seedInitialHouseTypesFromUnitsAction(project.id, project.slug);
+      alert(res.message);
+    });
   };
 
   const handleSaveUnit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -338,6 +445,12 @@ export const ProjectDashboardClient: React.FC<Props> = ({
           onClick={() => setActiveTab('units')}
         >
           Property Units
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'houseTypes' ? styles.active : ''}`}
+          onClick={() => setActiveTab('houseTypes')}
+        >
+          Tipe Rumah ({((project.houseTypes as any[]) || []).length})
         </button>
       </div>
 
@@ -757,6 +870,172 @@ export const ProjectDashboardClient: React.FC<Props> = ({
             </div>
           </div>
         )}
+
+        {activeTab === 'houseTypes' && (
+          <div className={styles.houseTypesTab}>
+            <div className={styles.cardHeader} style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827' }}>Master Tipe Rumah ({project.name})</h3>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280' }}>
+                  Kelola spesifikasi standar (luas tanah, luas bangunan, kamar tidur/mandi, carport, harga acuan) untuk otomatisasi saat registrasi unit kavling.
+                </p>
+              </div>
+              {canManageProjects && (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button 
+                    type="button" 
+                    onClick={handleSeedHouseTypes} 
+                    disabled={isPending}
+                    style={{ 
+                      padding: '8px 14px', 
+                      fontSize: '13px', 
+                      border: '1px solid #BBF7D0', 
+                      backgroundColor: '#F0FDF4', 
+                      color: '#166534', 
+                      borderRadius: '6px', 
+                      fontWeight: 600, 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    ⚡ Ekstrak dari Kavling Eksisting
+                  </button>
+                  <button className={styles.primaryBtn} onClick={openAddHouseTypeModal}>
+                    + Tambah Tipe Rumah
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {(!project.houseTypes || (project.houseTypes as any[]).length === 0) ? (
+              <div style={{ background: '#fff', borderRadius: '12px', border: '1px dashed #cbd5e1', padding: '48px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🏡</div>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '1.125rem', color: '#1e293b' }}>Belum Ada Master Tipe Rumah</h4>
+                <p style={{ margin: '0 0 20px 0', fontSize: '0.875rem', color: '#64748b', maxWidth: '520px', marginInline: 'auto' }}>
+                  Master tipe rumah memungkinkan pengisian otomatis luas tanah, luas bangunan, jumlah kamar, dan harga acuan saat menambahkan kavling unit.
+                </p>
+                {canManageProjects && (
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button 
+                      type="button" 
+                      onClick={handleSeedHouseTypes} 
+                      disabled={isPending}
+                      className={styles.primaryBtn}
+                      style={{ backgroundColor: '#10B981' }}
+                    >
+                      ⚡ Ekstrak Otomatis ({properties.length} Kavling)
+                    </button>
+                    <button className={styles.secondaryBtn} onClick={openAddHouseTypeModal}>
+                      + Buat Tipe Manual
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={styles.houseTypesGrid}>
+                {((project.houseTypes as any[]) || []).map((ht: any) => {
+                  const bSize = ht.buildingSize ?? ht.size?.building ?? 0;
+                  const lSize = ht.landSize ?? ht.size?.land ?? 0;
+                  const bdrooms = ht.bedrooms ?? ht.specs?.bedrooms ?? 0;
+                  const bthrooms = ht.bathrooms ?? ht.specs?.bathrooms ?? 0;
+                  const crports = ht.carports ?? ht.specs?.carports ?? 0;
+                  const prce = ht.price ?? (typeof ht.startingPrice === 'number' ? ht.startingPrice : 0);
+                  
+                  // Count units using this type
+                  const matchingCount = properties.filter(p => 
+                    p.typeName?.toLowerCase().trim() === ht.name?.toLowerCase().trim()
+                  ).length;
+
+                  return (
+                    <div key={ht.id} className={styles.houseTypeCard}>
+                      <div className={styles.houseTypeHeader}>
+                        <div>
+                          <h4 className={styles.houseTypeName}>{ht.name}</h4>
+                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                            {matchingCount} Unit Kavling Terdaftar
+                          </span>
+                        </div>
+                        <span className={styles.houseTypePrice}>
+                          {prce > 0 ? `Rp ${prce.toLocaleString('id-ID')}` : 'Belum Ada Harga'}
+                        </span>
+                      </div>
+
+                      {ht.description && (
+                        <p style={{ margin: 0, fontSize: '0.825rem', color: '#475569', lineHeight: 1.4 }}>
+                          {ht.description}
+                        </p>
+                      )}
+
+                      <div className={styles.houseTypeSpecsGrid}>
+                        <div className={styles.specRow}>
+                          <span className={styles.specIcon}>📐</span>
+                          <div>
+                            <div className={styles.specLabel}>Luas Bangunan</div>
+                            <div className={styles.specVal}>{bSize} m²</div>
+                          </div>
+                        </div>
+
+                        <div className={styles.specRow}>
+                          <span className={styles.specIcon}>🗺️</span>
+                          <div>
+                            <div className={styles.specLabel}>Luas Tanah (Std)</div>
+                            <div className={styles.specVal}>{lSize} m²</div>
+                          </div>
+                        </div>
+
+                        <div className={styles.specRow}>
+                          <span className={styles.specIcon}>🛏️</span>
+                          <div>
+                            <div className={styles.specLabel}>Kamar Tidur</div>
+                            <div className={styles.specVal}>{bdrooms} KT</div>
+                          </div>
+                        </div>
+
+                        <div className={styles.specRow}>
+                          <span className={styles.specIcon}>🚿</span>
+                          <div>
+                            <div className={styles.specLabel}>Kamar Mandi</div>
+                            <div className={styles.specVal}>{bthrooms} KM</div>
+                          </div>
+                        </div>
+
+                        <div className={styles.specRow} style={{ gridColumn: 'span 2' }}>
+                          <span className={styles.specIcon}>🚗</span>
+                          <div>
+                            <div className={styles.specLabel}>Kapasitas Carport</div>
+                            <div className={styles.specVal}>{crports} Mobil</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {canManageProjects && (
+                        <div className={styles.houseTypeActions}>
+                          <button 
+                            type="button" 
+                            className={styles.btnEditType}
+                            onClick={() => openEditHouseTypeModal(ht)}
+                          >
+                            Edit Spesifikasi
+                          </button>
+                          <button 
+                            type="button" 
+                            className={styles.btnDeleteType}
+                            onClick={() => handleDeleteHouseType(ht.id, ht.name)}
+                            disabled={isPending}
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <Modal isOpen={isPhaseModalOpen} onClose={() => setIsPhaseModalOpen(false)} title={editingPhase ? "Edit Construction Phase" : "Add Construction Phase"}>
@@ -812,21 +1091,86 @@ export const ProjectDashboardClient: React.FC<Props> = ({
             <strong>Phase Association:</strong> This unit will automatically be linked to the currently active phase.
           </div>
 
+          {/* Quick House Type Selector for Auto-Fill */}
+          {((project.houseTypes as any[]) || []).length > 0 && (
+            <div style={{ padding: '14px', backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label htmlFor="houseTypeSelect" style={{ fontWeight: 600, fontSize: '0.875rem', color: '#166534' }}>
+                ⚡ Pilih Master Tipe Rumah (Auto-Fill Spesifikasi & Harga):
+              </label>
+              <select
+                id="houseTypeSelect"
+                value={selectedHouseTypeId}
+                onChange={(e) => handleSelectHouseTypeForUnit(e.target.value)}
+                className={styles.select}
+                style={{ backgroundColor: '#fff', borderColor: '#86EFAC' }}
+              >
+                <option value="">-- Pilih Tipe Rumah (Atau Isi Manual) --</option>
+                {((project.houseTypes as any[]) || []).map((ht: any) => {
+                  const bSize = ht.buildingSize ?? ht.size?.building ?? 0;
+                  const lSize = ht.landSize ?? ht.size?.land ?? 0;
+                  const prce = ht.price ?? (typeof ht.startingPrice === 'number' ? ht.startingPrice : 0);
+                  return (
+                    <option key={ht.id} value={ht.id}>
+                      {ht.name} (LB: {bSize}m² / LT: {lSize}m²) — Rp {prce.toLocaleString('id-ID')}
+                    </option>
+                  );
+                })}
+              </select>
+              <span style={{ fontSize: '12px', color: '#15803D' }}>
+                Spesifikasi & harga akan terisi otomatis, dan Anda tetap dapat menyesuaikannya jika unit ini memiliki kelebihan tanah/hook.
+              </span>
+            </div>
+          )}
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <Input label="Unit Number / ID *" type="text" id="unitNumber" name="unitNumber" defaultValue={prefilledUnitId} required placeholder="e.g. A-01" />
+              <Input 
+                label="Unit Number / ID *" 
+                type="text" 
+                id="unitNumber" 
+                name="unitNumber" 
+                value={unitFormData.unitNumber} 
+                onChange={(e) => setUnitFormData(prev => ({ ...prev, unitNumber: e.target.value }))}
+                required 
+                placeholder="e.g. A-01" 
+              />
               <small className={styles.helpText}>Must exactly match the SVG data-id for Site Plan linking.</small>
             </div>
             
-            <Input label="Type Name *" type="text" id="typeName" name="typeName" required placeholder="e.g. Type 45, Type 60" />
+            <Input 
+              label="Type Name *" 
+              type="text" 
+              id="typeName" 
+              name="typeName" 
+              value={unitFormData.typeName}
+              onChange={(e) => setUnitFormData(prev => ({ ...prev, typeName: e.target.value }))}
+              required 
+              placeholder="e.g. Type 45, Type 60" 
+            />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Input label="Price (Rp) *" type="number" id="price" name="price" required min="0" defaultValue="0" />
+            <Input 
+              label="Price (Rp) *" 
+              type="number" 
+              id="price" 
+              name="price" 
+              required 
+              min="0" 
+              value={unitFormData.price}
+              onChange={(e) => setUnitFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+            />
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <label htmlFor="statusId" style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--color-tertiary)' }}>Status *</label>
-              <select id="statusId" name="statusId" className={styles.select} required>
+              <select 
+                id="statusId" 
+                name="statusId" 
+                className={styles.select} 
+                value={unitFormData.statusId}
+                onChange={(e) => setUnitFormData(prev => ({ ...prev, statusId: e.target.value }))}
+                required
+              >
                 <option value="">Select Status</option>
                 {statuses.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -836,20 +1180,176 @@ export const ProjectDashboardClient: React.FC<Props> = ({
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Input label="Land Size (m²) *" type="number" id="landSize" name="landSize" required min="0" defaultValue="0" />
-            <Input label="Building Size (m²) *" type="number" id="buildingSize" name="buildingSize" required min="0" defaultValue="0" />
+            <Input 
+              label="Land Size (m²) *" 
+              type="number" 
+              id="landSize" 
+              name="landSize" 
+              required 
+              min="0" 
+              step="any"
+              value={unitFormData.landSize}
+              onChange={(e) => setUnitFormData(prev => ({ ...prev, landSize: parseFloat(e.target.value) || 0 }))}
+            />
+            <Input 
+              label="Building Size (m²) *" 
+              type="number" 
+              id="buildingSize" 
+              name="buildingSize" 
+              required 
+              min="0" 
+              step="any"
+              value={unitFormData.buildingSize}
+              onChange={(e) => setUnitFormData(prev => ({ ...prev, buildingSize: parseFloat(e.target.value) || 0 }))}
+            />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-            <Input label="Bedrooms *" type="number" id="bedrooms" name="bedrooms" required min="0" defaultValue="0" />
-            <Input label="Bathrooms *" type="number" id="bathrooms" name="bathrooms" required min="0" defaultValue="0" />
-            <Input label="Carports *" type="number" id="carports" name="carports" required min="0" defaultValue="0" />
+            <Input 
+              label="Bedrooms *" 
+              type="number" 
+              id="bedrooms" 
+              name="bedrooms" 
+              required 
+              min="0" 
+              value={unitFormData.bedrooms}
+              onChange={(e) => setUnitFormData(prev => ({ ...prev, bedrooms: parseInt(e.target.value) || 0 }))}
+            />
+            <Input 
+              label="Bathrooms *" 
+              type="number" 
+              id="bathrooms" 
+              name="bathrooms" 
+              required 
+              min="0" 
+              value={unitFormData.bathrooms}
+              onChange={(e) => setUnitFormData(prev => ({ ...prev, bathrooms: parseInt(e.target.value) || 0 }))}
+            />
+            <Input 
+              label="Carports *" 
+              type="number" 
+              id="carports" 
+              name="carports" 
+              required 
+              min="0" 
+              value={unitFormData.carports}
+              onChange={(e) => setUnitFormData(prev => ({ ...prev, carports: parseInt(e.target.value) || 0 }))}
+            />
           </div>
 
           <div className={styles.formActions} style={{ marginTop: '16px', position: 'sticky', bottom: 0, backgroundColor: 'white', padding: '16px 0', borderTop: '1px solid #E5E7EB' }}>
             <button type="button" onClick={() => setIsAddUnitModalOpen(false)} className={styles.secondaryBtn}>Cancel</button>
             <button type="submit" disabled={isPending} className={styles.primaryBtn}>
               {isPending ? 'Saving...' : 'Register Unit'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal 
+        isOpen={isHouseTypeModalOpen} 
+        onClose={() => setIsHouseTypeModalOpen(false)} 
+        title={editingHouseType ? "Edit Master Tipe Rumah" : "Tambah Master Tipe Rumah"}
+      >
+        <form onSubmit={handleSaveHouseType} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', padding: '4px' }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+            <Input 
+              label="Nama Tipe Rumah *" 
+              type="text" 
+              id="name" 
+              name="name" 
+              defaultValue={editingHouseType?.name || ''} 
+              required 
+              placeholder="Contoh: Type 36, Type 45/72, Tipe Aster" 
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <Input 
+              label="Luas Bangunan (m²) *" 
+              type="number" 
+              id="buildingSize" 
+              name="buildingSize" 
+              required 
+              min="0" 
+              step="any"
+              defaultValue={editingHouseType?.buildingSize ?? editingHouseType?.size?.building ?? 0} 
+            />
+            <Input 
+              label="Luas Tanah Standar (m²) *" 
+              type="number" 
+              id="landSize" 
+              name="landSize" 
+              required 
+              min="0" 
+              step="any"
+              defaultValue={editingHouseType?.landSize ?? editingHouseType?.size?.land ?? 0} 
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <Input 
+              label="Kamar Tidur *" 
+              type="number" 
+              id="bedrooms" 
+              name="bedrooms" 
+              required 
+              min="0" 
+              defaultValue={editingHouseType?.bedrooms ?? editingHouseType?.specs?.bedrooms ?? 0} 
+            />
+            <Input 
+              label="Kamar Mandi *" 
+              type="number" 
+              id="bathrooms" 
+              name="bathrooms" 
+              required 
+              min="0" 
+              defaultValue={editingHouseType?.bathrooms ?? editingHouseType?.specs?.bathrooms ?? 0} 
+            />
+            <Input 
+              label="Carport (Mobil) *" 
+              type="number" 
+              id="carports" 
+              name="carports" 
+              required 
+              min="0" 
+              defaultValue={editingHouseType?.carports ?? editingHouseType?.specs?.carports ?? 0} 
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+            <Input 
+              label="Harga Acuan / Standar (Rp) *" 
+              type="number" 
+              id="price" 
+              name="price" 
+              required 
+              min="0" 
+              defaultValue={editingHouseType?.price ?? (typeof editingHouseType?.startingPrice === 'number' ? editingHouseType?.startingPrice : 0)} 
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label htmlFor="description" style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--color-tertiary)' }}>
+              Deskripsi / Catatan Singkat (Opsional)
+            </label>
+            <textarea 
+              id="description" 
+              name="description" 
+              defaultValue={editingHouseType?.description || ''} 
+              rows={2} 
+              className={styles.textarea}
+              placeholder="Contoh: Rumah tipe minimalis modern 1 lantai dengan taman depan & belakang..."
+            />
+          </div>
+
+          <div className={styles.formActions} style={{ marginTop: '16px' }}>
+            <button type="button" onClick={() => setIsHouseTypeModalOpen(false)} className={styles.secondaryBtn}>
+              Batal
+            </button>
+            <button type="submit" disabled={isPending} className={styles.primaryBtn}>
+              {isPending ? 'Menyimpan...' : (editingHouseType ? 'Simpan Perubahan' : 'Tambah Tipe')}
             </button>
           </div>
         </form>
