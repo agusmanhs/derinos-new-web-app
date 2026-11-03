@@ -633,10 +633,10 @@
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
@@ -645,6 +645,38 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
   border-color: #cbd5e1;
+}
+
+.houseTypeCardImageWrapper {
+  width: 100%;
+  height: 160px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.houseTypeCardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.25s ease;
+}
+
+.houseTypeCard:hover .houseTypeCardImage {
+  transform: scale(1.03);
+}
+
+.houseTypePlaceholderImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  gap: 4px;
 }
 
 .houseTypeHeader {

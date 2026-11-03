@@ -67,36 +67,58 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           <h2 className={styles.sectionTitle}>Masterplan & House Types</h2>
           <div className={styles.masterplanGrid}>
             <div className={styles.masterplanImageWrapper}>
-              <Image src={project.masterplanImage} alt="Masterplan" fill className={styles.imageCover} />
+              {project.masterplanImage ? (
+                <Image src={project.masterplanImage} alt="Masterplan" fill className={styles.imageCover} />
+              ) : (
+                <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f5f9', color: '#64748b', fontSize: '0.875rem' }}>
+                  Masterplan Site Plan
+                </div>
+              )}
             </div>
             <div className={styles.typesList}>
-              {project.houseTypes.map(type => (
-                <Card key={type.id} className={styles.typeCard}>
-                  <div className={styles.typeImageWrapper}>
-                    <Image src={type.image} alt={type.name} fill className={styles.imageCover} />
-                  </div>
-                  <Card.Body>
-                    <h3 className={styles.typeName}>{type.name}</h3>
-                    <p className={styles.typeSpecs}>
-                      LB: {type.size.building}m² | LT: {type.size.land}m²
-                    </p>
-                    <div className={styles.typeIcons}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                        <BedIcon size={15} color="#64748B" /> {type.specs.bedrooms} Bed
-                      </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                        <BathIcon size={15} color="#64748B" /> {type.specs.bathrooms} Bath
-                      </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                        <CarIcon size={15} color="#64748B" /> {type.specs.carports} Car
-                      </span>
+              {project.houseTypes.map(type => {
+                const bSize = type.size?.building ?? (type as any).buildingSize ?? 0;
+                const lSize = type.size?.land ?? (type as any).landSize ?? 0;
+                const bdrooms = type.specs?.bedrooms ?? (type as any).bedrooms ?? 0;
+                const bthrooms = type.specs?.bathrooms ?? (type as any).bathrooms ?? 0;
+                const crports = type.specs?.carports ?? (type as any).carports ?? 0;
+                const priceFormatted = type.startingPrice || ((type as any).price ? `Rp ${Number((type as any).price).toLocaleString('id-ID')}` : '-');
+
+                return (
+                  <Card key={type.id} className={styles.typeCard}>
+                    <div className={styles.typeImageWrapper}>
+                      {type.image ? (
+                        <Image src={type.image} alt={type.name} fill className={styles.imageCover} />
+                      ) : (
+                        <div className={styles.typePlaceholder}>
+                          <span style={{ fontSize: '2.5rem' }}>🏡</span>
+                          <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Foto Tipe</span>
+                        </div>
+                      )}
                     </div>
-                    <div className={styles.typePrice}>
-                      Starting from <strong>{type.startingPrice}</strong>
-                    </div>
-                  </Card.Body>
-                </Card>
-              ))}
+                    <Card.Body>
+                      <h3 className={styles.typeName}>{type.name}</h3>
+                      <p className={styles.typeSpecs}>
+                        LB: {bSize}m² | LT: {lSize}m²
+                      </p>
+                      <div className={styles.typeIcons}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <BedIcon size={15} color="#64748B" /> {bdrooms} Bed
+                        </span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <BathIcon size={15} color="#64748B" /> {bthrooms} Bath
+                        </span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <CarIcon size={15} color="#64748B" /> {crports} Car
+                        </span>
+                      </div>
+                      <div className={styles.typePrice}>
+                        Starting from <strong>{priceFormatted}</strong>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -11,7 +11,8 @@ import { createPropertyAjaxAction } from '@/actions/adminPropertyActions';
 import { 
   saveHouseTypeAction, 
   deleteHouseTypeAction, 
-  seedInitialHouseTypesFromUnitsAction 
+  seedInitialHouseTypesFromUnitsAction,
+  uploadHouseTypeImageAction
 } from '@/actions/adminHouseTypeActions';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -53,6 +54,8 @@ export const ProjectDashboardClient: React.FC<Props> = ({
   const [isHouseTypeModalOpen, setIsHouseTypeModalOpen] = useState(false);
   const [editingHouseType, setEditingHouseType] = useState<any | null>(null);
   const [selectedHouseTypeId, setSelectedHouseTypeId] = useState<string>('');
+  const [houseTypeImage, setHouseTypeImage] = useState<string>('');
+  const [isUploadingTypeImage, setIsUploadingTypeImage] = useState<boolean>(false);
 
   // Form data state for Register Unit Modal (for auto-fill)
   const [unitFormData, setUnitFormData] = useState({
@@ -185,12 +188,37 @@ export const ProjectDashboardClient: React.FC<Props> = ({
 
   const openAddHouseTypeModal = () => {
     setEditingHouseType(null);
+    setHouseTypeImage('');
     setIsHouseTypeModalOpen(true);
   };
 
   const openEditHouseTypeModal = (ht: any) => {
     setEditingHouseType(ht);
+    setHouseTypeImage(ht?.image || '');
     setIsHouseTypeModalOpen(true);
+  };
+
+  const handleHouseTypeImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingTypeImage(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await uploadHouseTypeImageAction(formData);
+      if (res.success && res.url) {
+        setHouseTypeImage(res.url);
+      } else {
+        alert(res.message || 'Gagal mengunggah foto tipe rumah');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Gagal mengunggah foto tipe rumah');
+    } finally {
+      setIsUploadingTypeImage(false);
+      e.target.value = '';
+    }
   };
 
   const handleSaveHouseType = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -206,6 +234,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({
       carports: parseInt(formData.get('carports') as string) || 0,
       price: parseFloat(formData.get('price') as string) || 0,
       description: (formData.get('description') as string) || '',
+      image: houseTypeImage || (formData.get('image') as string) || '',
     };
 
     startTransition(async () => {
@@ -950,6 +979,20 @@ export const ProjectDashboardClient: React.FC<Props> = ({
 
                   return (
                     <div key={ht.id} className={styles.houseTypeCard}>
+                      {ht.image ? (
+                        <div className={styles.houseTypeCardImageWrapper}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={ht.image} alt={ht.name} className={styles.houseTypeCardImage} />
+                        </div>
+                      ) : (
+                        <div className={styles.houseTypeCardImageWrapper}>
+                          <div className={styles.houseTypePlaceholderImage}>
+                            <span style={{ fontSize: '1.75rem' }}>🏡</span>
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Belum ada foto</span>
+                          </div>
+                        </div>
+                      )}
+
                       <div className={styles.houseTypeHeader}>
                         <div>
                           <h4 className={styles.houseTypeName}>{ht.name}</h4>
@@ -1263,6 +1306,80 @@ export const ProjectDashboardClient: React.FC<Props> = ({
               required 
               placeholder="Contoh: Type 36, Type 45/72, Tipe Aster" 
             />
+          </div>
+
+          {/* Foto Fasad / Render 3D Tipe Rumah */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--color-tertiary)' }}>
+              Foto / Render Fasad Tipe Rumah (Tampil di Landing Page Publik)
+            </label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                name="image" 
+                value={houseTypeImage} 
+                onChange={(e) => setHouseTypeImage(e.target.value)} 
+                placeholder="URL Gambar atau klik Unggah File..."
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #D1D5DB',
+                  fontSize: '0.875rem'
+                }}
+              />
+              <input 
+                type="file" 
+                id="houseTypeImageUploadInput" 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+                onChange={handleHouseTypeImageUpload} 
+              />
+              <button 
+                type="button" 
+                onClick={() => document.getElementById('houseTypeImageUploadInput')?.click()}
+                disabled={isUploadingTypeImage}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '6px',
+                  border: '1px solid #2563EB',
+                  backgroundColor: '#EFF6FF',
+                  color: '#1D4ED8',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {isUploadingTypeImage ? 'Mengunggah...' : '📷 Unggah Foto'}
+              </button>
+            </div>
+
+            {houseTypeImage && (
+              <div style={{ position: 'relative', width: '100%', height: '160px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #E2E8F0', marginTop: '6px' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={houseTypeImage} alt="Preview Tipe Rumah" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <button
+                  type="button"
+                  onClick={() => setHouseTypeImage('')}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    backgroundColor: 'rgba(0,0,0,0.65)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✕ Hapus Foto
+                </button>
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

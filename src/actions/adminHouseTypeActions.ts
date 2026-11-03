@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { verifySession } from '@/lib/session';
 import { AuthService } from '@/services/authService';
 import { revalidatePath } from 'next/cache';
+import fs from 'fs/promises';
+import path from 'path';
 
 export interface HouseTypeInput {
   id?: string;
@@ -241,3 +243,45 @@ export async function seedInitialHouseTypesFromUnitsAction(
     return { success: false, message: error.message || 'Gagal mengekstrak tipe rumah' };
   }
 }
+
+export async function uploadHouseTypeImageAction(formData: FormData) {
+  try {
+    const session = await verifySession();
+    if (!session) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    const file = formData.get('file') as File;
+    if (!file || !file.size) {
+      return { success: false, message: 'Berkas gambar tidak ditemukan' };
+    }
+
+    if (!file.type.startsWith('image/')) {
+      return { success: false, message: 'Berkas harus berupa file gambar (JPG, PNG, WebP)' };
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      return { success: false, message: 'Ukuran gambar maksimal 10MB' };
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const ext = path.extname(file.name) || '.jpg';
+    const cleanBase = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filename = `${Date.now()}-${cleanBase}${ext}`;
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'house-types');
+
+    await fs.mkdir(uploadDir, { recursive: true });
+    await fs.writeFile(path.join(uploadDir, filename), buffer);
+
+    return { 
+      success: true, 
+      url: `/uploads/house-types/${filename}`,
+      message: 'Foto tipe rumah berhasil diunggah'
+    };
+  } catch (err: any) {
+    console.error('Error in uploadHouseTypeImageAction:', err);
+    return { success: false, message: err.message || 'Gagal mengunggah foto tipe rumah' };
+  }
+}
+
+
