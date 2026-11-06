@@ -72,12 +72,6 @@ export function AdminDashboardClient({
             Monitoring real-time transaksi penjualan, kavling aktif, respon leads, grafik pertumbuhan, dan automasi WhatsApp.
           </p>
         </div>
-
-        <div className={styles.headerRightActions}>
-          <Link href="/admin/leads?create=1" className={styles.quickInputBtn}>
-            + Input Lead Baru
-          </Link>
-        </div>
       </div>
 
       {/* 2. TOP 5 EXECUTIVE KPI CARDS */}

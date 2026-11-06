@@ -118,12 +118,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ user, onMenuToggle }) 
           <span className={styles.badge}></span>
         </button>
 
-        {/* + Input Lead Baru CTA Button */}
-        <Link href="/admin/leads?create=1" className={styles.primaryCta}>
-          <IconPlus />
-          <span>Input Lead Baru</span>
-        </Link>
-
         {/* User Menu */}
         <div className={styles.userMenu} ref={dropdownRef}>
           <button 
