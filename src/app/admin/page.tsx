@@ -1,4 +1,5 @@
 import React from 'react';
+import { redirect } from 'next/navigation';
 import { verifySession } from '@/lib/session';
 import { AuthService } from '@/services/authService';
 import prisma from '@/lib/prisma';
@@ -9,6 +10,25 @@ export default async function AdminDashboardPage() {
   const user = session ? await AuthService.getUserById(session.userId) : null;
 
   if (!user) return null;
+
+  const roleName = user.role?.name || session?.roleName || '';
+  const roleNameLower = roleName.toLowerCase();
+  const userPermissions = user.role?.permissions || session?.permissions || [];
+  const isSuperAdmin = roleName === 'Super Admin';
+
+  // Role-based dashboard dispatching:
+  // Petugas Lapangan / Field Agent langsung diarahkan ke menu Progres Konstruksi
+  const isFieldAgent = 
+    !isSuperAdmin && (
+      roleNameLower.includes('field') || 
+      roleNameLower.includes('lapangan') || 
+      roleNameLower.includes('konstruksi') ||
+      (userPermissions.includes('update_construction_progress') && !userPermissions.includes('manage_roles') && !userPermissions.includes('view_leads'))
+    );
+
+  if (isFieldAgent) {
+    redirect('/admin/construction');
+  }
 
   // 1. KPI Stats
   const totalProjects = await prisma.project.count({ where: { archived: false } });

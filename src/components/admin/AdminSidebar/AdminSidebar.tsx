@@ -92,14 +92,28 @@ export const AdminSidebar: React.FC<{
   });
 
   const userPermissions = userRole?.permissions || [];
-  const hasPermission = (requiredPerms: string[]) => {
-    if (requiredPerms.length === 0) return true;
-    return requiredPerms.some(p => userPermissions.includes(p));
+  const roleNameLower = (userRole?.name || '').toLowerCase();
+  const isSuperAdmin = userRole?.name === 'Super Admin';
+  const isFieldAgent = 
+    !isSuperAdmin && (
+      roleNameLower.includes('field') || 
+      roleNameLower.includes('lapangan') || 
+      roleNameLower.includes('konstruksi') ||
+      (userPermissions.includes('update_construction_progress') && !userPermissions.includes('manage_roles') && !userPermissions.includes('view_leads'))
+    );
+
+  const hasPermission = (item: NavItem) => {
+    // Sembunyikan Executive Cockpit dari Field Agent / Petugas Lapangan
+    if (item.id === 'cockpit' && isFieldAgent) {
+      return false;
+    }
+    if (item.permissions.length === 0) return true;
+    return item.permissions.some(p => userPermissions.includes(p));
   };
 
   const allowedCategories = NAV_CATEGORIES.map(category => ({
     ...category,
-    items: category.items.filter(item => hasPermission(item.permissions))
+    items: category.items.filter(item => hasPermission(item))
   })).filter(category => category.items.length > 0);
 
   const toggleSubmenu = (id: string, e: React.MouseEvent) => {
@@ -131,7 +145,7 @@ export const AdminSidebar: React.FC<{
               <span className={styles.versionBadge}>v4.2</span>
             </div>
             <div className={styles.logoSubtitle}>
-              Executive Cockpit Suite
+              {isFieldAgent ? 'Field Operations Suite' : 'Executive Cockpit Suite'}
             </div>
           </div>
         </div>

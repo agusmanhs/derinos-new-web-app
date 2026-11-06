@@ -25,6 +25,20 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     user.role?.permissions || []
   );
 
+  const roleNameLower = (user.role?.name || '').toLowerCase();
+  const perms = user.role?.permissions || [];
+  const isFieldAgent = 
+    user.role?.name !== 'Super Admin' && (
+      roleNameLower.includes('field') || 
+      roleNameLower.includes('lapangan') || 
+      roleNameLower.includes('konstruksi') ||
+      (perms.includes('update_construction_progress') && !perms.includes('manage_roles') && !perms.includes('view_leads'))
+    );
+
+  if (isFieldAgent) {
+    redirect('/admin/construction');
+  }
+
   // Redirect to dashboard
   redirect('/admin');
 }
