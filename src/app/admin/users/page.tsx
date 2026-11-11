@@ -2,17 +2,13 @@ import React from 'react';
 import { UserService } from '@/services/userService';
 import { RoleService } from '@/services/roleService';
 import { UserListClient } from './UserListClient';
-import { verifySession } from '@/lib/session';
-import { redirect } from 'next/navigation';
+import { requirePermission } from '@/lib/authGuard';
 
 export default async function AdminUsersPage() {
-  const session = await verifySession();
-  if (!session?.permissions.includes('manage_users') && session?.roleName !== 'Super Admin') {
-    redirect('/admin');
-  }
+  const ctx = await requirePermission(['manage_users']);
 
   const users = await UserService.getUsers();
   const roles = await RoleService.getRoles();
 
-  return <UserListClient users={users} roles={roles} currentUserRole={session?.roleName || ''} />;
+  return <UserListClient users={users} roles={roles} currentUserRole={ctx.roleName || ''} />;
 }

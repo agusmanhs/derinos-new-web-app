@@ -2,8 +2,7 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { verifySession } from '@/lib/session';
-import { AuthService } from '@/services/authService';
+import { assertActionPermission } from '@/lib/authGuard';
 
 import { SalesService } from '@/services/salesService';
 
@@ -26,16 +25,9 @@ export async function updateUnitStatusFromSitePlan(
   dealData?: DealInputData
 ) {
   try {
-    const session = await verifySession();
-    if (!session) {
-      return { success: false, message: 'Unauthorized' };
-    }
-    const liveUser = await AuthService.getUserById(session.userId);
-    const userPerms = liveUser?.role?.permissions || session.permissions || [];
-    const roleName = liveUser?.role?.name || session.roleName || '';
-    const canUpdateStatus = roleName === 'Super Admin' || userPerms.includes('manage_projects') || userPerms.includes('update_unit_status');
-    if (!canUpdateStatus) {
-      return { success: false, message: 'Forbidden: Anda tidak memiliki izin untuk mengubah status unit' };
+    const auth = await assertActionPermission(['manage_projects', 'update_unit_status']);
+    if (!auth.authorized) {
+      return { success: false, message: auth.message };
     }
     const unit = await prisma.propertyUnit.findUnique({
       where: { id: propertyUnitId },
@@ -175,16 +167,9 @@ import path from 'path';
 
 export async function updateConstructionProgressAction(formData: FormData) {
   try {
-    const session = await verifySession();
-    if (!session) {
-      return { success: false, message: 'Unauthorized' };
-    }
-    const liveUser = await AuthService.getUserById(session.userId);
-    const userPerms = liveUser?.role?.permissions || session.permissions || [];
-    const roleName = liveUser?.role?.name || session.roleName || '';
-    const canUpdateProgress = roleName === 'Super Admin' || userPerms.includes('manage_projects') || userPerms.includes('update_construction_progress');
-    if (!canUpdateProgress) {
-      return { success: false, message: 'Forbidden: Anda tidak memiliki izin untuk mengupdate progress konstruksi unit' };
+    const auth = await assertActionPermission(['manage_projects', 'update_construction_progress']);
+    if (!auth.authorized) {
+      return { success: false, message: auth.message };
     }
 
     const propertyUnitId = formData.get('propertyUnitId') as string;

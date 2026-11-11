@@ -4,12 +4,12 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { PropertyService } from '@/services/propertyService';
 import { ProjectService } from '@/services/projectService';
-import { verifySession } from '@/lib/session';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function archivePropertyAction(id: string) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_properties') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_projects', 'manage_properties']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   await PropertyService.archiveProperty(id);
@@ -18,9 +18,9 @@ export async function archivePropertyAction(id: string) {
 }
 
 export async function savePropertyAction(prevState: unknown, formData: FormData) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_properties') && session?.roleName !== 'Super Admin') {
-    return { success: false, message: 'Unauthorized access' };
+  const auth = await assertActionPermission(['manage_projects', 'manage_properties']);
+  if (!auth.authorized) {
+    return { success: false, message: auth.message };
   }
 
   const id = formData.get('id') as string | null;
@@ -73,9 +73,9 @@ export async function savePropertyAction(prevState: unknown, formData: FormData)
 }
 
 export async function createPropertyAjaxAction(payload: any) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_properties') && session?.roleName !== 'Super Admin') {
-    return { success: false, message: 'Unauthorized access' };
+  const auth = await assertActionPermission(['manage_projects', 'manage_properties']);
+  if (!auth.authorized) {
+    return { success: false, message: auth.message };
   }
 
   if (!payload.projectId || !payload.unitNumber || !payload.typeName || !payload.statusId || isNaN(payload.price)) {

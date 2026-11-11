@@ -3,8 +3,10 @@ import { notFound } from 'next/navigation';
 import { MarketingService } from '@/services/marketingService';
 import { AgencyDetailClient } from './AgencyDetailClient';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHeader';
+import { requirePermission } from '@/lib/authGuard';
 
 export default async function AgencyDetailPage(props: { params: Promise<{ id: string }> }) {
+  await requirePermission(['manage_agencies']);
   const params = await props.params;
   const agency = await MarketingService.getAgencyById(params.id);
 

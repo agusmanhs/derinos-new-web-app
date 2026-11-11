@@ -1,18 +1,14 @@
 import React from 'react';
 import { MarketingService } from '@/services/marketingService';
 import { AgencyListClient } from './AgencyListClient';
-import { verifySession } from '@/lib/session';
-import { redirect } from 'next/navigation';
+import { requirePermission } from '@/lib/authGuard';
 
 export default async function AdminAgenciesPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const session = await verifySession();
-  if (!session?.permissions.includes('manage_agencies') && session?.roleName !== 'Super Admin') {
-    redirect('/admin');
-  }
+  await requirePermission(['manage_agencies']);
 
   const resolvedParams = await searchParams;
   const pageParam = resolvedParams?.page;

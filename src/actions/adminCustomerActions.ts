@@ -2,12 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { CustomerService } from '@/services/customerService';
-import { verifySession } from '@/lib/session';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function createCustomerAction(formData: FormData) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_customers') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_customers']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   const name = formData.get('name') as string;
@@ -27,9 +27,9 @@ export async function createCustomerAction(formData: FormData) {
 }
 
 export async function updateCustomerAction(id: string, formData: FormData) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_customers') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_customers']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   const name = formData.get('name') as string;
@@ -50,9 +50,9 @@ export async function updateCustomerAction(id: string, formData: FormData) {
 }
 
 export async function deleteCustomerAction(id: string) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_customers') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_customers']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   await CustomerService.deleteCustomer(id);

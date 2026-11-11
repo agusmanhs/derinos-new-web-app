@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/Icon/AdminIcons';
 import styles from './AdminSidebar.module.css';
 import { logoutAction } from '@/actions/authActions';
+import { isFieldAgentRole } from '@/lib/roleUtils';
 
 interface NavItem {
   id: string;
@@ -92,23 +93,20 @@ export const AdminSidebar: React.FC<{
   });
 
   const userPermissions = userRole?.permissions || [];
-  const roleNameLower = (userRole?.name || '').toLowerCase();
   const isSuperAdmin = userRole?.name === 'Super Admin';
-  const isFieldAgent = 
-    !isSuperAdmin && (
-      roleNameLower.includes('field') || 
-      roleNameLower.includes('lapangan') || 
-      roleNameLower.includes('konstruksi') ||
-      (userPermissions.includes('update_construction_progress') && !userPermissions.includes('manage_roles') && !userPermissions.includes('view_leads'))
-    );
+  const isFieldAgent = isFieldAgentRole(userRole?.name || '', userPermissions);
+
+  const hasPerms = (required: string[]) => {
+    if (isSuperAdmin || required.length === 0) return true;
+    return required.some(p => userPermissions.includes(p));
+  };
 
   const hasPermission = (item: NavItem) => {
     // Sembunyikan Executive Cockpit dari Field Agent / Petugas Lapangan
     if (item.id === 'cockpit' && isFieldAgent) {
       return false;
     }
-    if (item.permissions.length === 0) return true;
-    return item.permissions.some(p => userPermissions.includes(p));
+    return hasPerms(item.permissions);
   };
 
   const allowedCategories = NAV_CATEGORIES.map(category => ({
@@ -217,7 +215,7 @@ export const AdminSidebar: React.FC<{
 
                   {item.hasSubmenu && item.id === 'users' && isSubmenuOpen && (
                     <div className={styles.submenu}>
-                      {hasPermission(['manage_users']) && (
+                      {hasPerms(['manage_users']) && (
                         <Link 
                           href="/admin/users?refresh=1"
                           className={`${styles.submenuItem} ${pathname === '/admin/users' ? styles.activeSubmenu : ''}`}
@@ -225,7 +223,7 @@ export const AdminSidebar: React.FC<{
                           Users & Tim
                         </Link>
                       )}
-                      {hasPermission(['manage_roles']) && (
+                      {hasPerms(['manage_roles']) && (
                         <Link 
                           href="/admin/users/roles?refresh=1"
                           className={`${styles.submenuItem} ${pathname.startsWith('/admin/users/roles') ? styles.activeSubmenu : ''}`}

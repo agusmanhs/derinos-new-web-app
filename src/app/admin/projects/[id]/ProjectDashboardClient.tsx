@@ -904,7 +904,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({
           <div className={styles.houseTypesTab}>
             <div className={styles.cardHeader} style={{ marginBottom: '20px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827' }}>Master Tipe Rumah ({project.name})</h3>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827' }}>Master Tipe Rumah ({project.title})</h3>
                 <p style={{ margin: 0, fontSize: '0.875rem', color: '#6b7280' }}>
                   Kelola spesifikasi standar (luas tanah, luas bangunan, kamar tidur/mandi, carport, harga acuan) untuk otomatisasi saat registrasi unit kavling.
                 </p>

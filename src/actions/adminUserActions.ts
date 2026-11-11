@@ -2,8 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { UserService } from '@/services/userService';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function getUsersAction() {
+  const auth = await assertActionPermission(['manage_users']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const users = await UserService.getUsers();
     return { success: true, data: users };
@@ -13,6 +16,8 @@ export async function getUsersAction() {
 }
 
 export async function createUserAction(data: any) {
+  const auth = await assertActionPermission(['manage_users']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const user = await UserService.createUser(data);
     revalidatePath('/admin/users');
@@ -23,6 +28,8 @@ export async function createUserAction(data: any) {
 }
 
 export async function updateUserAction(id: string, data: any) {
+  const auth = await assertActionPermission(['manage_users']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const user = await UserService.updateUser(id, data);
     revalidatePath('/admin/users');
@@ -33,6 +40,8 @@ export async function updateUserAction(id: string, data: any) {
 }
 
 export async function deleteUserAction(id: string) {
+  const auth = await assertActionPermission(['manage_users']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     await UserService.deleteUser(id);
     revalidatePath('/admin/users');
@@ -43,6 +52,8 @@ export async function deleteUserAction(id: string) {
 }
 
 export async function updateUserRoleAction(id: string, roleId: string) {
+  const auth = await assertActionPermission(['manage_users']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const user = await UserService.updateUser(id, { roleId });
     revalidatePath('/admin/users');

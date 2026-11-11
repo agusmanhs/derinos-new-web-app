@@ -2,8 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { MarketingService } from '@/services/marketingService';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function saveAgencyAction(formData: FormData) {
+  const auth = await assertActionPermission(['manage_agencies']);
+  if (!auth.authorized) throw new Error(auth.message);
+
   const id = formData.get('id') as string | null;
   const name = formData.get('name') as string;
   const picName = formData.get('picName') as string;
@@ -27,11 +31,17 @@ export async function saveAgencyAction(formData: FormData) {
 }
 
 export async function deleteAgencyAction(id: string) {
+  const auth = await assertActionPermission(['manage_agencies']);
+  if (!auth.authorized) throw new Error(auth.message);
+
   await MarketingService.deleteAgency(id);
   revalidatePath('/admin/agencies');
 }
 
 export async function updateCommissionAction(id: string, amount: number, status: string, paymentNotes: string) {
+  const auth = await assertActionPermission(['manage_agencies']);
+  if (!auth.authorized) throw new Error(auth.message);
+
   const data: any = { amount, status, paymentNotes };
   if (status === 'Paid') {
     data.paymentDate = new Date();

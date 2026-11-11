@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { statusService } from '../services/statusService';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function getProjectStatuses() {
   try {
@@ -13,6 +14,8 @@ export async function getProjectStatuses() {
 }
 
 export async function createStatusAction(data: { name: string; colorHex: string; order?: number }) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) throw new Error(auth.message);
   try {
     const status = await statusService.createStatus(data);
     revalidatePath(`/admin/settings/statuses`);
@@ -25,6 +28,8 @@ export async function createStatusAction(data: { name: string; colorHex: string;
 }
 
 export async function updateStatusAction(id: string, data: { name?: string; colorHex?: string; order?: number }) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) throw new Error(auth.message);
   try {
     const status = await statusService.updateStatus(id, data);
     revalidatePath(`/admin/settings/statuses`);
@@ -37,6 +42,8 @@ export async function updateStatusAction(id: string, data: { name?: string; colo
 }
 
 export async function deleteStatusAction(id: string) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) throw new Error(auth.message);
   try {
     await statusService.deleteStatus(id);
     revalidatePath(`/admin/settings/statuses`);

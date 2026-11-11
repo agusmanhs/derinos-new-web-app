@@ -3,34 +3,36 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { ProjectService } from '@/services/projectService';
-import { verifySession } from '@/lib/session';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function archiveProjectAction(id: string) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_projects') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   await ProjectService.archiveProject(id);
   revalidatePath('/admin/projects');
   revalidatePath('/projects');
+  revalidatePath('/');
 }
 
 export async function deleteProjectAction(id: string) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_projects') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   await ProjectService.deleteProject(id);
   revalidatePath('/admin/projects');
   revalidatePath('/projects');
+  revalidatePath('/');
 }
 
 export async function saveProjectAction(prevState: unknown, formData: FormData) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_projects') && session?.roleName !== 'Super Admin') {
-    return { success: false, message: 'Unauthorized access' };
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) {
+    return { success: false, message: auth.message };
   }
 
   const id = formData.get('id') as string | null;
@@ -70,6 +72,8 @@ export async function saveProjectAction(prevState: unknown, formData: FormData) 
 
     revalidatePath('/admin/projects');
     revalidatePath('/projects');
+    revalidatePath(`/projects/${slug}`);
+    revalidatePath('/');
     
     // Using redirect inside try-catch requires careful handling in Next.js Server Actions
     // because redirect() throws an error internally.

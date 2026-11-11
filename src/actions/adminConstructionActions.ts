@@ -3,12 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { ProjectService } from '@/services/projectService';
-import { verifySession } from '@/lib/session';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function saveConstructionProgressAction(prevState: unknown, formData: FormData) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_construction') && session?.roleName !== 'Super Admin') {
-    return { success: false, message: 'Unauthorized access' };
+  const auth = await assertActionPermission(['manage_projects', 'update_construction_progress', 'manage_construction']);
+  if (!auth.authorized) {
+    return { success: false, message: auth.message };
   }
 
   const id = formData.get('id') as string;

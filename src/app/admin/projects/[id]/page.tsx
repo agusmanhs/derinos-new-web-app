@@ -5,12 +5,17 @@ import { PropertyService } from '@/services/propertyService';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHeader';
 import { ProjectDashboardClient } from './ProjectDashboardClient';
 import { statusService } from '@/services/statusService';
-import { verifySession } from '@/lib/session';
-import { AuthService } from '@/services/authService';
+import { requirePermission } from '@/lib/authGuard';
 import { MarketingService } from '@/services/marketingService';
 import { CustomerService } from '@/services/customerService';
 
 export default async function ViewProjectPage(props: { params: Promise<{ id: string }> }) {
+  const ctx = await requirePermission([
+    'view_projects',
+    'manage_projects',
+    'update_unit_status',
+    'update_construction_progress',
+  ]);
   const params = await props.params;
   let project = await ProjectService.getProjectBySlug(params.id);
   if (!project) {
@@ -28,20 +33,9 @@ export default async function ViewProjectPage(props: { params: Promise<{ id: str
     CustomerService.getCustomers(undefined, 1, 1000),
     MarketingService.getAgencies(undefined, 1, 1000)
   ]);
-  
-  const session = await verifySession();
-  let userPermissions: string[] = session?.permissions || [];
-  let roleName = session?.roleName || '';
 
-  if (session?.userId) {
-    const liveUser = await AuthService.getUserById(session.userId);
-    if (liveUser?.role) {
-      roleName = liveUser.role.name;
-      userPermissions = liveUser.role.permissions || [];
-    }
-  }
-
-  const isSuperAdmin = roleName === 'Super Admin';
+  const isSuperAdmin = ctx.isSuperAdmin;
+  const userPermissions = ctx.permissions;
   const canManageProjects = isSuperAdmin || userPermissions.includes('manage_projects');
   const canUpdateStatus = isSuperAdmin || canManageProjects || userPermissions.includes('update_unit_status');
   const canUpdateProgress = isSuperAdmin || canManageProjects || userPermissions.includes('update_construction_progress');

@@ -1,8 +1,10 @@
 import React from 'react';
 import { PropertyService } from '@/services/propertyService';
 import { PropertyListClient } from './PropertyListClient';
+import { requirePermission } from '@/lib/authGuard';
 
 export default async function AdminPropertiesPage(props: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
+  await requirePermission(['view_projects', 'manage_projects']);
   const searchParams = await props.searchParams;
   
   const page = parseInt(searchParams.page || '1');

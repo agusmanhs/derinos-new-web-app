@@ -1,8 +1,7 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { verifySession } from '@/lib/session';
-import { AuthService } from '@/services/authService';
+import { assertActionPermission } from '@/lib/authGuard';
 import { revalidatePath } from 'next/cache';
 import fs from 'fs/promises';
 import path from 'path';
@@ -26,18 +25,9 @@ export async function saveHouseTypeAction(
   projectSlug: string
 ) {
   try {
-    const session = await verifySession();
-    if (!session) {
-      return { success: false, message: 'Unauthorized' };
-    }
-
-    const liveUser = await AuthService.getUserById(session.userId);
-    const userPerms = liveUser?.role?.permissions || session.permissions || [];
-    const isSuperAdmin = (liveUser?.role?.name || session.roleName) === 'Super Admin';
-    const canManage = isSuperAdmin || userPerms.includes('manage_projects');
-
-    if (!canManage) {
-      return { success: false, message: 'Forbidden: Anda tidak memiliki izin untuk mengelola tipe rumah' };
+    const auth = await assertActionPermission(['manage_projects']);
+    if (!auth.authorized) {
+      return { success: false, message: auth.message };
     }
 
     const project = await prisma.project.findUnique({
@@ -93,6 +83,8 @@ export async function saveHouseTypeAction(
     revalidatePath(`/admin/projects/${projectSlug}`);
     revalidatePath(`/admin/projects/${projectId}`);
     revalidatePath('/admin/projects');
+    revalidatePath(`/projects/${projectSlug}`);
+    revalidatePath('/');
 
     return { success: true, message: 'Tipe rumah berhasil disimpan', houseType: normalized };
   } catch (error: any) {
@@ -107,18 +99,9 @@ export async function deleteHouseTypeAction(
   projectSlug: string
 ) {
   try {
-    const session = await verifySession();
-    if (!session) {
-      return { success: false, message: 'Unauthorized' };
-    }
-
-    const liveUser = await AuthService.getUserById(session.userId);
-    const userPerms = liveUser?.role?.permissions || session.permissions || [];
-    const isSuperAdmin = (liveUser?.role?.name || session.roleName) === 'Super Admin';
-    const canManage = isSuperAdmin || userPerms.includes('manage_projects');
-
-    if (!canManage) {
-      return { success: false, message: 'Forbidden: Anda tidak memiliki izin untuk menghapus tipe rumah' };
+    const auth = await assertActionPermission(['manage_projects']);
+    if (!auth.authorized) {
+      return { success: false, message: auth.message };
     }
 
     const project = await prisma.project.findUnique({
@@ -140,6 +123,8 @@ export async function deleteHouseTypeAction(
     revalidatePath(`/admin/projects/${projectSlug}`);
     revalidatePath(`/admin/projects/${projectId}`);
     revalidatePath('/admin/projects');
+    revalidatePath(`/projects/${projectSlug}`);
+    revalidatePath('/');
 
     return { success: true, message: 'Tipe rumah berhasil dihapus' };
   } catch (error: any) {
@@ -153,9 +138,9 @@ export async function seedInitialHouseTypesFromUnitsAction(
   projectSlug: string
 ) {
   try {
-    const session = await verifySession();
-    if (!session) {
-      return { success: false, message: 'Unauthorized' };
+    const auth = await assertActionPermission(['manage_projects']);
+    if (!auth.authorized) {
+      return { success: false, message: auth.message };
     }
 
     const project = await prisma.project.findUnique({
@@ -246,9 +231,9 @@ export async function seedInitialHouseTypesFromUnitsAction(
 
 export async function uploadHouseTypeImageAction(formData: FormData) {
   try {
-    const session = await verifySession();
-    if (!session) {
-      return { success: false, message: 'Unauthorized' };
+    const auth = await assertActionPermission(['manage_projects']);
+    if (!auth.authorized) {
+      return { success: false, message: auth.message };
     }
 
     const file = formData.get('file') as File;

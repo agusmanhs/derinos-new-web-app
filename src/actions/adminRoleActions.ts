@@ -2,8 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { RoleService } from '@/services/roleService';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function getRolesAction() {
+  const auth = await assertActionPermission(['manage_roles', 'manage_users']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const roles = await RoleService.getRoles();
     return { success: true, data: roles };
@@ -13,6 +16,8 @@ export async function getRolesAction() {
 }
 
 export async function getPermissionsAction() {
+  const auth = await assertActionPermission(['manage_roles']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const permissions = await RoleService.getPermissions();
     return { success: true, data: permissions };
@@ -22,6 +27,8 @@ export async function getPermissionsAction() {
 }
 
 export async function createRoleAction(name: string, description: string) {
+  const auth = await assertActionPermission(['manage_roles']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const role = await RoleService.createRole(name, description);
     revalidatePath('/admin/users/roles');
@@ -32,6 +39,8 @@ export async function createRoleAction(name: string, description: string) {
 }
 
 export async function updateRoleAction(id: string, name: string, description: string) {
+  const auth = await assertActionPermission(['manage_roles']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const role = await RoleService.updateRole(id, name, description);
     revalidatePath('/admin/users/roles');
@@ -42,6 +51,8 @@ export async function updateRoleAction(id: string, name: string, description: st
 }
 
 export async function deleteRoleAction(id: string) {
+  const auth = await assertActionPermission(['manage_roles']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     await RoleService.deleteRole(id);
     revalidatePath('/admin/users/roles');
@@ -52,6 +63,8 @@ export async function deleteRoleAction(id: string) {
 }
 
 export async function togglePermissionAction(roleId: string, permissionId: string, isAssigned: boolean) {
+  const auth = await assertActionPermission(['manage_roles']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     if (isAssigned) {
       await RoleService.removePermission(roleId, permissionId);

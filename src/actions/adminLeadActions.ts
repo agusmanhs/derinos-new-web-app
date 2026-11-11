@@ -2,13 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { LeadService } from '@/services/leadService';
-import { verifySession } from '@/lib/session';
+import { assertActionPermission } from '@/lib/authGuard';
 import { Lead } from '@/types/lead';
 
 export async function updateLeadStatusAction(id: string, status: Lead['status']) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_leads') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_leads']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   await LeadService.updateLeadStatus(id, status);

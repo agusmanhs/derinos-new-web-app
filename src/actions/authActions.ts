@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { AuthService } from '@/services/authService';
 import { createSession, deleteSession } from '@/lib/session';
+import { isFieldAgentRole } from '@/lib/roleUtils';
 
 export async function loginAction(prevState: unknown, formData: FormData) {
   const email = formData.get('email') as string;
@@ -25,17 +26,7 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     user.role?.permissions || []
   );
 
-  const roleNameLower = (user.role?.name || '').toLowerCase();
-  const perms = user.role?.permissions || [];
-  const isFieldAgent = 
-    user.role?.name !== 'Super Admin' && (
-      roleNameLower.includes('field') || 
-      roleNameLower.includes('lapangan') || 
-      roleNameLower.includes('konstruksi') ||
-      (perms.includes('update_construction_progress') && !perms.includes('manage_roles') && !perms.includes('view_leads'))
-    );
-
-  if (isFieldAgent) {
+  if (isFieldAgentRole(user.role?.name || '', user.role?.permissions || [])) {
     redirect('/admin/construction');
   }
 

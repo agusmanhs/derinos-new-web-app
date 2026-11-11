@@ -1,62 +1,333 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  BarChart, Bar, Cell
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
 } from 'recharts';
-import { 
-  IconCockpit, 
-  IconCRM, 
-  IconUnits, 
-  IconWhatsApp, 
-  IconFileLegal, 
-  IconClock, 
-  IconFilter, 
+import {
+  IconCockpit,
+  IconCRM,
+  IconUnits,
+  IconWhatsApp,
+  IconFileLegal,
+  IconClock,
   IconArrowUpRight,
-  IconProjects
+  IconProjects,
+  IconConstruction,
 } from '@/components/ui/Icon/AdminIcons';
-import { PhoneIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './AdminDashboardClient.module.css';
 
-export function AdminDashboardClient({ 
-  stats, 
-  recentBookings = [], 
-  recentCustomers = [], 
+export interface DashboardStats {
+  totalProjects: number;
+  totalUnits: number;
+  availableUnits: number;
+  bookedUnits: number;
+  soldUnits: number;
+  totalCustomers: number;
+  totalLeads: number;
+  leadStageCounts: {
+    New: number;
+    Contacted: number;
+    Qualified: number;
+    Lost: number;
+  };
+  totalSales: number;
+  activeBookingsCount: number;
+  totalPipelineValue: number;
+  thisMonthTransactionCount: number;
+  thisMonthTransactionValue: number;
+  conversionRate: number;
+}
+
+export interface DashboardLeadItem {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  projectId: string | null;
+  projectTitle: string | null;
+  propertyType: string | null;
+  budget: string | null;
+  message: string;
+  source: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface DashboardUnitItem {
+  id: string;
+  projectId: string;
+  projectTitle: string;
+  projectSlug: string;
+  phaseName: string | null;
+  unitNumber: string;
+  typeName: string;
+  landSize: number;
+  buildingSize: number;
+  bedrooms: number;
+  bathrooms: number;
+  price: number;
+  constructionProgress: number;
+  statusName: string;
+  statusColorHex: string;
+  customerName: string | null;
+}
+
+export interface DashboardProjectSummary {
+  id: string;
+  title: string;
+  slug: string;
+  location: string;
+  status: string;
+  overallProgress: number;
+  targetCompletion: string;
+  totalUnitsCount: number;
+  availableUnitsCount: number;
+}
+
+export interface DashboardActivityItem {
+  id: string;
+  type: 'status' | 'construction' | 'booking';
+  title: string;
+  description: string;
+  createdAt: string;
+}
+
+interface RecentBookingItem {
+  id: string;
+  projectTitle: string;
+  unitNumber: string;
+  price: number;
+  status: string;
+  customerName: string;
+  date: string;
+}
+
+interface RecentCustomerItem {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  createdAt: string;
+}
+
+interface ChartPoint {
+  month: string;
+  revenue: number;
+}
+
+interface UnitStatusPoint {
+  name: string;
+  value: number;
+  colorHex: string;
+}
+
+interface Props {
+  stats: DashboardStats;
+  projects: DashboardProjectSummary[];
+  units: DashboardUnitItem[];
+  recentLeads: DashboardLeadItem[];
+  activityFeed: DashboardActivityItem[];
+  recentBookings: RecentBookingItem[];
+  recentCustomers: RecentCustomerItem[];
+  chartData: ChartPoint[];
+  unitStatusData: UnitStatusPoint[];
+}
+
+function getInitials(name: string): string {
+  const parts = (name || 'L').trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+  return parts[0].slice(0, 2).toUpperCase();
+}
+
+function normalizeWaPhone(raw: string): string {
+  const digits = (raw || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('0')) return `62${digits.slice(1)}`;
+  if (digits.startsWith('8')) return `62${digits}`;
+  return digits;
+}
+
+function formatDateID(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return '-';
+  }
+}
+
+function getCellClass(statusName: string): string {
+  const lower = statusName.toLowerCase();
+  if (lower.includes('avail') || lower.includes('ready') || lower.includes('tersedia')) {
+    return styles.cellReady;
+  }
+  if (lower.includes('sold') || lower.includes('terjual') || lower.includes('akad') || lower.includes('lunas')) {
+    return styles.cellTerjual;
+  }
+  if (lower.includes('bangun') || lower.includes('progres') || lower.includes('construct')) {
+    return styles.cellBangun;
+  }
+  return styles.cellHold;
+}
+
+function getLeadBadgeInfo(status: string): { label: string; className: string; avatarClass: string } {
+  switch (status) {
+    case 'New':
+      return { label: 'Inquiry Baru', className: styles.badgeUrgent, avatarClass: styles.avatarPink };
+    case 'Contacted':
+      return { label: 'Sedang Dihubungi', className: styles.badgeHot, avatarClass: styles.avatarAmber };
+    case 'Qualified':
+      return { label: 'Prospek Potensial', className: styles.badgeSuccess, avatarClass: styles.avatarGreen };
+    case 'Lost':
+    default:
+      return { label: status || 'Lost', className: styles.statusChipSlate, avatarClass: styles.avatarAmber };
+  }
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value?: number }>;
+  label?: string;
+}
+
+function DashboardAreaTooltip({ active, payload, label }: CustomTooltipProps) {
+  if (active && payload && payload.length) {
+    return (
+      <div className={styles.customTooltip}>
+        <p className={styles.tooltipLabel}>{label}</p>
+        <p className={styles.tooltipValue}>
+          {new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 0,
+          }).format(payload[0]?.value || 0)}
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
+
+export function AdminDashboardClient({
+  stats,
+  projects = [],
+  units = [],
+  recentLeads = [],
+  activityFeed = [],
+  recentBookings = [],
+  recentCustomers = [],
   chartData = [],
   unitStatusData = [],
-  recentLeads = [],
-  sampleUnits = []
-}: any) {
-  const [activeStage, setActiveStage] = useState('inquiry');
-  const [activeUnitMatrix, setActiveUnitMatrix] = useState('A-08');
+}: Props) {
+  const [activeStage, setActiveStage] = useState<'all' | 'New' | 'Contacted' | 'Qualified' | 'Lost'>('all');
+  const [leadProjectFilter, setLeadProjectFilter] = useState<string>('all');
+  const [selectedMatrixProjectId, setSelectedMatrixProjectId] = useState<string>(projects[0]?.id || '');
+  const [selectedUnitId, setSelectedUnitId] = useState<string>(units[0]?.id || '');
 
   const formatCurrency = (value: number) => {
-    if (value >= 1000000000) return `Rp ${(value / 1000000000).toFixed(1)} M`;
-    if (value >= 1000000) return `Rp ${(value / 1000000).toFixed(1)} Jt`;
+    if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(2).replace(/\.?0+$/, '')} M`;
+    if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1).replace(/\.?0+$/, '')} Jt`;
     return `Rp ${value.toLocaleString('id-ID')}`;
   };
 
-  const totalUnitsValue = unitStatusData.reduce((acc: number, item: any) => acc + item.value, 0) || stats.totalUnits || 48;
-  const soldUnitsValue = unitStatusData.find((u: any) => u.name.toLowerCase().includes('sold') || u.name.toLowerCase().includes('terjual') || u.name.toLowerCase().includes('book'))?.value || 36;
-  const availableUnitsValue = Math.max(0, totalUnitsValue - soldUnitsValue) || 24;
-  const pipelineValue = stats.totalRevenue > 0 ? stats.totalRevenue : 48600000000;
+  const availableRatio =
+    stats.totalUnits > 0 ? Math.round((stats.availableUnits / stats.totalUnits) * 100) : 0;
 
-  // Custom tooltip for line/area chart
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className={styles.customTooltip}>
-          <p className={styles.tooltipLabel}>{label}</p>
-          <p className={styles.tooltipValue}>
-            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(payload[0].value)}
-          </p>
-        </div>
-      );
+  const sixMonthRevenueTotal = useMemo(
+    () => chartData.reduce((sum, item) => sum + (item.revenue || 0), 0),
+    [chartData]
+  );
+
+  // Filter Leads berdasarkan Proyek terpilih
+  const leadsByProject = useMemo(() => {
+    if (leadProjectFilter === 'all') return recentLeads;
+    return recentLeads.filter((l) => l.projectId === leadProjectFilter);
+  }, [recentLeads, leadProjectFilter]);
+
+  const stageCountsForView = useMemo(() => {
+    if (leadProjectFilter === 'all') {
+      return {
+        all: stats.totalLeads,
+        New: stats.leadStageCounts.New,
+        Contacted: stats.leadStageCounts.Contacted,
+        Qualified: stats.leadStageCounts.Qualified,
+        Lost: stats.leadStageCounts.Lost,
+      };
     }
-    return null;
-  };
+    return {
+      all: leadsByProject.length,
+      New: leadsByProject.filter((l) => l.status === 'New').length,
+      Contacted: leadsByProject.filter((l) => l.status === 'Contacted').length,
+      Qualified: leadsByProject.filter((l) => l.status === 'Qualified').length,
+      Lost: leadsByProject.filter((l) => l.status === 'Lost').length,
+    };
+  }, [leadProjectFilter, leadsByProject, stats]);
+
+  const visibleLeads = useMemo(() => {
+    const stageFiltered =
+      activeStage === 'all'
+        ? leadsByProject
+        : leadsByProject.filter((l) => l.status === activeStage);
+    return stageFiltered.slice(0, 5);
+  }, [leadsByProject, activeStage]);
+
+  // Matrix Unit Monitor per Proyek terpilih
+  const activeMatrixProject = useMemo(
+    () => projects.find((p) => p.id === selectedMatrixProjectId) || projects[0] || null,
+    [projects, selectedMatrixProjectId]
+  );
+
+  const unitsInMatrixProject = useMemo(() => {
+    if (!activeMatrixProject) return units;
+    return units.filter((u) => u.projectId === activeMatrixProject.id);
+  }, [units, activeMatrixProject]);
+
+  const matrixSampleUnits = useMemo(
+    () => unitsInMatrixProject.slice(0, 12),
+    [unitsInMatrixProject]
+  );
+
+  const selectedUnit = useMemo(() => {
+    if (unitsInMatrixProject.length === 0) return null;
+    return (
+      unitsInMatrixProject.find((u) => u.id === selectedUnitId) ||
+      unitsInMatrixProject[0] ||
+      null
+    );
+  }, [unitsInMatrixProject, selectedUnitId]);
+
+  const matrixCounts = useMemo(() => {
+    let ready = 0;
+    let hold = 0;
+    let sold = 0;
+    for (const u of unitsInMatrixProject) {
+      const lower = u.statusName.toLowerCase();
+      if (lower.includes('avail') || lower.includes('ready') || lower.includes('tersedia')) {
+        ready += 1;
+      } else if (lower.includes('sold') || lower.includes('terjual') || lower.includes('akad') || lower.includes('lunas')) {
+        sold += 1;
+      } else {
+        hold += 1;
+      }
+    }
+    return { ready, hold, sold };
+  }, [unitsInMatrixProject]);
 
   return (
     <div className={styles.dashboard}>
@@ -69,34 +340,42 @@ export function AdminDashboardClient({
           </div>
           <h1 className={styles.pageTitle}>Dashboard Operasional Properti</h1>
           <p className={styles.pageSubtitle}>
-            Monitoring real-time transaksi penjualan, kavling aktif, respon leads, grafik pertumbuhan, dan automasi WhatsApp.
+            Monitoring real-time transaksi penjualan, stok kavling aktif, leads CRM, dan progres proyek langsung dari database.
           </p>
         </div>
       </div>
 
-      {/* 2. TOP 5 EXECUTIVE KPI CARDS */}
+      {/* 2. TOP 5 EXECUTIVE KPI CARDS (100% Real Data) */}
       <div className={styles.kpiGrid}>
-        {/* Card 1: Total Pipeline Value */}
+        {/* Card 1: Total Nilai Transaksi & Booking */}
         <div className={`${styles.kpiCard} ${styles.kpiCardHighlight}`}>
           <div className={styles.kpiTopRow}>
-            <span className={styles.kpiLabel}>TOTAL PIPELINE VALUE</span>
-            <span className={styles.trendBadgePositive}>↑ +18.4% vs bln lalu</span>
+            <span className={styles.kpiLabel}>NILAI TRANSAKSI AKTIF</span>
+            <span className={styles.trendBadgePositive}>
+              {stats.activeBookingsCount} Booking
+            </span>
           </div>
-          <div className={styles.kpiMainValue}>{formatCurrency(pipelineValue)}</div>
-          <div className={styles.kpiSubText}>Estimasi nilai 148 prospek aktif</div>
+          <div className={styles.kpiMainValue}>{formatCurrency(stats.totalPipelineValue)}</div>
+          <div className={styles.kpiSubText}>
+            {stats.totalSales} sales deal • {stats.bookedUnits} hold/booking
+          </div>
         </div>
 
-        {/* Card 2: Leads Baru Aktif */}
+        {/* Card 2: Total Leads CRM */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiTopRow}>
-            <span className={styles.kpiLabel}>LEADS BARU AKTIF</span>
+            <span className={styles.kpiLabel}>TOTAL LEADS CRM</span>
             <div className={styles.kpiIconBlue}><IconCRM /></div>
           </div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue}>{stats.totalLeads > 0 ? stats.totalLeads : 148}</span>
-            <span className={styles.urgentBadge}>8 Urgent SLA</span>
+            <span className={styles.kpiMainValue}>{stats.totalLeads}</span>
+            {stats.leadStageCounts.New > 0 && (
+              <span className={styles.urgentBadge}>{stats.leadStageCounts.New} Baru</span>
+            )}
           </div>
-          <div className={styles.kpiSubText}>Inquiry masuk minggu ini</div>
+          <div className={styles.kpiSubText}>
+            {stats.leadStageCounts.Qualified} Qualified • {stats.leadStageCounts.Contacted} Dihubungi
+          </div>
         </div>
 
         {/* Card 3: Kavling Tersedia */}
@@ -106,42 +385,47 @@ export function AdminDashboardClient({
             <div className={styles.kpiIconGreen}><IconUnits /></div>
           </div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValueGreen}>{availableUnitsValue}</span>
-            <span className={styles.kpiUnitTarget}>dari {totalUnitsValue} Total Kavling</span>
+            <span className={styles.kpiMainValueGreen}>{stats.availableUnits}</span>
+            <span className={styles.kpiUnitTarget}>dari {stats.totalUnits} Total Kavling</span>
           </div>
           <div className={styles.kpiProgressBar}>
-            <div className={styles.kpiProgressFillGreen} style={{ width: `${Math.round((availableUnitsValue / totalUnitsValue) * 100)}%` }} />
+            <div
+              className={styles.kpiProgressFillGreen}
+              style={{ width: `${availableRatio}%` }}
+            />
           </div>
         </div>
 
-        {/* Card 4: SP3K & Akad Bulan Ini */}
+        {/* Card 4: Transaksi Bulan Ini */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiTopRow}>
-            <span className={styles.kpiLabel}>SP3K & AKAD BULAN INI</span>
+            <span className={styles.kpiLabel}>TRANSAKSI BULAN INI</span>
             <div className={styles.kpiIconPurple}><IconFileLegal /></div>
           </div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue}>{stats.totalSales > 0 ? stats.totalSales : 12} Unit</span>
-            <span className={styles.purpleChip}>Rp 9,8 M</span>
+            <span className={styles.kpiMainValue}>{stats.thisMonthTransactionCount} Unit</span>
+            <span className={styles.purpleChip}>{formatCurrency(stats.thisMonthTransactionValue)}</span>
           </div>
-          <div className={styles.kpiSubText}>Target closing: 14 unit</div>
+          <div className={styles.kpiSubText}>Deal &amp; booking bulan berjalan</div>
         </div>
 
-        {/* Card 5: Konversi Closing Q1 */}
+        {/* Card 5: Konversi & Konsumen */}
         <div className={styles.kpiCard}>
           <div className={styles.kpiTopRow}>
-            <span className={styles.kpiLabel}>KONVERSI CLOSING Q1</span>
+            <span className={styles.kpiLabel}>RASIO KONVERSI LEADS</span>
             <div className={styles.kpiIconAmber}><IconArrowUpRight /></div>
           </div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue}>14.8%</span>
-            <span className={styles.trendBadgePositive}>↑ +2.1%</span>
+            <span className={styles.kpiMainValue}>{stats.conversionRate}%</span>
+            <span className={styles.trendBadgePositive}>{stats.totalCustomers} Konsumen</span>
           </div>
-          <div className={styles.kpiSubText}>Melampaui Target (12.0%)</div>
+          <div className={styles.kpiSubText}>
+            {stats.totalProjects} proyek aktif • {stats.soldUnits} terjual/akad
+          </div>
         </div>
       </div>
 
-      {/* 3. FEATURED CHARTS SECTION (Langsung Muncul di Halaman Utama) */}
+      {/* 3. FEATURED CHARTS SECTION */}
       <div className={styles.chartsGrid}>
         {/* Chart 1: Revenue & Booking Trend */}
         <div className={styles.chartCard}>
@@ -149,15 +433,15 @@ export function AdminDashboardClient({
             <div>
               <div className={styles.cardTitleWithIcon}>
                 <span className={styles.amberIcon}><IconArrowUpRight /></span>
-                <h2 className={styles.cardTitle}>Tren Omzet &amp; Penjualan (6 Bulan Terakhir)</h2>
+                <h2 className={styles.cardTitle}>Tren Omzet &amp; Transaksi (6 Bulan Terakhir)</h2>
               </div>
               <p className={styles.cardSubtitle}>
-                Pertumbuhan akumulasi nilai transaksi booking dan akad kredit notaris
+                Akumulasi nilai transaksi booking aktif dan closing penjualan per bulan
               </p>
             </div>
             <div className={styles.chartHeaderBadge}>
               <span className={styles.trendDot} />
-              <span>Target Q1 Tercapai 114%</span>
+              <span>Total 6 Bln: {formatCurrency(sixMonthRevenueTotal)}</span>
             </div>
           </div>
           <div className={styles.chartWrapper}>
@@ -170,28 +454,34 @@ export function AdminDashboardClient({
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis 
-                  dataKey="month" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#64748B', fontSize: 12, fontWeight: 500 }} 
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748B', fontSize: 12, fontWeight: 500 }}
                   dy={8}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#64748B', fontSize: 12 }} 
-                  tickFormatter={(val) => `Rp${(val / 1000000000).toFixed(0)}B`}
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748B', fontSize: 12 }}
+                  tickFormatter={(val) =>
+                    val >= 1_000_000_000
+                      ? `Rp${(val / 1_000_000_000).toFixed(1)}M`
+                      : val >= 1_000_000
+                        ? `Rp${Math.round(val / 1_000_000)}Jt`
+                        : `Rp${val}`
+                  }
                 />
-                <RechartsTooltip content={<CustomTooltip />} />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#F59E0B" 
-                  strokeWidth={3.5} 
+                <RechartsTooltip content={<DashboardAreaTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#F59E0B"
+                  strokeWidth={3.5}
                   fillOpacity={1}
                   fill="url(#revenueGradient)"
-                  dot={{ r: 4, fill: '#F59E0B', strokeWidth: 2, stroke: '#FFFFFF' }} 
+                  dot={{ r: 4, fill: '#F59E0B', strokeWidth: 2, stroke: '#FFFFFF' }}
                   activeDot={{ r: 6, fill: '#0B192C', stroke: '#F59E0B', strokeWidth: 2 }}
                 />
               </AreaChart>
@@ -208,7 +498,7 @@ export function AdminDashboardClient({
                 <h2 className={styles.cardTitle}>Distribusi Status Stok Kavling</h2>
               </div>
               <p className={styles.cardSubtitle}>
-                Komposisi unit ready, booking/hold, dan progres bangun
+                Komposisi seluruh kavling terdaftar menurut status saat ini
               </p>
             </div>
             <Link href="/admin/properties" className={styles.viewInventoryLink}>
@@ -216,19 +506,32 @@ export function AdminDashboardClient({
             </Link>
           </div>
           <div className={styles.chartWrapper}>
-            <ResponsiveContainer width="100%" height={270}>
-              <BarChart data={unitStatusData} margin={{ top: 15, right: 10, left: -20, bottom: 0 }} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 12, fontWeight: 600 }} width={125} />
-                <RechartsTooltip cursor={{fill: '#F8FAFC'}} contentStyle={{borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'}} />
-                <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={26}>
-                  {unitStatusData.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={entry.colorHex || '#F59E0B'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {unitStatusData.length === 0 ? (
+              <div className={styles.emptyCockpitBox} style={{ marginTop: 40 }}>
+                Belum ada unit kavling yang terdaftar di database.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={270}>
+                <BarChart data={unitStatusData} margin={{ top: 15, right: 10, left: -20, bottom: 0 }} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
+                  <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#334155', fontSize: 12, fontWeight: 600 }} width={125} />
+                  <RechartsTooltip
+                    cursor={{ fill: '#F8FAFC' }}
+                    contentStyle={{
+                      borderRadius: '8px',
+                      border: '1px solid #E2E8F0',
+                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+                    }}
+                  />
+                  <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={26}>
+                    {unitStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.colorHex || '#F59E0B'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
@@ -237,7 +540,7 @@ export function AdminDashboardClient({
       <div className={styles.cockpitWorkspace}>
         {/* LEFT COLUMN: Pipeline Stage Monitor & Activity Feed */}
         <div className={styles.leftColumn}>
-          {/* Pipeline Stage Monitor Card */}
+          {/* Pipeline Stage Monitor Card (100% Real Leads) */}
           <div className={styles.cockpitCard}>
             <div className={styles.cardHeader}>
               <div>
@@ -246,510 +549,450 @@ export function AdminDashboardClient({
                   <h2 className={styles.cardTitle}>Pipeline Stage Monitor Prospek</h2>
                 </div>
                 <p className={styles.cardSubtitle}>
-                  Monitor status real-time calon pembeli dari kunjungan hingga akad kredit notaris.
+                  Monitor daftar prospek masuk langsung dari formulir website &amp; tim sales.
                 </p>
               </div>
               <div className={styles.cardHeaderActions}>
-                <select className={styles.filterSelect}>
-                  <option>Semua PIC Sales</option>
-                  <option>Ayu Lestari</option>
-                  <option>Reza Firmansyah</option>
+                <select
+                  className={styles.filterSelect}
+                  aria-label="Filter prospek berdasarkan proyek"
+                  value={leadProjectFilter}
+                  onChange={(e) => setLeadProjectFilter(e.target.value)}
+                >
+                  <option value="all">Semua Proyek</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
                 </select>
-                <button type="button" className={styles.filterBtn}>
-                  <IconFilter />
-                  <span>Filter</span>
-                </button>
+                <Link href="/admin/leads" className={styles.filterBtn} style={{ textDecoration: 'none' }}>
+                  Kelola CRM →
+                </Link>
               </div>
             </div>
 
-            {/* Stage Filter Tabs */}
+            {/* Stage Filter Tabs (Mapped to Real Lead Statuses) */}
             <div className={styles.stageTabs}>
-              <button 
-                type="button" 
-                onClick={() => setActiveStage('inquiry')}
-                className={`${styles.stageTab} ${activeStage === 'inquiry' ? styles.stageTabActive : ''}`}
+              <button
+                type="button"
+                onClick={() => setActiveStage('all')}
+                className={`${styles.stageTab} ${activeStage === 'all' ? styles.stageTabActive : ''}`}
+              >
+                <span>Semua</span>
+                <span className={styles.stageCountMuted}>{stageCountsForView.all}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveStage('New')}
+                className={`${styles.stageTab} ${activeStage === 'New' ? styles.stageTabActive : ''}`}
               >
                 <span>Inquiry Baru</span>
-                <span className={styles.stageCountRed}>42</span>
+                <span className={stageCountsForView.New > 0 ? styles.stageCountRed : styles.stageCountMuted}>
+                  {stageCountsForView.New}
+                </span>
               </button>
-              <button 
-                type="button" 
-                onClick={() => setActiveStage('konsultasi')}
-                className={`${styles.stageTab} ${activeStage === 'konsultasi' ? styles.stageTabActive : ''}`}
+              <button
+                type="button"
+                onClick={() => setActiveStage('Contacted')}
+                className={`${styles.stageTab} ${activeStage === 'Contacted' ? styles.stageTabActive : ''}`}
               >
-                <span>Konsultasi WA</span>
-                <span className={styles.stageCountMuted}>56</span>
+                <span>Dihubungi</span>
+                <span className={styles.stageCountMuted}>{stageCountsForView.Contacted}</span>
               </button>
-              <button 
-                type="button" 
-                onClick={() => setActiveStage('survey')}
-                className={`${styles.stageTab} ${activeStage === 'survey' ? styles.stageTabActive : ''}`}
+              <button
+                type="button"
+                onClick={() => setActiveStage('Qualified')}
+                className={`${styles.stageTab} ${activeStage === 'Qualified' ? styles.stageTabActive : ''}`}
               >
-                <span>Survey Lokasi</span>
-                <span className={styles.stageCountMuted}>28</span>
+                <span>Qualified</span>
+                <span className={styles.stageCountMuted}>{stageCountsForView.Qualified}</span>
               </button>
-              <button 
-                type="button" 
-                onClick={() => setActiveStage('slik')}
-                className={`${styles.stageTab} ${activeStage === 'slik' ? styles.stageTabActive : ''}`}
+              <button
+                type="button"
+                onClick={() => setActiveStage('Lost')}
+                className={`${styles.stageTab} ${activeStage === 'Lost' ? styles.stageTabActive : ''}`}
               >
-                <span>BI Checking SLIK</span>
-                <span className={styles.stageCountMuted}>15</span>
+                <span>Lost</span>
+                <span className={styles.stageCountMuted}>{stageCountsForView.Lost}</span>
               </button>
             </div>
 
             {/* Prospect Lead Cards List */}
             <div className={styles.leadsList}>
-              {/* Lead Item 1 */}
-              <div className={styles.leadCard}>
-                <div className={styles.leadMain}>
-                  <div className={`${styles.leadAvatar} ${styles.avatarPink}`}>AL</div>
-                  <div className={styles.leadDetails}>
-                    <div className={styles.leadTopRow}>
-                      <div className={styles.leadNameGroup}>
-                        <h3 className={styles.leadName}>Dr. Amanda Larasati</h3>
-                        <span className={styles.badgeUrgent}>Urgent Inquiry</span>
-                      </div>
-                      <div className={styles.leadScoreGroup}>
-                        <span className={styles.scoreText}>Skor Minat: <strong>96/100</strong></span>
-                        <span className={styles.leadSource}>Web Form • 15 mnt lalu</span>
-                      </div>
-                    </div>
-
-                    <div className={styles.leadMetaRow}>
-                      <span className={styles.leadId}>#LD-8819</span>
-                      <span className={styles.metaDot}>•</span>
-                      <span className={styles.leadUnit}>Harmoni Signature Villa (Blok A-01)</span>
-                      <span className={styles.metaDot}>•</span>
-                      <span className={styles.leadPrice}>Rp 1,85 Miliar (Cash Bertahap 12x)</span>
-                    </div>
-
-                    {/* Quote Box */}
-                    <div className={styles.quoteBox}>
-                      <p className={styles.quoteText}>
-                        &quot;Minta layout denah hook &amp; ketentuan pelunasan termin 1.&quot;
-                      </p>
-                      <span className={styles.picMuted}>PIC: Belum Ditugaskan</span>
-                    </div>
-
-                    {/* Lead Actions */}
-                    <div className={styles.leadActionRow}>
-                      <div className={styles.slaCounter}>
-                        <IconClock />
-                        <span>SLA Sisa: <strong>28 menit</strong></span>
-                      </div>
-                      <div className={styles.actionButtonsGroup}>
-                        <button type="button" className={styles.btnSecondary}>
-                          + Tugaskan Sales
-                        </button>
-                        <a 
-                          href="https://wa.me/6281234567890?text=Halo%20Dr.%20Amanda%2C%20kami%20dari%20Derinos%20Group%20..." 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className={styles.btnWhatsApp}
-                        >
-                          <IconWhatsApp />
-                          <span>Hubungi WA Sekarang</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
+              {visibleLeads.length === 0 ? (
+                <div className={styles.emptyCockpitBox}>
+                  Belum ada data prospek pada filter tahap ini. Calon pembeli yang mengisi form konsultasi di website akan langsung muncul di sini.
                 </div>
-              </div>
+              ) : (
+                visibleLeads.map((lead) => {
+                  const badgeInfo = getLeadBadgeInfo(lead.status);
+                  const waPhone = normalizeWaPhone(lead.phone);
+                  const waText = encodeURIComponent(
+                    `Halo ${lead.name}, terima kasih telah menghubungi Derinos Group${lead.projectTitle ? ` terkait proyek ${lead.projectTitle}` : ''}.`
+                  );
 
-              {/* Lead Item 2 */}
-              <div className={styles.leadCard}>
-                <div className={styles.leadMain}>
-                  <div className={`${styles.leadAvatar} ${styles.avatarAmber}`}>RW</div>
-                  <div className={styles.leadDetails}>
-                    <div className={styles.leadTopRow}>
-                      <div className={styles.leadNameGroup}>
-                        <h3 className={styles.leadName}>Raden Surya Wicaksono</h3>
-                        <span className={styles.badgeHot}>Hot Lead (Konsultasi)</span>
-                      </div>
-                      <div className={styles.leadScoreGroup}>
-                        <span className={styles.scoreText}>Skor Minat: <strong>94/100</strong></span>
-                        <span className={styles.leadSource}>WhatsApp • 40 mnt lalu</span>
-                      </div>
-                    </div>
+                  return (
+                    <div key={lead.id} className={styles.leadCard}>
+                      <div className={styles.leadMain}>
+                        <div className={`${styles.leadAvatar} ${badgeInfo.avatarClass}`}>
+                          {getInitials(lead.name)}
+                        </div>
+                        <div className={styles.leadDetails}>
+                          <div className={styles.leadTopRow}>
+                            <div className={styles.leadNameGroup}>
+                              <h3 className={styles.leadName}>{lead.name}</h3>
+                              <span className={badgeInfo.className}>{badgeInfo.label}</span>
+                            </div>
+                            <div className={styles.leadScoreGroup}>
+                              <span className={styles.leadSource}>
+                                {lead.source} • {formatDateID(lead.createdAt)}
+                              </span>
+                            </div>
+                          </div>
 
-                    <div className={styles.leadMetaRow}>
-                      <span className={styles.leadId}>#LD-8821</span>
-                      <span className={styles.metaDot}>•</span>
-                      <span className={styles.leadUnit}>Taman Harmoni Tipe 36/72 (Blok A-08)</span>
-                      <span className={styles.metaDot}>•</span>
-                      <span className={styles.leadPrice}>Rp 650 Juta (KPR BTN DP 10%)</span>
-                    </div>
+                          <div className={styles.leadMetaRow}>
+                            <span className={styles.leadUnit}>
+                              {lead.projectTitle || 'Minat Proyek Umum'}
+                            </span>
+                            {lead.propertyType && (
+                              <>
+                                <span className={styles.metaDot}>•</span>
+                                <span>{lead.propertyType}</span>
+                              </>
+                            )}
+                            {lead.budget && (
+                              <>
+                                <span className={styles.metaDot}>•</span>
+                                <span className={styles.leadPrice}>Budget: {lead.budget}</span>
+                              </>
+                            )}
+                          </div>
 
-                    <div className={styles.quoteBox}>
-                      <p className={styles.quoteText}>
-                        Kolektibilitas SLIK OJK Lancar (Kol-1). Menginginkan opsi DP dicicil 3x.
-                      </p>
-                      <span className={styles.picActive}>PIC: Ayu Lestari</span>
-                    </div>
+                          <div className={styles.quoteBox}>
+                            <p className={styles.quoteText}>
+                              {lead.message ? `"${lead.message}"` : 'Belum ada pesan atau catatan tambahan dari calon pembeli.'}
+                            </p>
+                            <span className={styles.picMuted}>{lead.email || lead.phone}</span>
+                          </div>
 
-                    <div className={styles.leadActionRow}>
-                      <div className={styles.chipsRow}>
-                        <span className={styles.statusChipGreen}>✓ Brosur Terkirim</span>
-                        <span className={styles.statusChipSlate}>Cicilan Rp 4,2 Jt/bln</span>
-                      </div>
-                      <div className={styles.actionButtonsGroup}>
-                        <button type="button" className={styles.btnSecondary}>
-                          Jadwalkan Survey
-                        </button>
-                        <a 
-                          href="https://wa.me/6281234567891" 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className={styles.btnWhatsApp}
-                        >
-                          <IconWhatsApp />
-                          <span>Chat WA Ayu</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Lead Item 3 */}
-              <div className={styles.leadCard}>
-                <div className={styles.leadMain}>
-                  <div className={`${styles.leadAvatar} ${styles.avatarGreen}`}>BT</div>
-                  <div className={styles.leadDetails}>
-                    <div className={styles.leadTopRow}>
-                      <div className={styles.leadNameGroup}>
-                        <h3 className={styles.leadName}>Bambang Trihatmojo</h3>
-                        <span className={styles.badgeSuccess}>BI Check OK (Kolektibilitas 1)</span>
-                      </div>
-                      <div className={styles.leadScoreGroup}>
-                        <span className={styles.scoreText}>Skor Minat: <strong>98/100</strong></span>
-                        <span className={styles.leadSource}>Survey Selesai • Kemarin</span>
-                      </div>
-                    </div>
-
-                    <div className={styles.leadMetaRow}>
-                      <span className={styles.leadId}>#LD-8794</span>
-                      <span className={styles.metaDot}>•</span>
-                      <span className={styles.leadUnit}>Grand Harmoni Blok B-14</span>
-                      <span className={styles.metaDot}>•</span>
-                      <span className={styles.leadPrice}>Rp 980 Juta (KPR Mandiri Prioritas)</span>
-                    </div>
-
-                    <div className={styles.statusNoticeBox}>
-                      <span>Status Unit: <strong>Kavling B-14 Hold NUP 24 Jam</strong></span>
-                      <span className={styles.metaDot}>|</span>
-                      <span>PIC Sales Agent: <strong>Reza Firmansyah</strong></span>
-                    </div>
-
-                    <div className={styles.leadActionRow}>
-                      <div className={styles.pendingUTJ}>
-                        <span>Menunggu Konfirmasi Bukti Transfer UTJ Rp 5 Jt</span>
-                      </div>
-                      <div className={styles.actionButtonsGroup}>
-                        <button type="button" className={styles.btnAmberAction}>
-                          Cetak SPR &amp; UTJ
-                        </button>
-                        <button type="button" className={styles.btnEmeraldAction}>
-                          Kirim Rekening Developer
-                        </button>
+                          <div className={styles.leadActionRow}>
+                            <div className={styles.slaCounter}>
+                              <IconClock />
+                              <span>Kontak: <strong>{lead.phone || '-'}</strong></span>
+                            </div>
+                            <div className={styles.actionButtonsGroup}>
+                              <Link
+                                href="/admin/leads"
+                                className={styles.btnSecondary}
+                                style={{ textDecoration: 'none' }}
+                              >
+                                Kelola Status
+                              </Link>
+                              {waPhone && (
+                                <a
+                                  href={`https://wa.me/${waPhone}?text=${waText}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={styles.btnWhatsApp}
+                                >
+                                  <IconWhatsApp />
+                                  <span>Hubungi WA</span>
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
-          {/* Log Aktivitas Sales Agent */}
+          {/* Log Aktivitas Operasional Real */}
           <div className={styles.cockpitCard}>
             <div className={styles.cardHeader}>
               <div className={styles.cardTitleWithIcon}>
                 <span className={styles.slateIcon}><IconClock /></span>
-                <h2 className={styles.cardTitle}>Log Aktivitas &amp; Interaksi Sales Agent</h2>
+                <h2 className={styles.cardTitle}>Log Aktivitas Operasional Terbaru</h2>
               </div>
-              <span className={styles.realtimePill}>Real-time Feed</span>
+              <span className={styles.realtimePill}>Live Database Feed</span>
             </div>
 
-            <div className={styles.activityFeed}>
-              <div className={styles.feedItem}>
-                <div className={styles.feedIconGreen}>
-                  <PhoneIcon size={14} color="#10B981" />
-                </div>
-                <div className={styles.feedContent}>
-                  <div className={styles.feedHeader}>
-                    <strong className={styles.feedAgent}>Ayu Lestari (Sales Agent)</strong>
-                    <span className={styles.feedTime}>8 mnt lalu</span>
-                  </div>
-                  <p className={styles.feedDesc}>
-                    Selesai panggilan WhatsApp follow-up ke <strong>Raden Surya Wicaksono</strong>. Prospek konfirmasi hadir survey besok pukul 10:00 WIB.
-                  </p>
-                </div>
+            {activityFeed.length === 0 ? (
+              <div className={styles.emptyCockpitBox}>
+                Belum ada riwayat perubahan status kavling, booking, atau progres konstruksi terbaru.
               </div>
-
-              <div className={styles.feedItem}>
-                <div className={styles.feedIconAmber}>
-                  <IconFileLegal />
-                </div>
-                <div className={styles.feedContent}>
-                  <div className={styles.feedHeader}>
-                    <strong className={styles.feedAgent}>Raden Ayu (Lead Admin)</strong>
-                    <span className={styles.feedTime}>24 mnt lalu</span>
+            ) : (
+              <div className={styles.activityFeed}>
+                {activityFeed.map((item) => (
+                  <div key={item.id} className={styles.feedItem}>
+                    <div
+                      className={
+                        item.type === 'construction'
+                          ? styles.feedIconGreen
+                          : item.type === 'booking'
+                            ? styles.feedIconAmber
+                            : styles.feedIconBlue
+                      }
+                    >
+                      {item.type === 'construction' ? (
+                        <IconConstruction />
+                      ) : item.type === 'booking' ? (
+                        <IconFileLegal />
+                      ) : (
+                        <IconUnits />
+                      )}
+                    </div>
+                    <div className={styles.feedContent}>
+                      <div className={styles.feedHeader}>
+                        <strong className={styles.feedAgent}>{item.title}</strong>
+                        <span className={styles.feedTime}>{formatDateID(item.createdAt)}</span>
+                      </div>
+                      <p className={styles.feedDesc}>{item.description}</p>
+                    </div>
                   </div>
-                  <p className={styles.feedDesc}>
-                    Memverifikasi kelengkapan berkas KPR BTN <strong>Maya Indriani (Blok C-08)</strong>. Menunggu slip gaji legalisir.
-                  </p>
-                </div>
+                ))}
               </div>
-
-              <div className={styles.feedItem}>
-                <div className={styles.feedIconBlue}>
-                  <IconUnits />
-                </div>
-                <div className={styles.feedContent}>
-                  <div className={styles.feedHeader}>
-                    <strong className={styles.feedAgent}>Reza Firmansyah (Sales)</strong>
-                    <span className={styles.feedTime}>1 jam lalu</span>
-                  </div>
-                  <p className={styles.feedDesc}>
-                    Membuat form NUP booking sementara unit <strong>Bambang Trihatmojo (Blok B-14)</strong>.
-                  </p>
-                </div>
-              </div>
-            </div>
+            )}
 
             <div className={styles.feedFooter}>
-              <span>Menampilkan 3 aktivitas terbaru dari 64 total log.</span>
-              <Link href="/admin/leads" className={styles.feedLink}>
-                Lihat Semua Log →
+              <span>Menampilkan {activityFeed.length} aktivitas operasional terbaru.</span>
+              <Link href="/admin/construction" className={styles.feedLink}>
+                Lihat Progres Konstruksi →
               </Link>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Site Plan Matrix & WhatsApp Broadcast Automation */}
+        {/* RIGHT COLUMN: Site Plan Matrix & Ringkasan Proyek */}
         <div className={styles.rightColumn}>
-          {/* Site Plan & Unit Matrix Monitor Card */}
+          {/* Site Plan & Unit Matrix Monitor Card (100% Real Units) */}
           <div className={styles.cockpitCard}>
             <div className={styles.cardHeader}>
               <div>
                 <div className={styles.cardTitleWithIcon}>
                   <span className={styles.amberIcon}><IconUnits /></span>
-                  <h2 className={styles.cardTitle}>Site Plan &amp; Unit Matrix Monitor</h2>
+                  <h2 className={styles.cardTitle}>Monitor Kavling &amp; Unit Proyek</h2>
                 </div>
                 <p className={styles.cardSubtitle}>
-                  Monitoring kavling aktif Cluster Alam Asri secara visual.
+                  Pantauan kavling nyata pada proyek {activeMatrixProject?.title || 'aktif'}.
                 </p>
               </div>
-              <span className={styles.totalUnitsBadge}>Total: 48 Unit</span>
+              <div className={styles.cardHeaderActions}>
+                {projects.length > 0 && (
+                  <select
+                    className={styles.filterSelect}
+                    aria-label="Pilih proyek untuk matriks unit"
+                    value={activeMatrixProject?.id || ''}
+                    onChange={(e) => {
+                      setSelectedMatrixProjectId(e.target.value);
+                      setSelectedUnitId('');
+                    }}
+                  >
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.title}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <span className={styles.totalUnitsBadge}>
+                  Total: {unitsInMatrixProject.length} Unit
+                </span>
+              </div>
             </div>
 
             {/* Matrix Blueprint Visual Box */}
             <div className={styles.matrixContainer}>
               <div className={styles.matrixHeaderRow}>
-                <span className={styles.matrixBoulevard}>● Blok Boulevard &amp; Asri Timur</span>
-                <span className={styles.matrixCode}>SITEPLAN_ACTIVE_V4</span>
+                <span className={styles.matrixBoulevard}>
+                  ● {activeMatrixProject?.title || 'Belum Ada Proyek'}
+                </span>
+                <span className={styles.matrixCode}>
+                  {activeMatrixProject ? `PROGRES ${Math.round(activeMatrixProject.overallProgress)}%` : 'DB_LIVE'}
+                </span>
               </div>
 
-              {/* Grid of Unit Matrix Boxes */}
-              <div className={styles.unitMatrixGrid}>
-                <div 
-                  onClick={() => setActiveUnitMatrix('A-08')}
-                  className={`${styles.unitCell} ${styles.cellReady} ${activeUnitMatrix === 'A-08' ? styles.cellSelected : ''}`}
-                >
-                  <div className={styles.unitCode}>A - 08</div>
-                  <div className={styles.unitStatusText}>READY</div>
-                  <div className={styles.unitSub}>Bougenville</div>
+              {matrixSampleUnits.length === 0 ? (
+                <div style={{ padding: '22px 12px', textAlign: 'center', color: '#94A3B8', fontSize: '0.82rem' }}>
+                  Belum ada unit terdaftar untuk proyek ini.
                 </div>
-
-                <div 
-                  onClick={() => setActiveUnitMatrix('A-09')}
-                  className={`${styles.unitCell} ${styles.cellHold} ${activeUnitMatrix === 'A-09' ? styles.cellSelected : ''}`}
-                >
-                  <div className={styles.unitCode}>A - 09</div>
-                  <div className={styles.unitStatusText}>HOLD UTJ</div>
-                  <div className={styles.unitSub}>04:22:10</div>
+              ) : (
+                <div className={styles.unitMatrixGrid}>
+                  {matrixSampleUnits.map((unit) => {
+                    const isSelected = selectedUnit?.id === unit.id;
+                    return (
+                      <div
+                        key={unit.id}
+                        onClick={() => setSelectedUnitId(unit.id)}
+                        className={`${styles.unitCell} ${getCellClass(unit.statusName)} ${isSelected ? styles.cellSelected : ''}`}
+                        title={`${unit.unitNumber} • ${unit.typeName} (${unit.statusName})`}
+                      >
+                        <div className={styles.unitCode}>{unit.unitNumber.toUpperCase()}</div>
+                        <div className={styles.unitStatusText}>
+                          {unit.statusName.toUpperCase()}
+                        </div>
+                        <div className={styles.unitSubTruncate}>
+                          {Math.round(unit.constructionProgress)}% • {unit.typeName}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+              )}
 
-                <div 
-                  onClick={() => setActiveUnitMatrix('B-03')}
-                  className={`${styles.unitCell} ${styles.cellBangun} ${activeUnitMatrix === 'B-03' ? styles.cellSelected : ''}`}
-                >
-                  <div className={styles.unitCode}>B - 03</div>
-                  <div className={styles.unitStatusText}>BANGUN</div>
-                  <div className={styles.unitSub}>65% • Type 45</div>
-                </div>
-
-                <div className={`${styles.unitCell} ${styles.cellTerjual}`}>
-                  <div className={styles.unitCode}>B - 04</div>
-                  <div className={styles.unitStatusText}>TERJUAL</div>
-                  <div className={styles.unitSub}>Akad BTN</div>
-                </div>
-
-                <div className={`${styles.unitCell} ${styles.cellTerjual}`}>
-                  <div className={styles.unitCode}>B - 05</div>
-                  <div className={styles.unitStatusText}>TERJUAL</div>
-                  <div className={styles.unitSub}>Akad BCA</div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveUnitMatrix('B-06')}
-                  className={`${styles.unitCell} ${styles.cellReady} ${activeUnitMatrix === 'B-06' ? styles.cellSelected : ''}`}
-                >
-                  <div className={styles.unitCode}>B - 06</div>
-                  <div className={styles.unitStatusText}>READY</div>
-                  <div className={styles.unitSub}>Type 54</div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveUnitMatrix('C-01')}
-                  className={`${styles.unitCell} ${styles.cellHold} ${activeUnitMatrix === 'C-01' ? styles.cellSelected : ''}`}
-                >
-                  <div className={styles.unitCode}>C - 01</div>
-                  <div className={styles.unitStatusText}>HOLD SP3K</div>
-                  <div className={styles.unitSub}>18:45:00</div>
-                </div>
-
-                <div 
-                  onClick={() => setActiveUnitMatrix('C-02')}
-                  className={`${styles.unitCell} ${styles.cellBangun} ${activeUnitMatrix === 'C-02' ? styles.cellSelected : ''}`}
-                >
-                  <div className={styles.unitCode}>C - 02</div>
-                  <div className={styles.unitStatusText}>BANGUN</div>
-                  <div className={styles.unitSub}>80% • Type 72</div>
-                </div>
-              </div>
-
-              {/* Matrix Legend */}
+              {/* Matrix Legend (Exact Project Counts) */}
               <div className={styles.matrixLegend}>
-                <span className={styles.legendItem}><span className={styles.dotGreen} /> Ready (24)</span>
-                <span className={styles.legendItem}><span className={styles.dotAmber} /> Hold / Booking (6)</span>
-                <span className={styles.legendItem}><span className={styles.dotBlue} /> Bangun (8)</span>
-                <span className={styles.legendItem}><span className={styles.dotSlate} /> Terjual (82)</span>
+                <span className={styles.legendItem}>
+                  <span className={styles.dotGreen} /> Ready ({matrixCounts.ready})
+                </span>
+                <span className={styles.legendItem}>
+                  <span className={styles.dotAmber} /> Booking / Proses ({matrixCounts.hold})
+                </span>
+                <span className={styles.legendItem}>
+                  <span className={styles.dotSlate} /> Terjual / Akad ({matrixCounts.sold})
+                </span>
               </div>
             </div>
 
             {/* Active Unit Detail Quick Info */}
             <div className={styles.activeUnitSection}>
               <h4 className={styles.sectionHeader}>INFORMASI DETAIL KAVLING AKTIF</h4>
-              
-              <div className={styles.unitDetailCard}>
-                <div className={styles.unitDetailHeader}>
-                  <span className={styles.unitBadgeCode}>A-08</span>
-                  <strong className={styles.unitNameTitle}>Bougenville Asri Tipe 36/72</strong>
-                  <span className={styles.badgeReadyStock}>READY STOCK</span>
-                </div>
 
-                <div className={styles.specsGrid}>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>Status Legalitas:</span>
-                    <strong className={styles.specValueGreen}>✓ SHM Pecah</strong>
-                  </div>
-                  <div className={styles.specItem}>
-                    <span className={styles.specLabel}>Harga Pricelist:</span>
-                    <strong className={styles.specValuePrice}>Rp 650.000.000</strong>
-                  </div>
-                  <div className={styles.specItemFull}>
-                    <span className={styles.specLabel}>Mitra KPR Rekomendasi:</span>
-                    <strong className={styles.specValueBlue}>Bank BTN (Bunga 3.75%)</strong>
-                  </div>
+              {!selectedUnit ? (
+                <div className={styles.emptyCockpitBox}>
+                  Pilih unit di atas atau tambahkan kavling melalui Master Proyek.
                 </div>
-              </div>
+              ) : (
+                <div className={styles.unitDetailCard}>
+                  <div className={styles.unitDetailHeader}>
+                    <span className={styles.unitBadgeCode}>
+                      {selectedUnit.unitNumber.toUpperCase()}
+                    </span>
+                    <strong className={styles.unitNameTitle}>
+                      {selectedUnit.typeName} ({selectedUnit.projectTitle})
+                    </strong>
+                    <span
+                      className={styles.badgeReadyStock}
+                      style={{
+                        backgroundColor: `${selectedUnit.statusColorHex}20`,
+                        color: selectedUnit.statusColorHex,
+                      }}
+                    >
+                      {selectedUnit.statusName.toUpperCase()}
+                    </span>
+                  </div>
 
-              {/* Concierge Bar */}
-              <div className={styles.conciergeBar}>
-                <div className={styles.conciergeLeft}>
-                  <span className={styles.conciergeDot} />
-                  <span>Derinos Concierge Desk Live</span>
-                </div>
-                <span className={styles.conciergeRight}>Fast Response Support</span>
-              </div>
+                  <div className={styles.specsGrid}>
+                    <div className={styles.specItem}>
+                      <span className={styles.specLabel}>Luas Bangunan / Tanah:</span>
+                      <strong className={styles.specValueGreen}>
+                        LB {selectedUnit.buildingSize}m² / LT {selectedUnit.landSize}m²
+                      </strong>
+                    </div>
+                    <div className={styles.specItem}>
+                      <span className={styles.specLabel}>Harga Pricelist:</span>
+                      <strong className={styles.specValuePrice}>
+                        Rp {selectedUnit.price.toLocaleString('id-ID')}
+                      </strong>
+                    </div>
+                    <div className={styles.specItem}>
+                      <span className={styles.specLabel}>Progres Konstruksi:</span>
+                      <strong className={styles.specValueBlue}>
+                        {Math.round(selectedUnit.constructionProgress)}% Selesai
+                      </strong>
+                    </div>
+                    <div className={styles.specItem}>
+                      <span className={styles.specLabel}>Konsumen / Pemilik:</span>
+                      <strong className={styles.specValuePrice}>
+                        {selectedUnit.customerName || 'Unit Tersedia'}
+                      </strong>
+                    </div>
+                  </div>
 
-              {/* Mitra Bank KPR */}
-              <div className={styles.bankPksRow}>
-                <span className={styles.bankPksLabel}>Mitra Bank KPR PKS Resmi:</span>
-                <div className={styles.bankTags}>
-                  <span className={styles.bankTag}>BTN Syariah</span>
-                  <span className={styles.bankTag}>Bank Mandiri</span>
-                  <span className={styles.bankTag}>BCA Prioritas</span>
+                  {selectedUnit.projectSlug && (
+                    <Link
+                      href={`/admin/projects/${selectedUnit.projectSlug}`}
+                      className={styles.detailCtaLink}
+                    >
+                      Buka Site Plan {selectedUnit.projectTitle} →
+                    </Link>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* WhatsApp Broadcast Action Center & Automasi Card */}
+          {/* Ringkasan Proyek Aktif & Pintasan Cepat (Real Database Card) */}
           <div className={styles.whatsappCard}>
             <div className={styles.waCardHeader}>
               <div className={styles.waIconBox}>
-                <IconWhatsApp />
+                <IconProjects />
               </div>
               <div className={styles.waHeaderText}>
-                <h3 className={styles.waTitle}>WhatsApp Broadcast Action Center &amp; Automasi</h3>
+                <h3 className={styles.waTitle}>Ringkasan Proyek &amp; Pintasan Cepat</h3>
                 <p className={styles.waSubtitle}>
-                  Broadcast terarah otomatis via Official WhatsApp Business API Meta.
+                  Pantau progres tiap kawasan proyek aktif dan akses modul inti dengan cepat.
                 </p>
               </div>
               <div className={styles.waStatusBadge}>
                 <span className={styles.waDot} />
-                <span>WA API Connected</span>
+                <span>{projects.length} Proyek Aktif</span>
               </div>
             </div>
 
-            {/* Template 1 */}
-            <div className={styles.templateCard}>
-              <div className={styles.templateHeader}>
-                <span className={styles.templateBadge}>TEMPLATE TERVERIFIKASI META</span>
-                <span className={styles.templateSent}>Terkirim 88/88</span>
+            {projects.length === 0 ? (
+              <div className={styles.templateCard}>
+                <h4 className={styles.templateTitle}>Belum Ada Proyek Aktif</h4>
+                <p className={styles.templateSnippet}>
+                  Tambahkan proyek pertama Anda di menu Master Proyek untuk mulai mengelola tipe rumah, unit kavling, dan site plan SVG.
+                </p>
               </div>
-              <h4 className={styles.templateTitle}>Promo KPR Subsidi Bunga 2.75% Fixed 3 Thn</h4>
-              <p className={styles.templateSnippet}>
-                &quot;Dapatkan subsidi bunga spesial bank BTN &amp; Mandiri khusus booking kavling minggu ini...&quot;
-              </p>
-              <div className={styles.templateActionRow}>
-                <span className={styles.templateTarget}>Target: <strong>42 Leads Inquiry</strong></span>
-                <button type="button" className={styles.btnBroadcastAmber}>
-                  <IconWhatsApp />
-                  <span>Kirim Broadcast</span>
-                </button>
-              </div>
-            </div>
+            ) : (
+              projects.slice(0, 3).map((prj) => (
+                <div key={prj.id} className={styles.templateCard}>
+                  <div className={styles.templateHeader}>
+                    <span className={styles.templateBadge}>{prj.status.toUpperCase()}</span>
+                    <span className={styles.templateSent}>
+                      {prj.availableUnitsCount} / {prj.totalUnitsCount} Unit Tersedia
+                    </span>
+                  </div>
+                  <h4 className={styles.templateTitle}>{prj.title}</h4>
+                  <p className={styles.templateSnippet}>
+                    {prj.location} • Target selesai: {prj.targetCompletion || '-'}
+                  </p>
+                  <div className={styles.quotaBar} style={{ marginTop: 4 }}>
+                    <div
+                      className={styles.quotaFill}
+                      style={{ width: `${Math.min(100, Math.max(0, prj.overallProgress))}%` }}
+                    />
+                  </div>
+                  <div className={styles.templateActionRow}>
+                    <span className={styles.templateTarget}>
+                      Progres Kawasan: <strong>{Math.round(prj.overallProgress)}%</strong>
+                    </span>
+                    <Link
+                      href={`/admin/projects/${prj.slug}`}
+                      className={styles.btnBroadcastAmber}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <span>Buka Site Plan →</span>
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
 
-            {/* Template 2 */}
-            <div className={styles.templateCard}>
-              <div className={styles.templateHeader}>
-                <span className={styles.templateBadgeBlue}>JADWAL OTOMATIS BESOK</span>
-                <span className={styles.templateSent}>Siap Kirim</span>
-              </div>
-              <h4 className={styles.templateTitle}>Reminder Site Plan Visit &amp; Konsultasi KPR</h4>
-              <p className={styles.templateSnippet}>
-                &quot;Undangan eksklusif survey unit contoh Cluster Alam Asri &amp; coffee morning bersama tim arsitek...&quot;
-              </p>
-              <div className={styles.templateActionRow}>
-                <span className={styles.templateTarget}>Target: <strong>28 Leads Survey</strong></span>
-                <button type="button" className={styles.btnAutoSend}>
-                  <span>Aktifkan Auto-Send</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Quota Bar */}
-            <div className={styles.quotaSection}>
-              <div className={styles.quotaTextRow}>
-                <span>Quota Bulanan: <strong>6.420 / 10.000</strong> Pesan WA Tersedia</span>
-              </div>
-              <div className={styles.quotaBar}>
-                <div className={styles.quotaFill} style={{ width: '64.2%' }} />
-              </div>
-            </div>
-
-            {/* WhatsApp Action Buttons */}
             <div className={styles.waFooterActions}>
-              <button type="button" className={styles.btnWaSecondary}>
-                Kelola Template Pesan
-              </button>
-              <button type="button" className={styles.btnWaPrimary}>
-                + Buat Kampanye Pesan Baru
-              </button>
+              <Link href="/admin/properties" className={styles.shortcutLinkSecondary}>
+                Kelola Stok Unit
+              </Link>
+              <Link href="/admin/projects" className={styles.shortcutLinkPrimary}>
+                Master Proyek &amp; Tipe →
+              </Link>
             </div>
           </div>
         </div>
@@ -779,9 +1022,9 @@ export function AdminDashboardClient({
                 {recentBookings.length === 0 ? (
                   <tr><td colSpan={4} className={styles.emptyText}>Belum ada booking transaksi terbaru.</td></tr>
                 ) : (
-                  recentBookings.map((b: any) => (
+                  recentBookings.map((b) => (
                     <tr key={b.id}>
-                      <td className={styles.fw500}>{b.customer?.name || 'Unknown'}</td>
+                      <td className={styles.fw500}>{b.customerName}</td>
                       <td>
                         <div className={styles.tdStack}>
                           <span className={styles.fw500}>{b.projectTitle}</span>
@@ -814,17 +1057,17 @@ export function AdminDashboardClient({
             {recentCustomers.length === 0 ? (
               <div className={styles.emptyText}>Belum ada customer terdaftar.</div>
             ) : (
-              recentCustomers.map((c: any) => (
+              recentCustomers.map((c) => (
                 <div key={c.id} className={styles.activityItem}>
                   <div className={styles.avatarCircle}>
                     {c.name.charAt(0).toUpperCase()}
                   </div>
                   <div className={styles.activityContent}>
                     <div className={styles.activityTitle}>{c.name}</div>
-                    <div className={styles.activityDesc}>{c.phone || c.email || 'No contact provided'}</div>
+                    <div className={styles.activityDesc}>{c.phone || c.email || 'Belum ada kontak'}</div>
                   </div>
                   <div className={styles.activityTime}>
-                    {new Date(c.createdAt).toLocaleDateString('id-ID')}
+                    {formatDateID(c.createdAt)}
                   </div>
                 </div>
               ))

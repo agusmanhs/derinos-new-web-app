@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import fs from 'fs/promises';
 import path from 'path';
+import { assertActionPermission } from '@/lib/authGuard';
 
 const SETTINGS_FILE = path.join(process.cwd(), 'data', 'landingSettings.json');
 
@@ -71,6 +72,8 @@ export async function getSiteSettings() {
 }
 
 export async function updateSiteSettings(data: any) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     // 1. Sync supported fields to database if available
     try {
@@ -119,6 +122,8 @@ export async function getMasterFacilities() {
 }
 
 export async function upsertMasterFacility(data: any) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     if (data.id) {
       await prisma.masterFacility.update({ where: { id: data.id }, data });
@@ -133,6 +138,8 @@ export async function upsertMasterFacility(data: any) {
 }
 
 export async function deleteMasterFacility(id: string) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     await prisma.masterFacility.delete({ where: { id } });
     revalidatePath('/');
@@ -147,6 +154,8 @@ export async function getMasterGallery() {
 }
 
 export async function addGalleryImage(data: any) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     await prisma.masterGallery.create({ data });
     revalidatePath('/');
@@ -157,6 +166,8 @@ export async function addGalleryImage(data: any) {
 }
 
 export async function deleteGalleryImage(id: string) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const img = await prisma.masterGallery.findUnique({ where: { id } });
     if (img && img.imageUrl.startsWith('/uploads/')) {
@@ -172,6 +183,8 @@ export async function deleteGalleryImage(id: string) {
 }
 
 export async function uploadImageAjaxAction(formData: FormData) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const file = formData.get('file') as File;
     if (!file) return { success: false, message: 'No file uploaded' };

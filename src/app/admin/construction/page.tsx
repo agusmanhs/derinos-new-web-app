@@ -2,31 +2,18 @@ import React from 'react';
 import { PropertyService } from '@/services/propertyService';
 import { ProjectService } from '@/services/projectService';
 import { ConstructionListClient } from './ConstructionListClient';
-import { verifySession } from '@/lib/session';
-import { AuthService } from '@/services/authService';
+import { getAuthContext } from '@/lib/authGuard';
 import { redirect } from 'next/navigation';
 
 export default async function AdminConstructionPage(props: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
-  const session = await verifySession();
-  if (!session) {
-    redirect('/login');
-  }
+  const ctx = await getAuthContext();
+  const { isSuperAdmin, isFieldAgent, permissions: userPermissions } = ctx;
 
-  let userPermissions: string[] = session.permissions || [];
-  let roleName = session.roleName || '';
-  if (session.userId) {
-    const liveUser = await AuthService.getUserById(session.userId);
-    if (liveUser?.role) {
-      roleName = liveUser.role.name;
-      userPermissions = liveUser.role.permissions || [];
-    }
-  }
-
-  const isSuperAdmin = roleName === 'Super Admin';
   const canView =
     isSuperAdmin ||
+    isFieldAgent ||
     userPermissions.includes('view_projects') ||
     userPermissions.includes('manage_projects') ||
     userPermissions.includes('update_construction_progress');

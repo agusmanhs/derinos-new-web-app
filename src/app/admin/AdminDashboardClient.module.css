@@ -1604,3 +1604,76 @@
   color: #94A3B8;
   white-space: nowrap;
 }
+
+.emptyCockpitBox {
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 12px;
+  padding: 24px 18px;
+  text-align: center;
+  color: #64748B;
+  font-size: 0.84rem;
+}
+
+.unitSubTruncate {
+  font-size: 0.62rem;
+  color: #94A3B8;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shortcutLinkSecondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #E2E8F0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 9px 10px;
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.shortcutLinkSecondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.shortcutLinkPrimary {
+  background: #F59E0B;
+  border: none;
+  color: #0B192C;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 9px 10px;
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.shortcutLinkPrimary:hover {
+  background: #D97706;
+}
+
+.detailCtaLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #0B192C;
+  color: #FFFFFF;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.detailCtaLink:hover {
+  background: #1E293B;
+}

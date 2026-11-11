@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { BookingService } from '@/services/bookingService';
-import { verifySession } from '@/lib/session';
+import { assertActionPermission } from '@/lib/authGuard';
 import { Booking } from '@/types/booking';
 
 export async function updateBookingStatusAction(
@@ -15,9 +15,9 @@ export async function updateBookingStatusAction(
     refundDecision?: string;
   }
 ) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_bookings') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_bookings']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   const updated = await BookingService.updateBookingStatus(id, status, paymentStatus, cancellationData);

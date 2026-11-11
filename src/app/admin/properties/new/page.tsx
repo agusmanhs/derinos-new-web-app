@@ -4,8 +4,10 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHea
 import { PropertyForm } from '../PropertyForm';
 import { CustomerService } from '@/services/customerService';
 import { statusService } from '@/services/statusService';
+import { requirePermission } from '@/lib/authGuard';
 
 export default async function NewPropertyPage() {
+  await requirePermission(['manage_projects']);
   // Fetch projects to populate the dropdown
   const [projects, paginatedCustomers, propertyStatuses] = await Promise.all([
     ProjectService.getProjects(),

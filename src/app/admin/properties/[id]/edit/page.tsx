@@ -6,8 +6,10 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHea
 import { PropertyForm } from '../../PropertyForm';
 import { CustomerService } from '@/services/customerService';
 import { statusService } from '@/services/statusService';
+import { requirePermission } from '@/lib/authGuard';
 
 export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
+  await requirePermission(['manage_projects']);
   const params = await props.params;
   const [property, projects, paginatedCustomers, propertyStatuses] = await Promise.all([
     PropertyService.getPropertyById(params.id),

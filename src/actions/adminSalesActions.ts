@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { SalesService } from '@/services/salesService';
-import { verifySession } from '@/lib/session';
+import { assertActionPermission } from '@/lib/authGuard';
 import { Sale } from '@/types/sale';
 
 export async function createOrUpdateSaleAction(data: {
@@ -16,9 +16,9 @@ export async function createOrUpdateSaleAction(data: {
   status?: 'In Progress' | 'Completed' | 'Cancelled';
   notes?: string | null;
 }) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_sales') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_bookings', 'manage_sales']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   const result = await SalesService.createOrUpdateSale(data);
@@ -30,9 +30,9 @@ export async function createOrUpdateSaleAction(data: {
 }
 
 export async function updateSaleStatusAction(id: string, status: Sale['status']) {
-  const session = await verifySession();
-  if (!session?.permissions?.includes('manage_sales') && session?.roleName !== 'Super Admin') {
-    throw new Error('Unauthorized');
+  const auth = await assertActionPermission(['manage_bookings', 'manage_sales']);
+  if (!auth.authorized) {
+    throw new Error(auth.message);
   }
 
   await SalesService.updateSaleStatus(id, status);

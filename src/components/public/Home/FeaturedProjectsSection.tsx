@@ -1,34 +1,30 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Project } from '@/types/project';
 import { landingMockData, MockProjectCard } from '@/lib/landingMockData';
 import { BedIcon, BathIcon, CarIcon, AreaIcon } from '@/components/ui/Icon/LandingIcons';
 import styles from './FeaturedProjectsSection.module.css';
 
+export interface PublicProjectCard extends MockProjectCard {
+  availableUnits?: number;
+  totalUnits?: number;
+}
+
 interface Props {
-  projects?: Project[];
+  projects?: PublicProjectCard[];
 }
 
 export const FeaturedProjectsSection: React.FC<Props> = ({ projects = [] }) => {
-  // Blend database projects with rich mock projects to guarantee a full, stunning 3-card showcase
-  const displayCards: MockProjectCard[] = landingMockData.featuredProjects.map((mockItem, index) => {
-    const dbProject = projects[index];
-    if (dbProject) {
-      return {
-        id: dbProject.id,
-        slug: dbProject.slug,
-        title: dbProject.title,
-        badge: index === 0 ? 'TERLARIS' : index === 1 ? 'UNGGULAN' : 'TERBARU',
-        badgeColor: index === 0 ? 'terlaris' : index === 1 ? 'unggulan' : 'terbaru',
-        location: dbProject.location || mockItem.location,
-        startingPrice: dbProject.startingPrice || mockItem.startingPrice,
-        image: dbProject.heroImage || mockItem.image,
-        specs: mockItem.specs,
-      };
-    }
-    return mockItem;
-  });
+  // Tampilkan proyek nyata dari database; fallback ke mock hanya jika database proyek masih kosong
+  const displayCards: PublicProjectCard[] =
+    projects.length > 0 ? projects : landingMockData.featuredProjects;
+
+  const gridModifierClass =
+    displayCards.length === 1
+      ? styles.gridSingle
+      : displayCards.length === 2
+        ? styles.gridDouble
+        : '';
 
   return (
     <section className={styles.section} id="proyek">
@@ -50,7 +46,7 @@ export const FeaturedProjectsSection: React.FC<Props> = ({ projects = [] }) => {
           </Link>
         </div>
 
-        <div className={styles.grid}>
+        <div className={`${styles.grid} ${gridModifierClass}`}>
           {displayCards.map((item) => (
             <div key={item.id} className={styles.card}>
               <div className={styles.imageContainer}>
@@ -60,7 +56,7 @@ export const FeaturedProjectsSection: React.FC<Props> = ({ projects = [] }) => {
                   </span>
                 )}
                 <Image
-                  src={item.image}
+                  src={item.image || '/mockups/hero_placeholder.jpg'}
                   alt={item.title}
                   fill
                   className={styles.image}
@@ -80,26 +76,30 @@ export const FeaturedProjectsSection: React.FC<Props> = ({ projects = [] }) => {
                 <h3 className={styles.projectTitle}>{item.title}</h3>
 
                 <div className={styles.priceSection}>
-                  <span className={styles.priceLabel}>Mulai dari</span>
+                  <span className={styles.priceLabel}>
+                    {typeof item.availableUnits === 'number' && item.availableUnits > 0
+                      ? `Mulai dari • ${item.availableUnits} Unit Tersedia`
+                      : 'Mulai dari'}
+                  </span>
                   <span className={styles.priceValue}>{item.startingPrice}</span>
                 </div>
 
                 <div className={styles.specsRow}>
                   <div className={styles.specItem} title="Kamar Tidur">
                     <span className={styles.specIcon}><BedIcon size={16} color="#0B192C" /></span>
-                    <span>{item.specs.bedrooms} KT</span>
+                    <span>{item.specs.bedrooms > 0 ? `${item.specs.bedrooms} KT` : '- KT'}</span>
                   </div>
                   <div className={styles.specItem} title="Kamar Mandi">
                     <span className={styles.specIcon}><BathIcon size={16} color="#0B192C" /></span>
-                    <span>{item.specs.bathrooms} KM</span>
+                    <span>{item.specs.bathrooms > 0 ? `${item.specs.bathrooms} KM` : '- KM'}</span>
                   </div>
                   <div className={styles.specItem} title="Carport">
                     <span className={styles.specIcon}><CarIcon size={16} color="#0B192C" /></span>
-                    <span>{item.specs.carports} Mobil</span>
+                    <span>{item.specs.carports > 0 ? `${item.specs.carports} Mobil` : '- Mobil'}</span>
                   </div>
                   <div className={styles.specItem} title="Luas Tanah">
                     <span className={styles.specIcon}><AreaIcon size={16} color="#0B192C" /></span>
-                    <span>{item.specs.landArea} m²</span>
+                    <span>{item.specs.landArea > 0 ? `${item.specs.landArea} m²` : '- m²'}</span>
                   </div>
                 </div>
 

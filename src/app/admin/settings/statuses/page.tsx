@@ -1,12 +1,14 @@
 import React from 'react';
 import { getProjectStatuses } from '@/actions/adminStatusActions';
 import { StatusListClient } from './StatusListClient';
+import { requirePermission } from '@/lib/authGuard';
 
 export const metadata = {
   title: 'Property Statuses | Derinos',
 };
 
 export default async function StatusesPage() {
+  await requirePermission(['manage_projects']);
   const statuses = await getProjectStatuses();
 
   return (

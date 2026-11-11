@@ -3,8 +3,11 @@
 import { PhaseService } from '@/services/phaseService';
 import { ProjectPhase } from '@/types/project';
 import { revalidatePath } from 'next/cache';
+import { assertActionPermission } from '@/lib/authGuard';
 
 export async function createPhaseAction(data: Omit<ProjectPhase, 'id' | 'createdAt' | 'updatedAt' | 'properties'>, projectSlug: string) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const phase = await PhaseService.createPhase(data);
     
@@ -19,6 +22,8 @@ export async function createPhaseAction(data: Omit<ProjectPhase, 'id' | 'created
   }
 }
 export async function deletePhaseAction(phaseId: string, projectId: string, projectSlug: string) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const success = await PhaseService.deletePhase(phaseId);
     if (success) {
@@ -34,6 +39,8 @@ export async function deletePhaseAction(phaseId: string, projectId: string, proj
 }
 
 export async function updatePhaseAction(phaseId: string, data: Partial<ProjectPhase>, projectId: string, projectSlug: string) {
+  const auth = await assertActionPermission(['manage_projects']);
+  if (!auth.authorized) return { success: false, message: auth.message };
   try {
     const phase = await PhaseService.updatePhase(phaseId, data);
     if (phase) {

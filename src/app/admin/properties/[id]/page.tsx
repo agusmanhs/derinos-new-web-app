@@ -5,8 +5,11 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHea
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button/Button';
 import { PropertyDetailClient } from './PropertyDetailClient';
+import { requirePermission } from '@/lib/authGuard';
 
 export default async function ViewPropertyPage(props: { params: Promise<{ id: string }> }) {
+  const ctx = await requirePermission(['view_projects', 'manage_projects']);
+  const canManageProjects = ctx.isSuperAdmin || ctx.permissions.includes('manage_projects');
   const params = await props.params;
   const property = await PropertyService.getPropertyById(params.id);
 
@@ -20,9 +23,11 @@ export default async function ViewPropertyPage(props: { params: Promise<{ id: st
         title={`Unit ${property.unitNumber}`} 
         description={`${property.project?.title || 'Unknown Project'} - Phase: ${property.phase?.name || '-'}`}
         action={
-          <Link href={`/admin/properties/${property.id}/edit`}>
-            <Button variant="primary">Edit Unit</Button>
-          </Link>
+          canManageProjects ? (
+            <Link href={`/admin/properties/${property.id}/edit`}>
+              <Button variant="primary">Edit Unit</Button>
+            </Link>
+          ) : undefined
         }
       />
       
