@@ -2,12 +2,15 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './AdminHeader.module.css';
 import { User } from '@/types/auth';
+import { Project } from '@/types/project';
 import { logoutAction } from '@/actions/authActions';
 
 interface AdminHeaderProps {
   user: User;
+  projects?: Project[];
   onMenuToggle: () => void;
 }
 
@@ -22,13 +25,6 @@ const IconBell = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-  </svg>
-);
-
-const IconPlus = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
   </svg>
 );
 
@@ -47,19 +43,35 @@ const IconClock = () => (
   </svg>
 );
 
-export const AdminHeader: React.FC<AdminHeaderProps> = ({ user, onMenuToggle }) => {
+export const AdminHeader: React.FC<AdminHeaderProps> = ({ user, projects = [], onMenuToggle }) => {
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const projectRef = useRef<HTMLDivElement>(null);
+
+  const activeProject = projects.length > 0 ? projects[0] : null;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
+      if (projectRef.current && !projectRef.current.contains(event.target as Node)) {
+        setIsProjectDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    router.push(`/admin/properties?search=${encodeURIComponent(searchQuery.trim())}`);
+  };
 
   return (
     <header className={styles.header}>
@@ -74,49 +86,109 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ user, onMenuToggle }) 
         </button>
 
         {/* Project Selector Box */}
-        <div className={styles.projectPill}>
-          <div className={styles.projectIcon}>
-            <IconBuilding />
+        <div className={styles.projectWrapper} ref={projectRef}>
+          <div 
+            className={styles.projectPill}
+            onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+            title="Klik untuk memilih atau membuka proyek"
+          >
+            <div className={styles.projectIcon}>
+              <IconBuilding />
+            </div>
+            <div className={styles.projectInfo}>
+              <span className={styles.projectName}>
+                {activeProject ? activeProject.title : 'Derinos Group'}
+              </span>
+              <span className={styles.projectCluster}>
+                {activeProject ? activeProject.location : 'Master Proyek'}
+              </span>
+            </div>
+            <svg 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              style={{ transform: isProjectDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
           </div>
-          <div className={styles.projectInfo}>
-            <span className={styles.projectName}>Taman Harmoni Residence</span>
-            <span className={styles.projectCluster}>Cluster Alam Asri</span>
-          </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+
+          {isProjectDropdownOpen && (
+            <div className={styles.projectDropdown}>
+              <div className={styles.projectDropdownHeader}>
+                Daftar Proyek Derinos ({projects.length})
+              </div>
+              {projects.length > 0 ? (
+                projects.map((proj) => (
+                  <Link
+                    key={proj.id}
+                    href={`/admin/projects/${proj.id}`}
+                    className={styles.projectDropdownItem}
+                    onClick={() => setIsProjectDropdownOpen(false)}
+                  >
+                    <span className={styles.projectDropdownTitle}>{proj.title}</span>
+                    <div className={styles.projectDropdownMeta}>
+                      <span>{proj.location}</span>
+                      <span style={{ fontWeight: 600, color: '#059669' }}>
+                        {proj.availableUnits} unit tersedia
+                      </span>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div style={{ padding: '12px 14px', fontSize: '0.8rem', color: '#64748B' }}>
+                  Belum ada proyek terdaftar.
+                </div>
+              )}
+              <Link 
+                href="/admin/projects"
+                className={styles.projectDropdownItem}
+                style={{ backgroundColor: '#F8FAFC', fontWeight: 600, color: '#D97706', textAlign: 'center', fontSize: '0.78rem' }}
+                onClick={() => setIsProjectDropdownOpen(false)}
+              >
+                Lihat Semua Proyek & Site Plan →
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* ERP Sync Badge */}
         <div className={styles.erpBadge}>
           <span className={styles.erpDot} />
-          <span>ERP SYNC: <strong>AKTIF</strong> (2m ago)</span>
+          <span>SISTEM: <strong>ONLINE</strong></span>
         </div>
 
         {/* SLA Pill */}
         <div className={styles.slaBadge}>
           <IconClock />
-          <span>LIVE SLA: <strong>00:11:42</strong> / avg 15m</span>
+          <span>PORTFOLIO: <strong>{projects.length} Proyek Aktif</strong></span>
         </div>
       </div>
       
       {/* Right: Search, Notifications, Primary Action & User */}
       <div className={styles.right}>
         {/* Global Search Bar */}
-        <div className={styles.searchBar}>
+        <form onSubmit={handleSearchSubmit} className={styles.searchBar}>
           <IconSearch />
           <input 
             type="text" 
             placeholder="Cari Kavling, NIK, No. WA..." 
             className={styles.searchInput} 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+        </form>
         
         {/* Notification Bell */}
-        <button className={styles.iconBtn} title="Notifikasi Sistem">
+        <Link href="/admin/leads" className={styles.iconBtn} title="Leads & Notifikasi Prospek">
           <IconBell />
           <span className={styles.badge}></span>
-        </button>
+        </Link>
 
         {/* User Menu */}
         <div className={styles.userMenu} ref={dropdownRef}>

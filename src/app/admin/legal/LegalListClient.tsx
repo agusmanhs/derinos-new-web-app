@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { LegalDocumentItem } from '@/types/legal';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHeader';
+import { saveLegalDocumentAction } from '@/actions/adminLegalActions';
 import { 
   IconFileLegal, 
   IconWhatsApp, 
@@ -24,6 +25,7 @@ export const LegalListClient: React.FC<Props> = ({ initialDocuments }) => {
   // Modal states
   const [selectedDoc, setSelectedDoc] = useState<LegalDocumentItem | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // New item form state
@@ -116,19 +118,31 @@ export const LegalListClient: React.FC<Props> = ({ initialDocuments }) => {
   }, [items, searchTerm, bankFilter, statusFilter, slikFilter]);
 
   // Save updated document from Modal
-  const handleSaveDoc = (e: React.FormEvent) => {
+  const handleSaveDoc = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDoc) return;
+    if (!selectedDoc || isSaving) return;
 
-    setItems(prev => prev.map(item => item.id === selectedDoc.id ? { ...selectedDoc, updatedAt: new Date().toISOString() } : item));
-    setSelectedDoc(null);
-    showToast(`Data berkas KPR ${selectedDoc.customerName} berhasil diperbarui.`);
+    setIsSaving(true);
+    try {
+      const res = await saveLegalDocumentAction(selectedDoc);
+      if (res.success && res.data) {
+        setItems(prev => prev.map(item => item.id === selectedDoc.id ? res.data! : item));
+        setSelectedDoc(null);
+        showToast(`Data berkas KPR ${selectedDoc.customerName} berhasil disimpan permanen.`);
+      } else {
+        alert(res.message || 'Gagal menyimpan perubahan berkas.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan sistem saat menyimpan.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Add new document
-  const handleAddNewDoc = (e: React.FormEvent) => {
+  const handleAddNewDoc = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDocForm.customerName || !newDocForm.unitNumber) {
+    if (!newDocForm.customerName || !newDocForm.unitNumber || isSaving) {
       alert('Mohon isi nama konsumen dan nomor unit kavling.');
       return;
     }
@@ -170,9 +184,21 @@ export const LegalListClient: React.FC<Props> = ({ initialDocuments }) => {
       updatedAt: new Date().toISOString(),
     };
 
-    setItems(prev => [createdItem, ...prev]);
-    setIsAddModalOpen(false);
-    showToast(`Berkas KPR baru untuk ${createdItem.customerName} berhasil ditambahkan.`);
+    setIsSaving(true);
+    try {
+      const res = await saveLegalDocumentAction(createdItem);
+      if (res.success && res.data) {
+        setItems(prev => [res.data!, ...prev]);
+        setIsAddModalOpen(false);
+        showToast(`Berkas KPR baru untuk ${createdItem.customerName} berhasil disimpan permanen.`);
+      } else {
+        alert(res.message || 'Gagal menambahkan berkas.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan sistem saat menyimpan.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Export CSV
@@ -840,8 +866,9 @@ export const LegalListClient: React.FC<Props> = ({ initialDocuments }) => {
                 <button 
                   type="submit" 
                   className={styles.primaryBtn}
+                  disabled={isSaving}
                 >
-                  Simpan Perubahan
+                  {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
                 </button>
               </div>
             </form>
@@ -990,8 +1017,9 @@ export const LegalListClient: React.FC<Props> = ({ initialDocuments }) => {
                 <button 
                   type="submit" 
                   className={styles.primaryBtn}
+                  disabled={isSaving}
                 >
-                  Simpan & Buat Berkas KPR
+                  {isSaving ? 'Menyimpan...' : 'Simpan & Buat Berkas KPR'}
                 </button>
               </div>
             </form>

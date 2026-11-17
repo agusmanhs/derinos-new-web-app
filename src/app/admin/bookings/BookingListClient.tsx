@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal/Modal';
 import { Booking } from '@/types/booking';
 import { updateBookingStatusAction } from '@/actions/adminBookingActions';
 import { createOrUpdateSaleAction } from '@/actions/adminSalesActions';
+import { exportToCsv } from '@/lib/exportUtils';
 import styles from './BookingListClient.module.css';
 
 interface Props {
@@ -453,11 +454,71 @@ export const BookingListClient: React.FC<Props> = ({ bookings }) => {
     }
   ];
 
+  const handleExportCSV = () => {
+    const headers = [
+      'ID Booking',
+      'Nama Konsumen',
+      'Telepon Konsumen',
+      'Nomor Unit',
+      'Proyek',
+      'Tanggal Booking',
+      'Booking Fee (Rp)',
+      'Status Pembayaran Fee',
+      'Status Booking',
+      'Metode Pembayaran Deal',
+      'Nilai Kontrak Deal (Rp)'
+    ];
+
+    const rows = filteredBookings.map((b) => [
+      b.id,
+      b.customer?.name || '-',
+      b.customer?.phone || '-',
+      b.unitNumber,
+      b.projectTitle,
+      new Date(b.date).toLocaleDateString('id-ID'),
+      b.bookingFee,
+      b.paymentStatus,
+      b.status,
+      b.sale?.paymentMethod || '-',
+      b.sale?.contractPrice || b.propertyUnit?.price || b.price || 0
+    ]);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCsv(`laporan_booking_nup_derinos_${dateStr}.csv`, headers, rows);
+  };
+
   return (
     <div className={styles.container}>
       <AdminPageHeader 
         title="Bookings" 
         description="Manage property reservations and booking fees."
+        action={
+          <button
+            onClick={handleExportCSV}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: '1px solid #cbd5e1',
+              backgroundColor: '#ffffff',
+              color: '#334155',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Export CSV</span>
+          </button>
+        }
       />
 
       <div className={styles.filtersCard}>

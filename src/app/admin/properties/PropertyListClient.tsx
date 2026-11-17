@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { archivePropertyAction } from '@/actions/adminPropertyActions';
 import { PropertyUnit } from '@/types/project';
 import { IconEye, IconEdit, IconTrash } from '@/components/ui/Icon/AdminIcons';
+import { exportToCsv } from '@/lib/exportUtils';
 import styles from './page.module.css';
 
 interface Props {
@@ -56,6 +57,43 @@ export const PropertyListClient: React.FC<Props> = ({ properties, pagination, fi
     }
   };
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Nomor Unit',
+      'Proyek',
+      'Tipe Rumah',
+      'Status',
+      'Harga (Rp)',
+      'Luas Tanah (m2)',
+      'Luas Bangunan (m2)',
+      'Kamar Tidur',
+      'Kamar Mandi',
+      'Carport',
+      'Progres Konstruksi (%)',
+      'Nama Konsumen',
+      'Kontak Konsumen'
+    ];
+
+    const rows = properties.map(p => [
+      p.unitNumber,
+      p.projectTitle || '-',
+      p.typeName || '-',
+      p.propertyStatus?.name || p.statusId || '-',
+      p.price || 0,
+      p.landSize || 0,
+      p.buildingSize || 0,
+      p.bedrooms || 0,
+      p.bathrooms || 0,
+      p.carports || 0,
+      p.constructionProgress || 0,
+      p.customer?.name || '-',
+      p.customer?.phone || '-'
+    ]);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCsv(`laporan_stok_kavling_derinos_${dateStr}.csv`, headers, rows);
+  };
+
   return (
     <div className={styles.container}>
       <AdminPageHeader 
@@ -63,7 +101,7 @@ export const PropertyListClient: React.FC<Props> = ({ properties, pagination, fi
         description="Manage all property units, availability, and details."
         action={
           <div style={{ display: 'flex', gap: '12px' }}>
-            <Button variant="outlined">
+            <Button variant="outlined" onClick={handleExportCSV}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>

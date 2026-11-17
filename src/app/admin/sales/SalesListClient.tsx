@@ -6,6 +6,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader/AdminPageHea
 import { AdminTable } from '@/components/admin/AdminTable/AdminTable';
 import { Sale } from '@/types/sale';
 import { updateSaleStatusAction } from '@/actions/adminSalesActions';
+import { exportToCsv } from '@/lib/exportUtils';
 import styles from './SalesListClient.module.css';
 
 interface Props {
@@ -226,11 +227,71 @@ export const SalesListClient: React.FC<Props> = ({ sales }) => {
     }
   ];
 
+  const handleExportCSV = () => {
+    const headers = [
+      'ID Deal',
+      'Nama Konsumen',
+      'Kontak Konsumen',
+      'Nomor Unit',
+      'Nama Proyek',
+      'Nilai Kontrak (Rp)',
+      'Metode Pembayaran',
+      'Status Deal',
+      'Tanggal Transaksi',
+      'Agency Marketing',
+      'Catatan'
+    ];
+
+    const rows = filteredSales.map((s) => [
+      s.id,
+      s.customer?.name || '-',
+      s.customer?.phone || '-',
+      s.unitNumber || '-',
+      s.projectTitle || '-',
+      s.contractPrice || 0,
+      s.paymentMethod || '-',
+      s.status || '-',
+      new Date(s.date).toLocaleDateString('id-ID'),
+      s.agency?.name || 'Internal In-House',
+      s.notes || '-'
+    ]);
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCsv(`laporan_sales_deals_derinos_${dateStr}.csv`, headers, rows);
+  };
+
   return (
     <div className={styles.container}>
       <AdminPageHeader 
         title="Sales Deals & Transaksi" 
         description="Pantau penutupan transaksi (closing), omset kontrak penjualan, dan skema pembiayaan konsumen."
+        action={
+          <button
+            onClick={handleExportCSV}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: '1px solid #cbd5e1',
+              backgroundColor: '#ffffff',
+              color: '#334155',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Export CSV</span>
+          </button>
+        }
       />
 
       {/* Summary Metrics Cards */}

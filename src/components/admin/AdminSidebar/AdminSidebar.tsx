@@ -73,7 +73,7 @@ const NAV_CATEGORIES: NavCategory[] = [
     permissions: ['manage_projects', 'manage_users', 'manage_roles'],
     items: [
       { id: 'landing', label: 'Landing Page Web', href: '/admin/landing', icon: <IconGlobe />, permissions: ['manage_projects'], hasSubmenu: true },
-      { id: 'whatsapp', label: 'WA Blast & Automasi', href: '#wa-automation', icon: <IconWhatsApp />, permissions: [], badge: 'API OK', badgeType: 'ok' },
+      { id: 'whatsapp', label: 'WA Blast & Automasi', href: '/admin/leads', icon: <IconWhatsApp />, permissions: [], badge: 'API OK', badgeType: 'ok' },
       { id: 'users', label: 'Pengaturan & Akses Tim', href: '/admin/users', icon: <IconSettings />, permissions: ['manage_users', 'manage_roles'], hasSubmenu: true },
     ]
   }
@@ -119,7 +119,10 @@ export const AdminSidebar: React.FC<{
     setOpenSubmenus(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const currentProjectName = projects.length > 0 ? projects[0].title : 'Cluster Alam Asri';
+  const currentProjectName = projects.length > 0 ? projects[0].title : 'Derinos Development';
+  const totalAvailableUnits = projects.reduce((acc, p) => acc + (p.availableUnits || 0), 0);
+  const totalUnits = projects.reduce((acc, p) => acc + (p.totalUnits || 0), 0);
+  const soldPercentage = totalUnits > 0 ? Math.round(((totalUnits - totalAvailableUnits) / totalUnits) * 100) : 0;
 
   return (
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
@@ -152,7 +155,7 @@ export const AdminSidebar: React.FC<{
         <div className={styles.clusterPill}>
           <span className={styles.clusterDot} />
           <span className={styles.clusterName}>{currentProjectName}</span>
-          <span className={styles.clusterSold}>92% Terjual</span>
+          <span className={styles.clusterSold}>{totalUnits > 0 ? `${soldPercentage}% Terjual` : '92% Terjual'}</span>
         </div>
       </div>
 
@@ -166,6 +169,9 @@ export const AdminSidebar: React.FC<{
               const isActive = (item.id === 'cockpit' && pathname === '/admin') || 
                                (item.id !== 'cockpit' && (pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href) && !item.hasSubmenu)));
               const isSubmenuOpen = openSubmenus[item.id];
+              const displayBadge = (item.id === 'units' && projects.length > 0)
+                ? `${totalAvailableUnits} Avail`
+                : item.badge;
               
               return (
                 <div key={item.id} className={styles.navItemContainer}>
@@ -178,9 +184,9 @@ export const AdminSidebar: React.FC<{
                     <span className={styles.label}>{item.label}</span>
                     
                     {/* Badges matching mockup */}
-                    {item.badge && (
+                    {displayBadge && (
                       <span className={`${styles.itemBadge} ${styles[item.badgeType || 'live']}`}>
-                        {item.badge}
+                        {displayBadge}
                       </span>
                     )}
 

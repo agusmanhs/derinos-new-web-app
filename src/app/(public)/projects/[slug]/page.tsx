@@ -3,6 +3,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ProjectService } from '@/services/projectService';
+import { PropertyService } from '@/services/propertyService';
+import { statusService } from '@/services/statusService';
+import { PublicSitePlanViewer } from '@/components/public/Project/PublicSitePlanViewer';
 import { CTASection } from '@/components/public/Home/CTASection';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { Card } from '@/components/ui/Card/Card';
@@ -21,6 +24,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const [propertiesResult, statuses] = await Promise.all([
+    PropertyService.getProperties({ project: project.title }, undefined, 1, 500),
+    statusService.getStatuses()
+  ]);
+  const properties = propertiesResult.data || [];
+
   return (
     <main className={styles.main}>
       {/* 1. Hero Section */}
@@ -33,7 +42,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             <h1 className={styles.title}>{project.title}</h1>
             <p className={styles.location}>{project.location}</p>
           </div>
-          
+
           <div className={styles.quickStats}>
             <div className={styles.stat}>
               <span className={styles.statLabel}>Total Area</span>
@@ -61,7 +70,14 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* 3. Masterplan & House Types */}
+      {/* 3. Interactive Site Plan & Lot Map */}
+      <PublicSitePlanViewer
+        project={project}
+        properties={properties}
+        statuses={statuses}
+      />
+
+      {/* 4. Masterplan & House Types */}
       <section className={styles.sectionLight}>
         <div className={styles.container}>
           <h2 className={styles.sectionTitle}>Masterplan & House Types</h2>
@@ -151,7 +167,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               View Full Report →
             </Link>
           </div>
-          
+
           <div className={styles.progressSummary}>
             <div className={styles.progressStat}>
               <span className={styles.statLabel}>Overall Progress</span>

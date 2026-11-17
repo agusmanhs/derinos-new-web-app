@@ -1,5 +1,9 @@
+import fs from 'fs';
+import path from 'path';
 import prisma from '@/lib/prisma';
 import { LegalDocumentItem } from '@/types/legal';
+
+const LEGAL_DATA_FILE = path.join(process.cwd(), 'data', 'legalDocuments.json');
 
 const INITIAL_MOCK_LEGAL: LegalDocumentItem[] = [
   {
@@ -178,10 +182,40 @@ const INITIAL_MOCK_LEGAL: LegalDocumentItem[] = [
   }
 ];
 
+function readSavedFile(): LegalDocumentItem[] {
+  try {
+    if (fs.existsSync(LEGAL_DATA_FILE)) {
+      const raw = fs.readFileSync(LEGAL_DATA_FILE, 'utf-8');
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error('Error reading legalDocuments.json:', err);
+  }
+  return [];
+}
+
+function writeSavedFile(items: LegalDocumentItem[]): void {
+  try {
+    const dir = path.dirname(LEGAL_DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(LEGAL_DATA_FILE, JSON.stringify(items, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error writing legalDocuments.json:', err);
+  }
+}
+
 export const LegalService = {
   async getLegalDocuments(): Promise<LegalDocumentItem[]> {
+    const savedItems = readSavedFile();
+    const savedMap = new Map<string, LegalDocumentItem>();
+    for (const item of savedItems) {
+      savedMap.set(item.id, item);
+    }
+
     try {
-      // Query sales and bookings from DB
+      // Query sales from DB
       const sales = await prisma.sale.findMany({
         where: { status: { not: 'Cancelled' } },
         include: {
@@ -189,38 +223,35 @@ export const LegalService = {
           booking: {
             include: {
               propertyUnit: true,
-              project: true
-            }
-          }
+              project: true,
+            },
+          },
         },
-        orderBy: { date: 'desc' }
+        orderBy: { date: 'desc' },
       });
 
-      if (!sales || sales.length === 0) {
-        return INITIAL_MOCK_LEGAL;
-      }
-
-      // Map existing DB sales deals to Legal items
       const dbLegalItems: LegalDocumentItem[] = sales.map((sale, idx) => {
+        const saved = savedMap.get(sale.id);
         const isKpr = sale.paymentMethod === 'Mortgage';
         const isCompleted = sale.status === 'Completed';
 
-        return {
+        // Default structure from Sale data
+        const base: LegalDocumentItem = {
           id: sale.id,
-          code: `KPR-2026-${String(idx + 1).padStart(4, '0')}`,
-          customerName: sale.customer?.name || 'Konsumen Derinos',
-          customerPhone: sale.customer?.phone || '+62 812-0000-0000',
-          customerNik: sale.customer?.ktpNumber || '3201xxxxxxxx0001',
-          customerOccupation: sale.customer?.occupation || 'Karyawan',
-          projectName: sale.projectTitle,
-          unitNumber: sale.unitNumber,
-          unitType: sale.booking?.propertyUnit?.typeName || 'Tipe Standar',
-          price: sale.contractPrice,
-          paymentMethod: (sale.paymentMethod as any) || 'Mortgage',
-          bankName: isKpr ? 'Bank BTN' : 'Cash Keras',
-          plafondAmount: isKpr ? Math.round(sale.contractPrice * 0.85) : 0,
-          interestRate: isKpr ? '3.75% Fixed 3 Thn' : undefined,
-          docs: {
+          code: saved?.code || `KPR-2026-${String(idx + 1).padStart(4, '0')}`,
+          customerName: sale.customer?.name || saved?.customerName || 'Konsumen Derinos',
+          customerPhone: sale.customer?.phone || saved?.customerPhone || '+62 812-0000-0000',
+          customerNik: sale.customer?.ktpNumber || saved?.customerNik || '3201xxxxxxxx0001',
+          customerOccupation: sale.customer?.occupation || saved?.customerOccupation || 'Karyawan',
+          projectName: sale.projectTitle || saved?.projectName || 'Proyek Derinos',
+          unitNumber: sale.unitNumber || saved?.unitNumber || 'Blok 00',
+          unitType: sale.booking?.propertyUnit?.typeName || saved?.unitType || 'Tipe Standar',
+          price: sale.contractPrice || saved?.price || 650000000,
+          paymentMethod: (sale.paymentMethod as any) || saved?.paymentMethod || 'Mortgage',
+          bankName: saved?.bankName || (isKpr ? 'Bank BTN' : 'Cash Keras'),
+          plafondAmount: saved?.plafondAmount !== undefined ? saved.plafondAmount : (isKpr ? Math.round(sale.contractPrice * 0.85) : 0),
+          interestRate: saved?.interestRate || (isKpr ? '3.75% Fixed 3 Thn' : undefined),
+          docs: saved?.docs || {
             ktpKK: true,
             npwp: !!sale.customer?.npwp,
             slipGaji: true,
@@ -228,30 +259,85 @@ export const LegalService = {
             skKerja: true,
             slikOjk: 'Kol-1',
           },
-          sp3kStatus: isCompleted ? 'SP3K Terbit' : 'Review Bank',
-          sp3kDate: isCompleted ? sale.date.toISOString().split('T')[0] : undefined,
-          unitLegality: {
+          sp3kStatus: saved?.sp3kStatus || (isCompleted ? 'SP3K Terbit' : 'Review Bank'),
+          sp3kDate: saved?.sp3kDate || (isCompleted ? sale.date.toISOString().split('T')[0] : undefined),
+          sp3kExpiryDate: saved?.sp3kExpiryDate,
+          unitLegality: saved?.unitLegality || {
             shmStatus: 'Pecah',
             pbgStatus: 'Lengkap',
             pbbStatus: 'Lunas',
           },
-          notaryStatus: isCompleted ? 'Selesai Akad' : 'Menunggu Berkas',
-          akadDate: isCompleted ? sale.date.toISOString().split('T')[0] : undefined,
-          notaryName: 'Notaris Rekanan Derinos, SH.',
-          notes: sale.notes || 'Pemberkasan KPR berjalan sesuai tahapan perbankan.',
-          updatedAt: sale.updatedAt.toISOString(),
+          notaryStatus: saved?.notaryStatus || (isCompleted ? 'Selesai Akad' : 'Menunggu Berkas'),
+          akadDate: saved?.akadDate || (isCompleted ? sale.date.toISOString().split('T')[0] : undefined),
+          notaryName: saved?.notaryName || 'Notaris Rekanan Derinos, SH.',
+          notes: saved?.notes || sale.notes || 'Pemberkasan KPR berjalan sesuai tahapan perbankan.',
+          updatedAt: saved?.updatedAt || sale.updatedAt.toISOString(),
         };
+
+        return base;
       });
 
-      // Combine with mock if few DB records exist for complete demonstration
-      if (dbLegalItems.length < 4) {
-        return [...dbLegalItems, ...INITIAL_MOCK_LEGAL.slice(dbLegalItems.length)];
+      // Include saved standalone/custom items that don't match any sale.id
+      const dbIds = new Set(sales.map((s) => s.id));
+      const customItems = savedItems.filter((item) => !dbIds.has(item.id));
+
+      const combined = [...dbLegalItems, ...customItems];
+
+      // If no DB sales and no custom items exist yet, initialize with clean mock data and save it
+      if (combined.length === 0) {
+        writeSavedFile(INITIAL_MOCK_LEGAL);
+        return INITIAL_MOCK_LEGAL;
       }
 
-      return dbLegalItems;
+      return combined;
     } catch (err) {
-      console.error('Error fetching legal documents:', err);
+      console.error('Error fetching legal documents from DB:', err);
+      // Fallback to saved items or initial mock
+      if (savedItems.length > 0) {
+        return savedItems;
+      }
       return INITIAL_MOCK_LEGAL;
     }
-  }
+  },
+
+  async saveLegalDocument(doc: LegalDocumentItem): Promise<LegalDocumentItem> {
+    const savedItems = readSavedFile();
+    const updatedDoc: LegalDocumentItem = {
+      ...doc,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const index = savedItems.findIndex((item) => item.id === doc.id);
+    if (index >= 0) {
+      savedItems[index] = updatedDoc;
+    } else {
+      savedItems.unshift(updatedDoc);
+    }
+
+    writeSavedFile(savedItems);
+
+    // Also update notes on Sale model in DB if this document maps to a Sale
+    try {
+      const existingSale = await prisma.sale.findUnique({ where: { id: doc.id } });
+      if (existingSale) {
+        await prisma.sale.update({
+          where: { id: doc.id },
+          data: {
+            notes: doc.notes || existingSale.notes,
+          },
+        });
+      }
+    } catch (dbErr) {
+      console.warn('Could not sync legal notes to DB Sale model:', dbErr);
+    }
+
+    return updatedDoc;
+  },
+
+  async deleteLegalDocument(id: string): Promise<boolean> {
+    const savedItems = readSavedFile();
+    const filtered = savedItems.filter((item) => item.id !== id);
+    writeSavedFile(filtered);
+    return true;
+  },
 };

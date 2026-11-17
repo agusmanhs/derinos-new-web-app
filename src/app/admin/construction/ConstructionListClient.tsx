@@ -8,6 +8,7 @@ import { Project } from '@/types/project';
 import { UpdateProgressModal } from '@/components/admin/SvgSitePlanRenderer/UpdateProgressModal';
 import { ConstructionHistoryModal } from './ConstructionHistoryModal';
 import { PhotoLightboxModal } from './PhotoLightboxModal';
+import { exportToCsv } from '@/lib/exportUtils';
 import styles from './ConstructionList.module.css';
 
 interface Props {
@@ -87,13 +88,95 @@ export const ConstructionListClient: React.FC<Props> = ({
     return 'Selesai 100%';
   };
 
+  const handleExportCSV = () => {
+    if (activeTab === 'units') {
+      const headers = [
+        'Nomor Unit',
+        'Proyek',
+        'Tipe Rumah',
+        'Tahap / Phase',
+        'Status Kavling',
+        'Progres Fisik (%)',
+        'Tahapan Progres',
+        'Nama Konsumen',
+        'Kontak Konsumen',
+        'Terakhir Diperbarui'
+      ];
+
+      const rows = properties.map((p) => [
+        p.unitNumber,
+        p.projectTitle || '-',
+        p.typeName || '-',
+        p.phase?.name || '-',
+        p.propertyStatus?.name || p.statusId || '-',
+        p.constructionProgress || 0,
+        getProgressStage(p.constructionProgress || 0),
+        p.customer?.name || '-',
+        p.customer?.phone || '-',
+        p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('id-ID') : '-'
+      ]);
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      exportToCsv(`laporan_progres_konstruksi_unit_${dateStr}.csv`, headers, rows);
+    } else {
+      const headers = [
+        'Nama Proyek',
+        'Lokasi',
+        'Status',
+        'Total Unit',
+        'Unit Tersedia',
+        'Progres Fisik Rata-rata (%)',
+        'Target Selesai'
+      ];
+
+      const rows = projects.map((prj) => [
+        prj.title,
+        prj.location,
+        prj.status,
+        prj.totalUnits,
+        prj.availableUnits,
+        prj.overallProgress || 0,
+        prj.targetCompletion || '-'
+      ]);
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      exportToCsv(`laporan_progres_proyek_global_${dateStr}.csv`, headers, rows);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <AdminPageHeader
         title="Monitoring Progres Pembangunan"
         description="Pantau persentase fisik, foto dokumentasi lapangan, dan riwayat pembangunan tiap unit kavling."
         action={
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              onClick={handleExportCSV}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e1',
+                backgroundColor: '#ffffff',
+                color: '#334155',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export CSV</span>
+            </button>
+
             <div style={{ display: 'flex', backgroundColor: '#e2e8f0', borderRadius: '8px', padding: '3px' }}>
               <button
                 onClick={() => setActiveTab('units')}
