@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { createPhaseAction, deletePhaseAction, updatePhaseAction } from '@/actions/adminPhaseActions';
 import { createPropertyAjaxAction } from '@/actions/adminPropertyActions';
-import { 
-  saveHouseTypeAction, 
-  deleteHouseTypeAction, 
+import {
+  saveHouseTypeAction,
+  deleteHouseTypeAction,
   seedInitialHouseTypesFromUnitsAction,
   uploadHouseTypeImageAction
 } from '@/actions/adminHouseTypeActions';
@@ -29,12 +29,12 @@ interface Props {
   canUpdateProgress?: boolean;
 }
 
-export const ProjectDashboardClient: React.FC<Props> = ({ 
-  project, 
-  properties, 
-  statuses, 
-  customers, 
-  agencies, 
+export const ProjectDashboardClient: React.FC<Props> = ({
+  project,
+  properties,
+  statuses,
+  customers,
+  agencies,
   canManageProjects = false,
   canUpdateStatus = false,
   canUpdateProgress = false
@@ -113,7 +113,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({
       status: 'Planning' as const,
       order: parseInt(formData.get('order') as string) || 0,
     };
-    
+
     // If we're editing but didn't upload a new SVG, we keep the old one
     if (editingPhase && !uploadedSvg) {
       delete (data as any).sitePlanSvg;
@@ -138,7 +138,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({
 
   const handleDeletePhase = async (phaseId: string) => {
     if (!confirm('Are you sure you want to delete this phase? This action cannot be undone.')) return;
-    
+
     startTransition(async () => {
       const res = await deletePhaseAction(phaseId, project.id, project.slug);
       if (res.success) {
@@ -299,21 +299,21 @@ export const ProjectDashboardClient: React.FC<Props> = ({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const newId = formData.get('newId') as string;
-    
+
     if (!newId || newId.trim() === '') return;
-    
+
     const phase = project.phases?.find(p => p.id === selectedPhaseId);
     if (!phase || !phase.sitePlanSvg) return;
-    
+
     const escapedOldId = editingSvgId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     let newSvgString = phase.sitePlanSvg;
-    
+
     const idRegex = new RegExp(`id=["']${escapedOldId}["']`, 'g');
     newSvgString = newSvgString.replace(idRegex, `id="${newId}"`);
-    
+
     const dataIdRegex = new RegExp(`data-id=["']${escapedOldId}["']`, 'g');
     newSvgString = newSvgString.replace(dataIdRegex, `data-id="${newId}"`);
-    
+
     startTransition(async () => {
       const res = await updatePhaseAction(phase.id, { sitePlanSvg: newSvgString }, project.id, project.slug);
       if (res.success) {
@@ -327,11 +327,11 @@ export const ProjectDashboardClient: React.FC<Props> = ({
   const [isExporting, setIsExporting] = useState<string | null>(null);
 
   const handleExportPDF = async (phaseId: string, phaseName: string) => {
-    setIsExporting(phaseId);
+    setIsExporting(`${phaseId}-pdf`);
     try {
       const containerId = `siteplan-export-container-${phaseId}`;
       const element = document.getElementById(containerId);
-      
+
       if (!element) {
         throw new Error("Could not find the Site Plan container to export.");
       }
@@ -344,7 +344,7 @@ export const ProjectDashboardClient: React.FC<Props> = ({
       });
 
       const imgData = canvas.toDataURL('image/png');
-      
+
       // Calculate aspect ratio for PDF (Landscape A4)
       const pdf = new jsPDF({
         orientation: 'landscape',
@@ -354,11 +354,11 @@ export const ProjectDashboardClient: React.FC<Props> = ({
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      
+
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
       const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      
+
       const targetWidth = imgWidth * ratio;
       const targetHeight = imgHeight * ratio;
       const marginX = (pdfWidth - targetWidth) / 2;
@@ -369,6 +369,38 @@ export const ProjectDashboardClient: React.FC<Props> = ({
 
     } catch (error: any) {
       alert("Error exporting PDF: " + error.message);
+    } finally {
+      setIsExporting(null);
+    }
+  };
+
+  const handleExportImage = async (phaseId: string, phaseName: string) => {
+    setIsExporting(`${phaseId}-img`);
+    try {
+      const containerId = `siteplan-export-container-${phaseId}`;
+      const element = document.getElementById(containerId);
+
+      if (!element) {
+        throw new Error("Could not find the Site Plan container to export.");
+      }
+
+      // Capture the element using html2canvas at high resolution
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = imgData;
+      link.download = `SitePlan-${project.slug}-${phaseName.replace(/\s+/g, '-')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (error: any) {
+      alert("Error exporting Image: " + error.message);
     } finally {
       setIsExporting(null);
     }
@@ -457,25 +489,25 @@ export const ProjectDashboardClient: React.FC<Props> = ({
   return (
     <div className={styles.container}>
       <div className={styles.tabs}>
-        <button 
+        <button
           className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
           onClick={() => setActiveTab('overview')}
         >
           Overview
         </button>
-        <button 
+        <button
           className={`${styles.tab} ${activeTab === 'phases' ? styles.active : ''}`}
           onClick={() => setActiveTab('phases')}
         >
           Phases & Site Plan
         </button>
-        <button 
+        <button
           className={`${styles.tab} ${activeTab === 'units' ? styles.active : ''}`}
           onClick={() => setActiveTab('units')}
         >
           Property Units
         </button>
-        <button 
+        <button
           className={`${styles.tab} ${activeTab === 'houseTypes' ? styles.active : ''}`}
           onClick={() => setActiveTab('houseTypes')}
         >
@@ -732,13 +764,57 @@ export const ProjectDashboardClient: React.FC<Props> = ({
                     <div key={phase.id} className={styles.phaseCard}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <h4 style={{ margin: 0 }}>{phase.name} <span className={styles.badge}>{phase.status}</span></h4>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           <button 
                             onClick={() => handleExportPDF(phase.id, phase.name)} 
-                            disabled={isExporting === phase.id}
-                            style={{ padding: '6px 12px', fontSize: '12px', border: '1px solid #10B981', color: '#047857', backgroundColor: '#ECFDF5', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            disabled={isExporting !== null || !phase.sitePlanSvg}
+                            style={{ 
+                              padding: '6px 12px', 
+                              fontSize: '12px', 
+                              fontWeight: 500,
+                              border: '1px solid #10B981', 
+                              color: '#047857', 
+                              backgroundColor: '#ECFDF5', 
+                              borderRadius: '4px', 
+                              cursor: (isExporting !== null || !phase.sitePlanSvg) ? 'not-allowed' : 'pointer', 
+                              opacity: (isExporting !== null || !phase.sitePlanSvg) ? 0.6 : 1,
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '6px' 
+                            }}
                           >
-                            {isExporting === phase.id ? 'Exporting...' : 'Export PDF'}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                              <line x1="16" y1="13" x2="8" y2="13"></line>
+                              <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            {isExporting === `${phase.id}-pdf` ? 'Exporting PDF...' : 'Export PDF'}
+                          </button>
+                          <button 
+                            onClick={() => handleExportImage(phase.id, phase.name)} 
+                            disabled={isExporting !== null || !phase.sitePlanSvg}
+                            style={{ 
+                              padding: '6px 12px', 
+                              fontSize: '12px', 
+                              fontWeight: 500,
+                              border: '1px solid #3B82F6', 
+                              color: '#1D4ED8', 
+                              backgroundColor: '#EFF6FF', 
+                              borderRadius: '4px', 
+                              cursor: (isExporting !== null || !phase.sitePlanSvg) ? 'not-allowed' : 'pointer', 
+                              opacity: (isExporting !== null || !phase.sitePlanSvg) ? 0.6 : 1,
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '6px' 
+                            }}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                              <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            {isExporting === `${phase.id}-img` ? 'Exporting Gambar...' : 'Export Gambar (PNG)'}
                           </button>
                           {canManageProjects && (
                             <>
@@ -1506,5 +1582,5 @@ export const ProjectDashboardClient: React.FC<Props> = ({
         </form>
       </Modal>
     </div>
-  );
+      );
 };
